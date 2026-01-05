@@ -16,8 +16,9 @@ import About from "./pages/About";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 
-// Auth page
+// Auth pages
 import Auth from "./pages/Auth";
+import EmailVerification from "./pages/EmailVerification";
 
 // Protected MySmash App pages
 import Dashboard from "./pages/Dashboard";
@@ -48,6 +49,7 @@ const App = () => (
 
               {/* Authentication */}
               <Route path="/auth" element={<Auth />} />
+              <Route path="/verify-email" element={<EmailVerification />} />
 
               {/* Protected MySmash App Routes */}
               <Route

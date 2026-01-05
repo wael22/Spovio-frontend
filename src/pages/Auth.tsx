@@ -99,25 +99,33 @@ const Auth = () => {
         role: 'player', // Default role for registration
       };
 
-      await authService.register(userData);
+      const response = await authService.register(userData);
 
-      toast({
-        title: "Inscription réussie",
-        description: "Votre compte a été créé. Vous pouvez maintenant vous connecter.",
-      });
+      // Check if verification is required
+      if (response.data?.requires_verification) {
+        toast({
+          title: "Email envoyé",
+          description: "Un code de vérification a été envoyé à votre email.",
+        });
+        // Redirect to email verification page
+        navigate('/verify-email', { state: { email: userData.email } });
+      } else {
+        // Old flow - direct success (shouldn't happen normally)
+        toast({
+          title: "Inscription réussie",
+          description: "Votre compte a été créé. Vous pouvez maintenant vous connecter.",
+        });
 
-      // Clear register form and switch to login
-      setRegisterForm({
-        firstName: "",
-        lastName: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-      });
-      setMode("login");
-
-      // Pre-fill login email for convenience
-      setLoginForm({ ...loginForm, email: userData.email });
+        setRegisterForm({
+          firstName: "",
+          lastName: "",
+          email: "",
+          password: "",
+          confirmPassword: "",
+        });
+        setMode("login");
+        setLoginForm({ ...loginForm, email: userData.email });
+      }
 
     } catch (error: any) {
       console.error('Registration error:', error);
@@ -171,8 +179,8 @@ const Auth = () => {
             <button
               onClick={() => setMode("login")}
               className={`flex-1 py-2.5 px-4 rounded-lg font-medium transition-all ${mode === "login"
-                  ? "bg-primary text-primary-foreground shadow-lg"
-                  : "text-muted-foreground hover:text-foreground"
+                ? "bg-primary text-primary-foreground shadow-lg"
+                : "text-muted-foreground hover:text-foreground"
                 }`}
             >
               Connexion
@@ -180,8 +188,8 @@ const Auth = () => {
             <button
               onClick={() => setMode("register")}
               className={`flex-1 py-2.5 px-4 rounded-lg font-medium transition-all ${mode === "register"
-                  ? "bg-primary text-primary-foreground shadow-lg"
-                  : "text-muted-foreground hover:text-foreground"
+                ? "bg-primary text-primary-foreground shadow-lg"
+                : "text-muted-foreground hover:text-foreground"
                 }`}
             >
               Inscription
