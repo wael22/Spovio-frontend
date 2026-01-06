@@ -3,9 +3,9 @@
 
 import axios, { AxiosInstance } from 'axios';
 
-// Use Vercel proxy to avoid CORS: /api/* -> https://spovio-backend.onrender.com/api/*
-// Defined in vercel.json
-const API_BASE_URL = '/api';
+// Direct Render URL (Vercel proxy rewriting to external URLs requires Pro plan)
+// Backend has CORS configured to accept requests from Vercel frontend
+const API_BASE_URL = 'https://spovio-backend.onrender.com/api';
 
 const api: AxiosInstance = axios.create({
     baseURL: API_BASE_URL,
