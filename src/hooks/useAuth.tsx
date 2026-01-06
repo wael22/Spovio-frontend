@@ -21,6 +21,7 @@ interface AuthContextType {
     logout: () => Promise<{ success: boolean }>;
     fetchUser: () => Promise<User>;
     updateProfile: (profileData: any) => Promise<{ success: boolean; user?: User; error?: string }>;
+    verifyEmail: (email: string, code: string) => Promise<{ success: boolean; user?: User; error?: string }>;
     isAuthenticated: boolean;
     isAdmin: boolean;
     isPlayer: boolean;
@@ -170,6 +171,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         logout,
         fetchUser,
         updateProfile,
+        verifyEmail,
         isAuthenticated,
         isAdmin,
         isPlayer,
