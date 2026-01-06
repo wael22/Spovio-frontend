@@ -23,10 +23,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole 
     }
 
     if (!user) {
+        console.log("🔒 ProtectedRoute: Access denied - No user found");
         return <Navigate to="/auth" replace />;
     }
 
     if (requiredRole && user.role !== requiredRole) {
+        console.log(`🔒 ProtectedRoute: Access denied - Role mismatch. User: ${user.role}, Required: ${requiredRole}`);
         // Redirect based on user role
         switch (user.role) {
             case 'player':
@@ -40,6 +42,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole 
         }
     }
 
+    console.log("🔓 ProtectedRoute: Access granted");
     return <>{children}</>;
 };
 

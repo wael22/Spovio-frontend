@@ -54,16 +54,33 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             // Avoid multiple initializations
             if (isInitialized) return;
 
+            // Try to restore session from localStorage first (fast)
+            const storedUser = localStorage.getItem('user');
+            if (storedUser) {
+                try {
+                    setUser(JSON.parse(storedUser));
+                } catch (e) {
+                    console.error("Failed to parse stored user", e);
+                    localStorage.removeItem('user');
+                }
+            }
+
             try {
+                // Verify with backend
                 const response = await authService.getCurrentUser();
                 setUser(response.data.user);
+                // Update storage with fresh data
+                localStorage.setItem('user', JSON.stringify(response.data.user));
             } catch (error: any) {
                 // 401 is expected if not authenticated
                 if (error.response?.status === 401) {
                     setUser(null);
+                    localStorage.removeItem('user');
                 } else {
                     console.error("Error checking authentication status:", error);
-                    setUser(null);
+                    // Don't clear user here if it's a network error, keep offline state if possible
+                    // But for now, safe default:
+                    // setUser(null); 
                 }
             } finally {
                 setLoading(false);
@@ -79,8 +96,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             setError(null);
             setLoading(true);
             const response = await authService.login(credentials);
-            setUser(response.data.user);
-            return { success: true, user: response.data.user };
+            const userData = response.data.user;
+
+            setUser(userData);
+            localStorage.setItem('user', JSON.stringify(userData));
+
+            return { success: true, user: userData };
         } catch (error: any) {
             const errorMessage = error.response?.data?.error || error.response?.data?.message || 'Login error';
             setError(errorMessage);
@@ -99,6 +120,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             // Don't set user if verification is required
             if (response.data.user) {
                 setUser(response.data.user);
+                localStorage.setItem('user', JSON.stringify(response.data.user));
             }
 
             // Return full response data including requires_verification
@@ -115,11 +137,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     const logout = async () => {
         try {
             await authService.logout();
-            setUser(null);
-            localStorage.removeItem('user');
-            return { success: true };
         } catch (error) {
-            // Even if logout fails on server, clear client state
+            console.error("Logout error", error);
+        } finally {
             setUser(null);
             localStorage.removeItem('user');
             return { success: true };
@@ -130,11 +150,14 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     const fetchUser = async () => {
         try {
             const response = await authService.getCurrentUser();
-            setUser(response.data.user);
-            return response.data.user;
+            const userData = response.data.user;
+            setUser(userData);
+            localStorage.setItem('user', JSON.stringify(userData));
+            return userData;
         } catch (error: any) {
             if (error.response?.status === 401) {
                 setUser(null);
+                localStorage.removeItem('user');
             }
             throw error;
         }
@@ -145,10 +168,31 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             setError(null);
             setLoading(true);
             const response = await authService.updateProfile(profileData);
-            setUser(response.data.user);
-            return { success: true, user: response.data.user };
+            const userData = response.data.user;
+            setUser(userData);
+            localStorage.setItem('user', JSON.stringify(userData));
+            return { success: true, user: userData };
         } catch (error: any) {
             const errorMessage = error.response?.data?.error || error.response?.data?.message || 'Profile update error';
+            setError(errorMessage);
+            return { success: false, error: errorMessage };
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const verifyEmail = async (email: string, code: string) => {
+        try {
+            setError(null);
+            setLoading(true);
+            const response = await authService.verifyEmail(email, code);
+            // Verify email returns user + token, so we can log them in directly
+            const userData = response.data.user;
+            setUser(userData);
+            localStorage.setItem('user', JSON.stringify(userData));
+            return { success: true, user: userData };
+        } catch (error: any) {
+            const errorMessage = error.response?.data?.error || error.response?.data?.message || 'Verification error';
             setError(errorMessage);
             return { success: false, error: errorMessage };
         } finally {
