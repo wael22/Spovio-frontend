@@ -16,6 +16,8 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { authService } from "@/lib/api";
 
+import { useAuth } from "@/hooks/useAuth";
+
 type AuthMode = "login" | "register";
 
 const Auth = () => {
@@ -38,37 +40,43 @@ const Auth = () => {
     confirmPassword: "",
   });
 
+  /* 
+   * FIX: Use useAuth hook instead of direct service call to properly update 
+   * global state and trigger redirects in ProtectedRoute
+   */
+  const { login, register } = useAuth();
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      const response = await authService.login(loginForm);
+      // Use login from auth context to update global state
+      const result = await login(loginForm);
 
-      // Store user data in localStorage
-      if (response.data.user) {
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-      }
+      if (result.success && result.user) {
+        toast({
+          title: "Connexion réussie",
+          description: `Bienvenue ${result.user.name || ''} !`,
+        });
 
-      toast({
-        title: "Connexion réussie",
-        description: `Bienvenue ${response.data.user?.name || ''} !`,
-      });
-
-      // Redirect based on role
-      const role = response.data.user?.role;
-      if (role === 'super_admin') {
-        navigate("/admin");
-      } else if (role === 'club_admin') {
-        navigate("/club");
+        // Redirect based on role
+        const role = result.user.role;
+        if (role === 'super_admin') {
+          navigate("/admin");
+        } else if (role === 'club_admin') {
+          navigate("/club");
+        } else {
+          navigate("/dashboard");
+        }
       } else {
-        navigate("/dashboard");
+        throw new Error(result.error);
       }
     } catch (error: any) {
       console.error('Login error:', error);
       toast({
         title: "Erreur de connexion",
-        description: error.response?.data?.message || "Email ou mot de passe incorrect",
+        description: error.message || "Email ou mot de passe incorrect",
         variant: "destructive",
       });
     } finally {
