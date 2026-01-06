@@ -54,8 +54,8 @@ const EmailVerification = () => {
                 description: "Votre compte est maintenant actif. Vous pouvez vous connecter.",
             });
 
-            // Redirect to auth with login tab
-            navigate("/auth");
+            // Backend returns user data + token - user is logged in
+            navigate("/dashboard");
         } catch (error: any) {
             console.error('Verification error:', error);
             toast({
