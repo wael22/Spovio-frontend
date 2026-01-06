@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { authService } from "@/lib/api";
+import { useAuth } from "@/hooks/useAuth";
 
 const EmailVerification = () => {
     const navigate = useNavigate();
