@@ -101,6 +101,11 @@ const Auth = () => {
 
       const response = await authService.register(userData);
 
+      // Debug: log the full response to see structure
+      console.log('Registration response:', response);
+      console.log('Response data:', response.data);
+      console.log('Requires verification?', response.data?.requires_verification);
+
       // Check if verification is required
       if (response.data?.requires_verification) {
         toast({
