@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { authService } from '../lib/api';
+import { authService, tokenManager } from '../lib/api';
 
 interface User {
     id: string;
@@ -142,6 +142,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         } finally {
             setUser(null);
             localStorage.removeItem('user');
+            tokenManager.clearToken(); // 🆕 Clear JWT token
             return { success: true };
         }
     };
