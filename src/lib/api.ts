@@ -35,15 +35,15 @@ api.interceptors.request.use(
         const token = tokenManager.getToken();
 
         if (token) {
-            // Standard JWT authentication using Authorization header
+            // Use X-API-Key header (commonly allowed in CORS, unlike Authorization)
             if (!config.headers) {
                 config.headers = {} as any;
             }
-            config.headers['Authorization'] = `Bearer ${token}`;
+            config.headers['X-API-Key'] = token;
 
             console.log('[API DEBUG] Token attached:', {
                 tokenLength: token.length,
-                header: 'Authorization: Bearer ...'
+                header: 'X-API-Key'
             });
         } else {
             console.log('[API DEBUG] No token available');
