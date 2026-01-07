@@ -33,8 +33,23 @@ export { tokenManager };
 api.interceptors.request.use(
     (config) => {
         const token = tokenManager.getToken();
+
+        // Ensure headers object exists
+        if (!config.headers) {
+            config.headers = {} as any;
+        }
+
         if (token) {
+            // Set Authorization header using multiple methods to ensure it works
+            config.headers['Authorization'] = `Bearer ${token}`;
             config.headers.Authorization = `Bearer ${token}`;
+
+            console.log('[API DEBUG] Token attached to request:', {
+                tokenLength: token.length,
+                authHeader: config.headers['Authorization']?.substring(0, 20) + '...'
+            });
+        } else {
+            console.log('[API DEBUG] No token available to attach');
         }
 
         console.log('[API DEBUG] Request:', {
@@ -42,6 +57,7 @@ api.interceptors.request.use(
             baseURL: config.baseURL,
             fullURL: `${config.baseURL}${config.url}`,
             hasToken: !!token,
+            hasAuthHeader: !!config.headers['Authorization'],
             headers: config.headers,
             data: config.data
         });
