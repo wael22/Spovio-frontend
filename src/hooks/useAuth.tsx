@@ -97,6 +97,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             setLoading(true);
             const response = await authService.login(credentials);
             const userData = response.data.user;
+            const token = response.data.token;
+
+            // 🔥 CRITICAL: Store token FIRST before setting user
+            if (token) {
+                tokenManager.setToken(token);
+                console.log('[useAuth] JWT token stored explicitly');
+            } else {
+                console.warn('[useAuth] No token in login response!');
+            }
 
             setUser(userData);
             localStorage.setItem('user', JSON.stringify(userData));
@@ -187,8 +196,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             setError(null);
             setLoading(true);
             const response = await authService.verifyEmail(email, code);
-            // Verify email returns user + token, so we can log them in directly
             const userData = response.data.user;
+            const token = response.data.token;
+
+            // 🔥 CRITICAL: Store token FIRST before setting user
+            if (token) {
+                tokenManager.setToken(token);
+                console.log('[useAuth] JWT token stored from email verification');
+            }
+
             setUser(userData);
             localStorage.setItem('user', JSON.stringify(userData));
             return { success: true, user: userData };
