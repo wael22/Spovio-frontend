@@ -16,7 +16,7 @@ import {
   Coins
 } from "lucide-react";
 import { useLocation } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 
 interface DashboardNavbarProps {
   credits: number;
@@ -63,8 +63,8 @@ export function DashboardNavbar({ credits }: DashboardNavbarProps) {
                   key={link.href}
                   to={link.href}
                   className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-all ${isActive
-                      ? "bg-primary text-primary-foreground font-medium"
-                      : "text-muted-foreground hover:text-foreground hover:bg-card/50"
+                    ? "bg-primary text-primary-foreground font-medium"
+                    : "text-muted-foreground hover:text-foreground hover:bg-card/50"
                     }`}
                 >
                   <link.icon className="h-4 w-4" />

@@ -34,7 +34,7 @@ import {
 } from "lucide-react";
 import { playerService, recordingService, videoService } from "@/lib/api";
 import { toast } from "sonner";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import QRScannerModal from "./QRScannerModal";
 
 interface StartRecordingModalProps {
@@ -257,10 +257,10 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted }: 
       onClick={() => court.available && setSelectedCourt(court.id.toString())}
       disabled={!court.available}
       className={`w-full p-3 rounded-xl border flex flex-col transition-all text-left ${selectedCourt === court.id.toString()
-          ? "border-primary bg-primary/10"
-          : court.available
-            ? "border-border/50 bg-background/30 hover:border-primary/50"
-            : "border-border/30 bg-background/10 opacity-50 cursor-not-allowed"
+        ? "border-primary bg-primary/10"
+        : court.available
+          ? "border-border/50 bg-background/30 hover:border-primary/50"
+          : "border-border/30 bg-background/10 opacity-50 cursor-not-allowed"
         }`}
     >
       <div className="flex items-center justify-between">
@@ -369,8 +369,8 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted }: 
                     whileTap={{ scale: 0.98 }}
                     onClick={() => setSelectedDuration(duration.value)}
                     className={`p-3 rounded-xl border text-left transition-all ${selectedDuration === duration.value
-                        ? "border-primary bg-primary/10 shadow-[0_0_20px_hsl(var(--primary)/0.2)]"
-                        : "border-border/50 bg-background/30 hover:border-primary/50"
+                      ? "border-primary bg-primary/10 shadow-[0_0_20px_hsl(var(--primary)/0.2)]"
+                      : "border-border/50 bg-background/30 hover:border-primary/50"
                       }`}
                   >
                     <div className="flex items-center gap-2">
