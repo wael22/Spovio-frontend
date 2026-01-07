@@ -34,19 +34,15 @@ api.interceptors.request.use(
     (config) => {
         const token = tokenManager.getToken();
 
-        // Ensure headers object exists
-        if (!config.headers) {
-            config.headers = {} as any;
-        }
-
         if (token) {
-            // Use custom header X-Token (simple name to avoid proxy filtering)
-            config.headers['X-Token'] = token;
+            // Railway filters ALL custom headers in CORS requests
+            // So we MUST use query parameter instead
+            const separator = config.url?.includes('?') ? '&' : '?';
+            config.url = `${config.url}${separator}token=${encodeURIComponent(token)}`;
 
-            console.log('[API DEBUG] Token attached to request:', {
+            console.log('[API DEBUG] Token attached as query param:', {
                 tokenLength: token.length,
-                headerName: 'X-Token',
-                authHeader: `Token ${token.substring(0, 20)}...`
+                url: config.url?.substring(0, 50) + '...'
             });
         } else {
             console.log('[API DEBUG] No token available to attach');
@@ -55,11 +51,8 @@ api.interceptors.request.use(
         console.log('[API DEBUG] Request:', {
             url: config.url,
             baseURL: config.baseURL,
-            fullURL: `${config.baseURL}${config.url}`,
             hasToken: !!token,
-            hasXToken: !!config.headers['X-Token'],
-            headers: config.headers,
-            data: config.data
+            method: config.method
         });
         return config;
     },
