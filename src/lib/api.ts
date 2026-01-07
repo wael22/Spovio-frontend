@@ -2,13 +2,13 @@
 // Based on padelvar-frontend-main/src/lib/api.js
 
 import axios, { AxiosInstance } from 'axios';
+import { tokenManager } from './tokenManager';
 
 // Railway URL - Better CORS support than Render
 const API_BASE_URL = 'https://spovio-backend-main-production.up.railway.app/api';
 
 const api: AxiosInstance = axios.create({
     baseURL: API_BASE_URL,
-    withCredentials: true,
     headers: {
         'Content-Type': 'application/json',
     },
@@ -26,13 +26,22 @@ export const getAssetUrl = (path: string): string => {
 
 let isRedirecting = false;
 
-// Request interceptor for logging
+// Re-export tokenManager for convenience
+export { tokenManager };
+
+// Request interceptor - Attach JWT token to all requests
 api.interceptors.request.use(
     (config) => {
+        const token = tokenManager.getToken();
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+
         console.log('[API DEBUG] Request:', {
             url: config.url,
             baseURL: config.baseURL,
             fullURL: `${config.baseURL}${config.url}`,
+            hasToken: !!token,
             headers: config.headers,
             data: config.data
         });
@@ -44,9 +53,16 @@ api.interceptors.request.use(
     }
 );
 
-// Response interceptor for error handling
+// Response interceptor for error handling and token management
 api.interceptors.response.use(
-    (response) => response,
+    (response) => {
+        // Store JWT token if present in response
+        if (response.data?.token) {
+            tokenManager.setToken(response.data.token);
+            console.log('[API] JWT token stored from response');
+        }
+        return response;
+    },
     (error) => {
         console.error('[API DEBUG] Response error:', {
             status: error.response?.status,
@@ -65,7 +81,8 @@ api.interceptors.response.use(
 
             if (!isRedirecting && !isPublicRoute) {
                 isRedirecting = true;
-                console.warn('[API] Redirecting to auth - 401 Error');
+                console.warn('[API] 401 Error - Clearing token and redirecting to auth');
+                tokenManager.clearToken(); // Clear invalid token
                 window.location.href = '/auth';
                 setTimeout(() => {
                     isRedirecting = false;
