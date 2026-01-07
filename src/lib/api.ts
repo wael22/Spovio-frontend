@@ -40,13 +40,12 @@ api.interceptors.request.use(
         }
 
         if (token) {
-            // Set Authorization header using multiple methods to ensure it works
-            config.headers['Authorization'] = `Bearer ${token}`;
-            config.headers.Authorization = `Bearer ${token}`;
+            // Use custom header X-Auth-Token instead of Authorization to bypass CORS issues
+            config.headers['X-Auth-Token'] = token;
 
             console.log('[API DEBUG] Token attached to request:', {
                 tokenLength: token.length,
-                authHeader: config.headers['Authorization']?.substring(0, 20) + '...'
+                authHeader: `Token ${token.substring(0, 20)}...`
             });
         } else {
             console.log('[API DEBUG] No token available to attach');
@@ -57,7 +56,7 @@ api.interceptors.request.use(
             baseURL: config.baseURL,
             fullURL: `${config.baseURL}${config.url}`,
             hasToken: !!token,
-            hasAuthHeader: !!config.headers['Authorization'],
+            hasAuthHeader: !!config.headers['X-Auth-Token'],
             headers: config.headers,
             data: config.data
         });
