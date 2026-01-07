@@ -40,11 +40,12 @@ api.interceptors.request.use(
         }
 
         if (token) {
-            // Use custom header X-Auth-Token instead of Authorization to bypass CORS issues
-            config.headers['X-Auth-Token'] = token;
+            // Use custom header X-Token (simple name to avoid proxy filtering)
+            config.headers['X-Token'] = token;
 
             console.log('[API DEBUG] Token attached to request:', {
                 tokenLength: token.length,
+                headerName: 'X-Token',
                 authHeader: `Token ${token.substring(0, 20)}...`
             });
         } else {
@@ -56,7 +57,7 @@ api.interceptors.request.use(
             baseURL: config.baseURL,
             fullURL: `${config.baseURL}${config.url}`,
             hasToken: !!token,
-            hasAuthHeader: !!config.headers['X-Auth-Token'],
+            hasXToken: !!config.headers['X-Token'],
             headers: config.headers,
             data: config.data
         });
