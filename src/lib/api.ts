@@ -35,17 +35,18 @@ api.interceptors.request.use(
         const token = tokenManager.getToken();
 
         if (token) {
-            // Railway filters ALL custom headers in CORS requests
-            // So we MUST use query parameter instead
-            const separator = config.url?.includes('?') ? '&' : '?';
-            config.url = `${config.url}${separator}token=${encodeURIComponent(token)}`;
+            // Standard JWT authentication using Authorization header
+            if (!config.headers) {
+                config.headers = {} as any;
+            }
+            config.headers['Authorization'] = `Bearer ${token}`;
 
-            console.log('[API DEBUG] Token attached as query param:', {
+            console.log('[API DEBUG] Token attached:', {
                 tokenLength: token.length,
-                url: config.url?.substring(0, 50) + '...'
+                header: 'Authorization: Bearer ...'
             });
         } else {
-            console.log('[API DEBUG] No token available to attach');
+            console.log('[API DEBUG] No token available');
         }
 
         console.log('[API DEBUG] Request:', {
