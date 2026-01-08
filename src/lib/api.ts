@@ -9,10 +9,10 @@ const API_BASE_URL = 'https://spovio-backend-main-production.up.railway.app/api'
 
 const api: AxiosInstance = axios.create({
     baseURL: API_BASE_URL,
-    withCredentials: true,  // CRITICAL: Enable cookies in CORS requests
     headers: {
         'Content-Type': 'application/json',
     },
+    // withCredentials removed - we use JWT in headers, not cookies
 });
 
 export const getAssetUrl = (path: string): string => {
