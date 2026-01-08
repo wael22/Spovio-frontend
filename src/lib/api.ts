@@ -1,18 +1,20 @@
 ﻿// API Service Layer for MySmash Frontend
-// Based on padelvar-frontend-main/src/lib/api.js
+// Session-based authentication (cookies) - No JWT token management needed
 
 import axios, { AxiosInstance } from 'axios';
-import { tokenManager } from './tokenManager';
 
-// Railway URL - Better CORS support than Render
-const API_BASE_URL = 'https://spovio-backend-main-production.up.railway.app/api';
+// LOCAL DEVELOPMENT - Backend on localhost:5000
+const API_BASE_URL = 'http://localhost:5000/api';
+
+// Production Railway URL (commented out)
+// const API_BASE_URL = 'https://spovio-backend-main-production.up.railway.app/api';
 
 const api: AxiosInstance = axios.create({
     baseURL: API_BASE_URL,
+    withCredentials: true,  // 🔑 CRITICAL: Enable session cookies for authentication
     headers: {
         'Content-Type': 'application/json',
     },
-    // withCredentials removed - we use JWT in headers, not cookies
 });
 
 export const getAssetUrl = (path: string): string => {
@@ -27,38 +29,12 @@ export const getAssetUrl = (path: string): string => {
 
 let isRedirecting = false;
 
-// Re-export tokenManager for convenience
-export { tokenManager };
-
-// Request interceptor - Attach JWT token to all requests
+// Request interceptor - Simple logging (sessions handle authentication via cookies)
 api.interceptors.request.use(
     (config) => {
-        const token = tokenManager.getToken();
-
-        if (token) {
-            // Standard JWT authentication - Authorization: Bearer header
-            if (!config.headers) {
-                config.headers = {} as any;
-            }
-            config.headers['Authorization'] = `Bearer ${token}`;
-
-            // FALLBACK: Also send as query parameter (browsers/proxies can't block this)
-            const separator = config.url?.includes('?') ? '&' : '?';
-            config.url = `${config.url}${separator}_token=${encodeURIComponent(token)}`;
-
-            console.log('[API DEBUG] Token attached:', {
-                tokenLength: token.length,
-                header: 'Authorization: Bearer',
-                queryParam: 'Added _token'
-            });
-        } else {
-            console.log('[API DEBUG] No token available');
-        }
-
         console.log('[API DEBUG] Request:', {
             url: config.url,
             baseURL: config.baseURL,
-            hasToken: !!token,
             method: config.method
         });
         return config;
@@ -69,14 +45,9 @@ api.interceptors.request.use(
     }
 );
 
-// Response interceptor for error handling and token management
+// Response interceptor - Handle errors and redirect on 401
 api.interceptors.response.use(
     (response) => {
-        // Store JWT token if present in response
-        if (response.data?.token) {
-            tokenManager.setToken(response.data.token);
-            console.log('[API] JWT token stored from response');
-        }
         return response;
     },
     (error) => {
@@ -88,17 +59,14 @@ api.interceptors.response.use(
             message: error.message
         });
 
-        // Redirect to login only for real 401 errors (not authenticated)
-        // NOT for 500 errors (server errors)
-        // AND NOT for public routes
+        // Redirect to /auth on 401 (session expired or not authenticated)
         if (error.response?.status === 401) {
             const publicRoutes = ['/login', '/register', '/auth', '/super-secret-login', '/forgot-password', '/reset-password', '/verify-email'];
             const isPublicRoute = publicRoutes.some(route => window.location.pathname.startsWith(route));
 
             if (!isRedirecting && !isPublicRoute) {
                 isRedirecting = true;
-                console.warn('[API] 401 Error - Clearing token and redirecting to auth');
-                tokenManager.clearToken(); // Clear invalid token
+                console.warn('[API] Redirecting to /auth - 401 Unauthorized (session expired)');
                 window.location.href = '/auth';
                 setTimeout(() => {
                     isRedirecting = false;

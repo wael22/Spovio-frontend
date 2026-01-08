@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { authService, tokenManager } from '../lib/api';
+import { authService } from '../lib/api';  // Session-based auth, no tokenManager needed
 
 interface User {
     id: string;
@@ -101,7 +101,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
             // 🔥 CRITICAL: Store token FIRST before setting user
             if (token) {
-                tokenManager.setToken(token);
+                // Session authentication - no token storage needed
                 console.log('[useAuth] JWT token stored explicitly');
             } else {
                 console.warn('[useAuth] No token in login response!');
@@ -151,7 +151,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         } finally {
             setUser(null);
             localStorage.removeItem('user');
-            tokenManager.clearToken(); // 🆕 Clear JWT token
+            // Session cleared by backend - no manual token clearing needed
             return { success: true };
         }
     };
@@ -201,7 +201,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
             // 🔥 CRITICAL: Store token FIRST before setting user
             if (token) {
-                tokenManager.setToken(token);
+                // Session authentication - no token storage needed
                 console.log('[useAuth] JWT token stored from email verification');
             }
 

@@ -1,6 +1,6 @@
 ﻿// Authentication Context for MySmash
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { authService, tokenManager } from '../lib/api';  // 🆕 Import tokenManager
+import { authService } from '../lib/api';  // Session-based auth
 
 interface User {
     id: string;
@@ -73,7 +73,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             console.error('Logout error:', error);
         } finally {
             setUser(null);
-            tokenManager.clearToken();  // 🆕 Use tokenManager
+            // Session cleared by backend automatically
             console.log('[AuthContext] Logout complete, token cleared');
         }
     };
@@ -87,20 +87,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // Check authentication on mount
     useEffect(() => {
         const checkAuth = async () => {
-            // 🆕 Only check auth if token exists
-            if (!tokenManager.hasToken()) {
-                console.log('[AuthContext] No token found, skipping auth check');
-                setLoading(false);
-                return;
-            }
-
             try {
                 const response = await authService.getCurrentUser();
                 setUser(response.data.user);
-                console.log('[AuthContext] User authenticated from token');
+                console.log('[AuthContext] User authenticated via session cookie');
             } catch (error) {
-                console.log('[AuthContext] Token invalid or expired, clearing');
-                tokenManager.clearToken();
+                console.log('[AuthContext] No valid session, user not authenticated');
                 setUser(null);
             } finally {
                 setLoading(false);
