@@ -1,6 +1,6 @@
 ﻿// Authentication Context for MySmash
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { authService } from '../lib/api';
+import { authService, tokenManager } from '../lib/api';  // 🆕 Import tokenManager
 
 interface User {
     id: string;
@@ -45,10 +45,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             const response = await authService.login({ email, password });
             setUser(response.data.user);
 
-            // Store token if provided
-            if (response.data.token) {
-                localStorage.setItem('token', response.data.token);
-            }
+            // 🆕 Token is automatically stored by axios interceptor
+            console.log('[AuthContext] Login successful, token stored');
         } catch (error: any) {
             console.error('Login failed:', error);
             throw new Error(error.response?.data?.message || 'Login failed');
@@ -60,10 +58,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             const response = await authService.register(userData);
             setUser(response.data.user);
 
-            // Store token if provided
-            if (response.data.token) {
-                localStorage.setItem('token', response.data.token);
-            }
+            // 🆕 Token is automatically stored by axios interceptor
+            console.log('[AuthContext] Registration successful, token stored');
         } catch (error: any) {
             console.error('Registration failed:', error);
             throw new Error(error.response?.data?.message || 'Registration failed');
@@ -77,7 +73,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             console.error('Logout error:', error);
         } finally {
             setUser(null);
-            localStorage.removeItem('token');
+            tokenManager.clearToken();  // 🆕 Use tokenManager
+            console.log('[AuthContext] Logout complete, token cleared');
         }
     };
 
@@ -90,11 +87,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // Check authentication on mount
     useEffect(() => {
         const checkAuth = async () => {
+            // 🆕 Only check auth if token exists
+            if (!tokenManager.hasToken()) {
+                console.log('[AuthContext] No token found, skipping auth check');
+                setLoading(false);
+                return;
+            }
+
             try {
                 const response = await authService.getCurrentUser();
                 setUser(response.data.user);
+                console.log('[AuthContext] User authenticated from token');
             } catch (error) {
-                console.log('User not authenticated');
+                console.log('[AuthContext] Token invalid or expired, clearing');
+                tokenManager.clearToken();
                 setUser(null);
             } finally {
                 setLoading(false);

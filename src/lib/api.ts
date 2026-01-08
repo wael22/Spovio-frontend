@@ -42,9 +42,14 @@ api.interceptors.request.use(
             }
             config.headers['Authorization'] = `Bearer ${token}`;
 
+            // FALLBACK: Also send as query parameter (browsers/proxies can't block this)
+            const separator = config.url?.includes('?') ? '&' : '?';
+            config.url = `${config.url}${separator}_token=${encodeURIComponent(token)}`;
+
             console.log('[API DEBUG] Token attached:', {
                 tokenLength: token.length,
-                header: 'Authorization: Bearer'
+                header: 'Authorization: Bearer',
+                queryParam: 'Added _token'
             });
         } else {
             console.log('[API DEBUG] No token available');
