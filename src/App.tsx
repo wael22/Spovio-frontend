@@ -21,12 +21,17 @@ import Auth from "./pages/Auth";
 import EmailVerification from "./pages/EmailVerification";
 
 // Protected MySmash App pages
-import Dashboard from "./pages/Dashboard";
-import MyClips from "./pages/MyClips";
-import Clubs from "./pages/Clubs";
-import Credits from "./pages/Credits";
-import Profile from "./pages/Profile";
-import Support from "./pages/Support";
+import Dashboard from './pages/Dashboard';
+import MyClips from './pages/MyClips';
+import Clubs from './pages/Clubs';
+import Credits from './pages/Credits';
+import Profile from './pages/Profile';
+import Support from './pages/Support';
+
+// Admin & Club pages
+import Admin from './pages/Admin';
+import Club from './pages/Club';
+import SuperAdminLogin from './pages/SuperAdminLogin';
 
 const queryClient = new QueryClient();
 
@@ -50,6 +55,25 @@ const App = () => (
               {/* Authentication */}
               <Route path="/auth" element={<Auth />} />
               <Route path="/verify-email" element={<EmailVerification />} />
+              <Route path="/super-secret-login" element={<SuperAdminLogin />} />
+
+              {/* Protected Admin & Club Routes */}
+              <Route
+                path="/admin"
+                element={
+                  <ProtectedRoute requiredRole="super_admin">
+                    <Admin />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/club"
+                element={
+                  <ProtectedRoute requiredRole="club">
+                    <Club />
+                  </ProtectedRoute>
+                }
+              />
 
               {/* Protected MySmash App Routes */}
               <Route

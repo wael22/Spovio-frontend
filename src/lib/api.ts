@@ -81,6 +81,7 @@ api.interceptors.response.use(
 export const authService = {
     register: (userData: any) => api.post('/auth/register', userData),
     login: (credentials: any) => api.post('/auth/login', credentials),
+    superAdminLogin: (credentials: any) => api.post('/auth/super-admin-login', credentials),
     logout: () => api.post('/auth/logout'),
     getCurrentUser: () => api.get('/auth/me'),
     updateProfile: (profileData: any) => api.put('/auth/update-profile', profileData),
@@ -171,6 +172,18 @@ export const clubService = {
     buyCredits: (purchaseData: any) => api.post('/clubs/credits/buy', purchaseData),
     getCreditsHistory: () => api.get('/clubs/credits/history'),
     getCreditPackages: () => api.get('/clubs/credits/packages'),
+    getPaymentMethods: () => api.get('/players/credits/payment-methods'),
+
+    // Player Management
+    updatePlayer: (playerId: string, playerData: any) => api.put(`/clubs/${playerId}`, playerData),
+    addCreditsToPlayer: (playerId: string, credits: number) =>
+        api.post(`/clubs/${playerId}/add-credits`, { credits }),
+
+    // Follower Management (aliases for player management)
+    updateFollower: (playerId: string, playerData: any) =>
+        clubService.updatePlayer(playerId, playerData),
+    addCreditsToFollower: (playerId: string, credits: number) =>
+        clubService.addCreditsToPlayer(playerId, credits),
 };
 
 // Tutorial Service
@@ -209,6 +222,78 @@ export const clipService = {
         api.post(`/clips/${clipId}/share`, platform ? { platform } : {}),
     trackDownload: (clipId: string) => api.post(`/clips/${clipId}/download`),
     getClipMeta: (clipId: string) => api.get(`/clips/${clipId}/meta`),
+};
+
+// Admin Service (Super Admin only)
+export const adminService = {
+    // User Management
+    getAllUsers: () => api.get('/admin/users'),
+    createUser: (userData: any) => api.post('/admin/users', userData),
+    updateUser: (userId: string, userData: any) => api.put(`/admin/users/${userId}`, userData),
+    deleteUser: (userId: string) => api.delete(`/admin/users/${userId}`),
+
+    // Club Management
+    getAllClubs: () => api.get('/admin/clubs'),
+    createClub: (clubData: any) => api.post('/admin/clubs', clubData),
+    updateClub: (clubId: string, clubData: any) => api.put(`/admin/clubs/${clubId}`, clubData),
+    deleteClub: (clubId: string) => api.delete(`/admin/clubs/${clubId}`),
+
+    // Court Management
+    createCourt: (clubId: string, courtData: any) => api.post(`/admin/clubs/${clubId}/courts`, courtData),
+    getClubCourts: (clubId: string) => api.get(`/admin/clubs/${clubId}/courts`),
+    updateCourt: (courtId: string, courtData: any) => api.put(`/admin/courts/${courtId}`, courtData),
+    deleteCourt: (courtId: string) => api.delete(`/admin/courts/${courtId}`),
+    getAllCourts: () => api.get('/admin/courts'),
+
+    // Video Management
+    getAllVideos: () => api.get('/admin/videos'),
+    deleteVideo: (videoId: string, mode: 'local_only' | 'cloud_only' | 'local_and_cloud' = 'local_and_cloud') =>
+        api.delete(`/admin/videos/${videoId}`, { data: { mode } }),
+
+    // Credits Management
+    addCredits: (userId: string, credits: number) => api.post(`/admin/users/${userId}/credits`, { credits }),
+    addCreditsToClub: (clubId: string, credits: number) => api.post(`/admin/clubs/${clubId}/credits`, { credits }),
+
+    // Club History
+    getAllClubsHistory: () => api.get('/admin/clubs/history/all'),
+
+    // System Configuration
+    getSystemConfig: () => api.get('/admin/config'),
+    getBunnyCDNConfig: () => api.get('/admin/config/bunny-cdn'),
+    updateBunnyCDNConfig: (config: any) => api.put('/admin/config/bunny-cdn', config),
+    testBunnyCDN: (config: any) => api.post('/admin/config/test-bunny', config),
+
+    // Logs Management
+    getLogs: (params?: any) => api.get('/admin/logs', { params }),
+    downloadLogs: () => api.get('/admin/logs/download', { responseType: 'blob' }),
+
+    // Notifications Management
+    getNotifications: () => api.get('/notifications'),
+    markNotificationAsRead: (notificationId: string) => api.post(`/notifications/${notificationId}/mark-read`),
+    markAllNotificationsAsRead: () => api.post('/notifications/mark-all-read'),
+
+    // Credit Packages Management
+    getCreditPackages: (type?: 'player' | 'club') => api.get(`/admin/credit-packages${type ? `?type=${type}` : ''}`),
+    createCreditPackage: (packageData: any) => api.post('/admin/credit-packages', packageData),
+    updateCreditPackage: (packageId: string, packageData: any) => api.put(`/admin/credit-packages/${packageId}`, packageData),
+    deleteCreditPackage: (packageId: string) => api.delete(`/admin/credit-packages/${packageId}`),
+
+    // Overlays Management
+    uploadImage: (formData: FormData) => api.post('/admin/uploads/image', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    }),
+    getClubOverlays: (clubId: string) => api.get(`/admin/clubs/${clubId}/overlays`),
+    createClubOverlay: (clubId: string, data: any) => api.post(`/admin/clubs/${clubId}/overlays`, data),
+    updateClubOverlay: (clubId: string, overlayId: string, data: any) =>
+        api.put(`/admin/clubs/${clubId}/overlays/${overlayId}`, data),
+    deleteClubOverlay: (clubId: string, overlayId: string) =>
+        api.delete(`/admin/clubs/${clubId}/overlays/${overlayId}`),
+};
+
+// Settings Service
+export const settingsService = {
+    getSettings: () => api.get('/settings'),
+    updateSettings: (settings: any) => api.put('/settings', settings),
 };
 
 export default api;

@@ -133,17 +133,56 @@ const Dashboard = () => {
   };
 
   const handleDeleteVideo = async (video: any) => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer cette vidéo ?')) {
-      return;
-    }
+    // Super admin gets advanced deletion options
+    if (user?.role === 'super_admin') {
+      const deleteMode = window.prompt(
+        `🗑️ MODE DE SUPPRESSION (Super Admin)\n\nChoisissez le mode de suppression pour "${video.title}":\n\n1️⃣  "database" - Supprimer seulement de la base de données\n2️⃣  "bunny" - Supprimer seulement de Bunny CDN\n3️⃣  "both" - Suppression complète (recommandé)\n\nEntrez: database, bunny, ou both`,
+        'both'
+      );
 
-    try {
-      await videoService.deleteVideo(video.id);
-      setVideos(videos.filter(v => v.id !== video.id));
-      toast.success('vidéo supprimée avec succès');
-    } catch (error: any) {
-      console.error('Failed to delete video:', error);
-      toast.error('Erreur lors de la suppression');
+      if (!deleteMode) return; // User cancelled
+
+      const validModes = ['database', 'bunny', 'both'];
+      const selectedMode = deleteMode.toLowerCase().trim();
+
+      if (!validModes.includes(selectedMode)) {
+        toast.error('Mode invalide. Utilisez: database, bunny, ou both');
+        return;
+      }
+
+      if (!confirm(`Confirmer la suppression (${selectedMode}) de "${video.title}" ?`)) {
+        return;
+      }
+
+      try {
+        const { adminService } = await import('@/lib/api');
+        const response = await adminService.deleteVideo(video.id, selectedMode as 'database' | 'bunny' | 'both');
+
+        // Remove from UI if deleted from database
+        if (selectedMode === 'database' || selectedMode === 'both') {
+          setVideos(videos.filter(v => v.id !== video.id));
+        }
+
+        toast.success(response.data.message || `Vidéo supprimée (${selectedMode})`);
+      } catch (error: any) {
+        console.error('Failed to delete video:', error);
+        const errorMsg = error.response?.data?.error || 'Erreur lors de la suppression';
+        toast.error(errorMsg);
+      }
+    } else {
+      // Regular user: simple deletion
+      if (!confirm('Êtes-vous sûr de vouloir supprimer cette vidéo ?')) {
+        return;
+      }
+
+      try {
+        await videoService.deleteVideo(video.id);
+        setVideos(videos.filter(v => v.id !== video.id));
+        toast.success('Vidéo supprimée avec succès');
+      } catch (error: any) {
+        console.error('Failed to delete video:', error);
+        toast.error('Erreur lors de la suppression');
+      }
     }
   };
 
@@ -301,6 +340,7 @@ const Dashboard = () => {
                     date={video.created_at || new Date().toISOString()}
                     shared={video.shared || false}
                     court={video.court_name || 'Court'}
+                    isExpired={video.is_expired || false}
                     onPlay={() => handlePlayVideo(video)}
                     onShare={() => handleShareVideo(video)}
                     onEdit={() => handleEditVideo(video)}

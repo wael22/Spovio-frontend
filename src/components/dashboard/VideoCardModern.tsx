@@ -29,6 +29,7 @@ interface VideoCardModernProps {
   date: string;
   shared?: boolean;
   court?: string;
+  isExpired?: boolean;  // ✅ NOUVEAU: Indique si la vidéo est expirée (cloud supprimé)
   onPlay?: () => void;
   onShare?: () => void;
   onDelete?: () => void;
@@ -45,6 +46,7 @@ export function VideoCardModern({
   date,
   shared = false,
   court,
+  isExpired = false,
   onPlay,
   onShare,
   onDelete,
@@ -104,10 +106,17 @@ export function VideoCardModern({
         </div>
 
         {/* Shared Badge */}
-        {shared && (
+        {shared && !isExpired && (
           <Badge className="absolute top-3 left-3 bg-accent/80 hover:bg-accent text-accent-foreground">
             <Share2 className="h-3 w-3 mr-1" />
             Partagée
+          </Badge>
+        )}
+
+        {/* Expired Badge */}
+        {isExpired && (
+          <Badge className="absolute top-3 left-3 bg-destructive/90 hover:bg-destructive text-destructive-foreground">
+            🔒 Expirée
           </Badge>
         )}
 
@@ -123,13 +132,13 @@ export function VideoCardModern({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem onClick={onPlay}>
+            <DropdownMenuItem onClick={onPlay} disabled={isExpired}>
               <Play className="h-4 w-4 mr-2" />
-              Lire
+              {isExpired ? "Vidéo expirée" : "Lire"}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={onCreateClip}>
+            <DropdownMenuItem onClick={onCreateClip} disabled={isExpired}>
               <Scissors className="h-4 w-4 mr-2" />
-              Créer un clip
+              {isExpired ? "Clip non disponible" : "Créer un clip"}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onEdit}>
               <Edit className="h-4 w-4 mr-2" />
