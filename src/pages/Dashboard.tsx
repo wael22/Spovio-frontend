@@ -9,6 +9,7 @@ import { VideoCardModern } from "@/components/dashboard/VideoCardModern";
 import { ActiveRecordingBanner } from "@/components/dashboard/ActiveRecordingBanner";
 import { StartRecordingModal } from "@/components/dashboard/StartRecordingModal";
 import { ShareVideoModal } from "@/components/dashboard/ShareVideoModal";
+import { VideoClipEditor } from "@/components/dashboard/VideoClipEditor";
 
 import { VideoPlayerModal } from "@/components/dashboard/VideoPlayerModal";
 import { EditVideoTitleModal } from "@/components/dashboard/EditVideoTitleModal";
@@ -64,6 +65,7 @@ const Dashboard = () => {
   const [activeRecording, setActiveRecording] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [clipsCount, setClipsCount] = useState(0);
+  const [isClipEditorOpen, setIsClipEditorOpen] = useState(false);
 
   // Format duration from seconds to mm:ss
   const formatDuration = (seconds: number | string): string => {
@@ -93,6 +95,23 @@ const Dashboard = () => {
     fetchVideos();
   }, []);
 
+  // Fetch clips count
+  useEffect(() => {
+    const fetchClipsCount = async () => {
+      try {
+        const { clipService } = await import('@/lib/api');
+        const response = await clipService.getMyClips();
+        setClipsCount(response.data.clips?.length || 0);
+      } catch (error) {
+        console.error('Failed to fetch clips count:', error);
+      }
+    };
+
+    fetchClipsCount();
+  }, []);
+
+
+
   // Fetch active recording
   useEffect(() => {
     const fetchActiveRecording = async () => {
@@ -112,6 +131,28 @@ const Dashboard = () => {
     const interval = setInterval(fetchActiveRecording, 30000); // Check every 30s
     return () => clearInterval(interval);
   }, []);
+
+  // Handle stop recording
+  const handleStopRecording = async () => {
+    if (!activeRecording) return;
+
+    if (!confirm('Voulez-vous vraiment arrêter cet enregistrement ?')) {
+      return;
+    }
+
+    try {
+      await recordingService.stopRecording(activeRecording.id);
+      toast.success('Enregistrement arrêté avec succès');
+      setActiveRecording(null);
+
+      // Refresh videos after stopping
+      const response = await videoService.getMyVideos();
+      setVideos(response.data.videos || []);
+    } catch (error: any) {
+      console.error('Failed to stop recording:', error);
+      toast.error(error.response?.data?.error || 'Erreur lors de l\'arrêt de l\'enregistrement');
+    }
+  };
 
   const filteredVideos = videos.filter((video) =>
     video.title?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -186,25 +227,27 @@ const Dashboard = () => {
     }
   };
 
-  const handleDownloadVideo = (video: any) => {
-    if (video.file_url) {
-      window.open(video.file_url, '_blank');
-    } else {
-      toast.error('URL de téléchargement non disponible');
-    }
+  const handleDownloadVideo = async (video: any) => {
+    // Bunny Stream ne supporte que le streaming HLS, pas les téléchargements MP4
+    toast.info('Les vidéos complètes sont disponibles en streaming uniquement. Créez un clip pour télécharger et partager!', {
+      duration: 5000,
+    });
   };
 
   const handleCreateClip = (video: any) => {
-    navigate('/my-clips');
-    toast.info('FonctionnalitÃ© de crÃ©ation de clips bientÃ´t disponible');
+    setSelectedVideo(video);
+    setIsClipEditorOpen(true);
   };
 
   // Calculate stats
+  const ownedVideos = videos.filter(v => !v.is_shared);  // Mes vidéos possédées
+  const sharedVideos = videos.filter(v => v.is_shared);   // Vidéos reçues/partagées avec moi
+
   const stats = [
-    { icon: Video, label: "Vidéos", value: videos.length.toString(), color: "primary" as const },
+    { icon: Video, label: "Vidéos", value: ownedVideos.length.toString(), color: "primary" as const },
     { icon: Scissors, label: "Clips", value: clipsCount.toString(), color: "accent" as const },
     { icon: CreditCard, label: "Crédits", value: (user?.credits_balance || user?.credits)?.toString() || "0", color: "cyan" as const },
-    { icon: Share2, label: "Partagées", value: videos.filter(v => v.shared).length.toString(), color: "purple" as const },
+    { icon: Share2, label: "Partagées", value: sharedVideos.length.toString(), color: "purple" as const },
   ];
 
   if (loading) {
@@ -229,6 +272,7 @@ const Dashboard = () => {
             court={activeRecording.court_name || "Court"}
             club={activeRecording.club_name || "Club"}
             startTime={new Date(activeRecording.start_time)}
+            onStop={handleStopRecording}
           />
         )}
 
@@ -338,7 +382,7 @@ const Dashboard = () => {
                     thumbnail={video.thumbnail || 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=400'}
                     duration={formatDuration(video.duration || 0)}
                     date={video.created_at || new Date().toISOString()}
-                    shared={video.shared || false}
+                    shared={video.is_shared || false}
                     court={video.court_name || 'Court'}
                     isExpired={video.is_expired || false}
                     onPlay={() => handlePlayVideo(video)}
@@ -387,6 +431,7 @@ const Dashboard = () => {
       <ShareVideoModal
         open={isShareModalOpen}
         onOpenChange={setIsShareModalOpen}
+        videoId={selectedVideo?.id}
         videoTitle={selectedVideo?.title || ""}
       />
 
@@ -416,11 +461,24 @@ const Dashboard = () => {
           setSelectedVideo(null);
         }}
       />
+
+      <VideoClipEditor
+        isOpen={isClipEditorOpen}
+        onClose={() => {
+          setIsClipEditorOpen(false);
+          setSelectedVideo(null);
+        }}
+        video={selectedVideo}
+        onClipCreated={async (clip) => {
+          toast.success('Clip créé avec succès !');
+          // Refresh clip count
+          const { clipService } = await import('@/lib/api');
+          const response = await clipService.getMyClips();
+          setClipsCount(response.data.clips?.length || 0);
+        }}
+      />
     </div>
   );
 };
 
 export default Dashboard;
-
-
-

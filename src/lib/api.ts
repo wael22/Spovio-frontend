@@ -1,4 +1,4 @@
-﻿// API Service Layer for MySmash Frontend
+// API Service Layer for MySmash Frontend
 // Session-based authentication (cookies) - No JWT token management needed
 
 import axios, { AxiosInstance } from 'axios';
@@ -11,7 +11,7 @@ const API_BASE_URL = 'http://localhost:5000/api';
 
 const api: AxiosInstance = axios.create({
     baseURL: API_BASE_URL,
-    withCredentials: true,  // 🔑 CRITICAL: Enable session cookies for authentication
+    withCredentials: true,  // ?? CRITICAL: Enable session cookies for authentication
     headers: {
         'Content-Type': 'application/json',
     },
@@ -114,6 +114,7 @@ export const videoService = {
     getClubCourtsForPlayers: (clubId: string) => api.get(`/recording/v3/clubs/${clubId}/courts?_t=${Date.now()}`),
     shareVideoWithUser: (videoId: string, recipientEmail: string, message: string) =>
         api.post(`/videos/${videoId}/share-with-user`, { recipient_email: recipientEmail, message }),
+    getDownloadUrl: (videoId: string) => `${API_BASE_URL}/videos/${videoId}/download`,
     getSharedWithMe: () => api.get('/videos/shared-with-me'),
     removeSharedAccess: (sharedVideoId: string) => api.delete(`/videos/shared/${sharedVideoId}`),
     getMySharedVideos: () => api.get('/videos/my-shared-videos'),

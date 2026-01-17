@@ -51,6 +51,7 @@ export function VideoClipEditor({ isOpen, onClose, video, onClipCreated }: Video
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
+    const [isPreviewing, setIsPreviewing] = useState(false);
 
     // Selection states
     const [startTime, setStartTime] = useState(0);
@@ -134,7 +135,15 @@ export function VideoClipEditor({ isOpen, onClose, video, onClipCreated }: Video
 
     const handleTimeUpdate = () => {
         if (videoRef.current) {
-            setCurrentTime(videoRef.current.currentTime);
+            const time = videoRef.current.currentTime;
+            setCurrentTime(time);
+
+            // Auto-pause when reaching endTime during preview
+            if (isPreviewing && time >= endTime) {
+                videoRef.current.pause();
+                setIsPlaying(false);
+                setIsPreviewing(false);
+            }
         }
     };
 
@@ -153,6 +162,38 @@ export function VideoClipEditor({ isOpen, onClose, video, onClipCreated }: Video
         const mins = Math.floor(seconds / 60);
         const secs = Math.floor(seconds % 60);
         return `${mins}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    /**
+     * Preview the selected segment
+     */
+    const handlePreviewSelection = () => {
+        if (videoRef.current) {
+            videoRef.current.currentTime = startTime;
+            videoRef.current.play();
+            setIsPreviewing(true);
+            setIsPlaying(true);
+        }
+    };
+
+    /**
+     * Navigate to start of selection
+     */
+    const goToStart = () => {
+        if (videoRef.current) {
+            videoRef.current.currentTime = startTime;
+            setIsPreviewing(false);
+        }
+    };
+
+    /**
+     * Navigate to end of selection
+     */
+    const goToEnd = () => {
+        if (videoRef.current) {
+            videoRef.current.currentTime = endTime;
+            setIsPreviewing(false);
+        }
     };
 
     /**
@@ -349,6 +390,45 @@ export function VideoClipEditor({ isOpen, onClose, video, onClipCreated }: Video
                             >
                                 Votre navigateur ne supporte pas la lecture vidéo.
                             </video>
+
+                            {/* Visual selection indicator */}
+                            {duration > 0 && (
+                                <div className="absolute bottom-16 left-2 right-2 h-1 bg-white/20 rounded-full overflow-hidden">
+                                    {/* Full timeline background */}
+                                    <div className="absolute inset-0" />
+
+                                    {/* Selected region highlight */}
+                                    <div
+                                        className="absolute h-full bg-blue-500/60"
+                                        style={{
+                                            left: `${(startTime / duration) * 100}%`,
+                                            width: `${((endTime - startTime) / duration) * 100}%`
+                                        }}
+                                    />
+
+                                    {/* Start marker */}
+                                    <div
+                                        className="absolute top-0 bottom-0 w-0.5 bg-green-500"
+                                        style={{ left: `${(startTime / duration) * 100}%` }}
+                                    >
+                                        <div className="absolute -top-1 -left-1 w-2 h-2 rounded-full bg-green-500" />
+                                    </div>
+
+                                    {/* End marker */}
+                                    <div
+                                        className="absolute top-0 bottom-0 w-0.5 bg-red-500"
+                                        style={{ left: `${(endTime / duration) * 100}%` }}
+                                    >
+                                        <div className="absolute -top-1 -left-1 w-2 h-2 rounded-full bg-red-500" />
+                                    </div>
+
+                                    {/* Current time indicator */}
+                                    <div
+                                        className="absolute top-0 bottom-0 w-0.5 bg-white"
+                                        style={{ left: `${(currentTime / duration) * 100}%` }}
+                                    />
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -356,13 +436,37 @@ export function VideoClipEditor({ isOpen, onClose, video, onClipCreated }: Video
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
                             <Label>Sélection ({formatTime(endTime - startTime)})</Label>
-                            <span className="text-sm text-muted-foreground">
-                                {formatTime(startTime)} - {formatTime(endTime)}
-                            </span>
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm text-muted-foreground">
+                                    {formatTime(startTime)} - {formatTime(endTime)}
+                                </span>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={handlePreviewSelection}
+                                    disabled={loading || endTime - startTime < 1}
+                                    className="gap-1.5"
+                                >
+                                    <Play className="h-3.5 w-3.5" />
+                                    Prévisualiser
+                                </Button>
+                            </div>
                         </div>
 
                         <div className="space-y-2">
-                            <Label className="text-sm">Début</Label>
+                            <div className="flex items-center justify-between">
+                                <Label className="text-sm">Début</Label>
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={goToStart}
+                                    className="h-6 px-2 text-xs"
+                                >
+                                    Aller au début
+                                </Button>
+                            </div>
                             <Slider
                                 value={[startTime]}
                                 onValueChange={(value) => setStartTime(Math.min(value[0], endTime - 1))}
@@ -373,7 +477,18 @@ export function VideoClipEditor({ isOpen, onClose, video, onClipCreated }: Video
                         </div>
 
                         <div className="space-y-2">
-                            <Label className="text-sm">Fin</Label>
+                            <div className="flex items-center justify-between">
+                                <Label className="text-sm">Fin</Label>
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={goToEnd}
+                                    className="h-6 px-2 text-xs"
+                                >
+                                    Aller à la fin
+                                </Button>
+                            </div>
                             <Slider
                                 value={[endTime]}
                                 onValueChange={(value) => setEndTime(Math.max(value[0], startTime + 1))}
