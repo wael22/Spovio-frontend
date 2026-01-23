@@ -47,7 +47,7 @@ const MyClips = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isPlayerModalOpen, setIsPlayerModalOpen] = useState(false);
-  const [selectedClip, setSelectedClip] = useState<{ id: string; title: string; file_url?: string } | null>(null);
+  const [selectedClip, setSelectedClip] = useState<{ id: number; title: string; file_url?: string } | null>(null);
   const [selectedVideo, setSelectedVideo] = useState<{ id: string; title: string; file_url?: string } | null>(null);
   const [clips, setClips] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -90,7 +90,7 @@ const MyClips = () => {
     clip.title?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleShareClip = (clip: { id: string; title: string }) => {
+  const handleShareClip = (clip: { id: number; title: string }) => {
     setSelectedClip(clip);
     setIsShareModalOpen(true);
   };
@@ -102,6 +102,35 @@ const MyClips = () => {
       file_url: clip.file_url
     });
     setIsPlayerModalOpen(true);
+  };
+
+  const handleDownloadClip = async (clip: any) => {
+    try {
+      toast.loading('Téléchargement en cours...');
+      const response = await clipService.downloadClip(clip.id);
+
+      // Create blob URL
+      const blob = new Blob([response.data], { type: 'video/mp4' });
+      const url = window.URL.createObjectURL(blob);
+
+      // Create download link
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${clip.title || 'clip'}.mp4`;
+      document.body.appendChild(link);
+      link.click();
+
+      // Cleanup
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast.dismiss();
+      toast.success('Clip téléchargé avec succès');
+    } catch (error: any) {
+      console.error('Failed to download clip:', error);
+      toast.dismiss();
+      toast.error('Erreur lors du téléchargement du clip');
+    }
   };
 
   if (loading) {
@@ -197,6 +226,7 @@ const MyClips = () => {
                     status={clip.status}
                     onPlay={() => handlePlayClip(clip)}
                     onShare={() => handleShareClip({ id: clip.id, title: clip.title })}
+                    onDownload={() => handleDownloadClip(clip)}
                     onDelete={() => handleDeleteClip(clip.id)}
                   />
                 </motion.div>
@@ -234,6 +264,7 @@ const MyClips = () => {
       <ShareClipModal
         open={isShareModalOpen}
         onOpenChange={setIsShareModalOpen}
+        clipId={selectedClip?.id || 0}
         clipTitle={selectedClip?.title || ""}
       />
 

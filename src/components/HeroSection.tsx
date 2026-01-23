@@ -20,27 +20,28 @@ export function HeroSection() {
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-primary/30 mb-8 animate-slide-up">
             <Zap className="w-4 h-4 text-primary" />
             <span className="text-sm font-medium text-muted-foreground">
-              AI-Powered Sports Analytics Platform
+              Plateforme d'Analyse Sportive Propulsée par l'IA
             </span>
             <ChevronRight className="w-4 h-4 text-primary" />
           </div>
 
           {/* Main Heading */}
           <h1 className="font-display text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 animate-slide-up animation-delay-100">
-            Elevate Every Sport with
+            Révolutionnez Votre Sport avec
             <br />
             <span className="gradient-text">Spovio</span>
           </h1>
 
           {/* Subheading */}
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 animate-slide-up animation-delay-200">
-            The complete AI-powered platform for recording, analyzing, and improving your game.
-            From padel to football, we've got every sport covered.
+            La plateforme complète propulsée par l'IA pour enregistrer,
+            analyser et améliorer votre jeu. Du padel au football,
+            nous couvrons tous vos sports.
           </p>
 
           {/* Sport Products Grid */}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-10 animate-slide-up animation-delay-250">
-            <Link to="/mysmash" className="p-4 rounded-xl glass border border-primary/20 hover:border-primary/50 transition-all group">
+            <div className="p-4 rounded-xl glass border border-primary/20 transition-all">
               <div className="flex items-center gap-3">
                 <Trophy className="w-6 h-6 text-primary" />
                 <div className="text-left">
@@ -48,10 +49,10 @@ export function HeroSection() {
                   <div className="text-xs text-muted-foreground">Padel</div>
                 </div>
               </div>
-            </Link>
-            <div className="p-4 rounded-xl glass border border-border/50 opacity-60">
+            </div>
+            <div className="p-4 rounded-xl glass border border-primary/20 transition-all">
               <div className="flex items-center gap-3">
-                <Trophy className="w-6 h-6 text-muted-foreground" />
+                <Trophy className="w-6 h-6 text-primary" />
                 <div className="text-left">
                   <div className="font-semibold">MyServe</div>
                   <div className="text-xs text-muted-foreground">Tennis</div>
@@ -101,12 +102,12 @@ export function HeroSection() {
             <Link to="/mysmash">
               <Button variant="hero" size="xl" className="group">
                 <Play className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
-                Discover MySmash
+                Découvrir MySmash
               </Button>
             </Link>
             <Button variant="neonOutline" size="xl" className="group">
               <Video className="w-5 h-5 mr-2" />
-              Watch Demo
+              Voir la Démo
             </Button>
           </div>
 
@@ -114,21 +115,21 @@ export function HeroSection() {
           <div className="grid grid-cols-3 gap-8 mt-16 pt-16 border-t border-border/30 animate-slide-up animation-delay-400">
             <div className="text-center">
               <div className="font-display text-3xl md:text-4xl font-bold gradient-text mb-2">
-                50K+
+                1K+
               </div>
-              <div className="text-sm text-muted-foreground">Active Players</div>
+              <div className="text-sm text-muted-foreground">Joueurs Actifs</div>
             </div>
             <div className="text-center">
               <div className="font-display text-3xl md:text-4xl font-bold gradient-text-accent mb-2">
-                1M+
+                5K+
               </div>
-              <div className="text-sm text-muted-foreground">Hours Recorded</div>
+              <div className="text-sm text-muted-foreground">Heures Enregistrées</div>
             </div>
             <div className="text-center">
               <div className="font-display text-3xl md:text-4xl font-bold gradient-text mb-2">
-                500+
+                10+
               </div>
-              <div className="text-sm text-muted-foreground">Partner Clubs</div>
+              <div className="text-sm text-muted-foreground">Clubs Partenaires</div>
             </div>
           </div>
         </div>

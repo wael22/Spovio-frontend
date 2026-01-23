@@ -2,27 +2,27 @@
 
 const footerLinks = {
   product: [
-    { label: "Features", href: "#features" },
-    { label: "Pricing", href: "#pricing" },
-    { label: "For Clubs", href: "#" },
-    { label: "API", href: "#" },
+    { label: "Features", href: "/features" },
+    { label: "Pricing", href: "/#pricing" },
+    { label: "For Clubs", href: "/#pricing" },
+    { label: "API", href: "/api" },
   ],
   company: [
-    { label: "About", href: "#" },
-    { label: "Blog", href: "#" },
-    { label: "Careers", href: "#" },
-    { label: "Press", href: "#" },
+    { label: "About", href: "/about" },
+    { label: "Blog", href: "/blog" },
+    { label: "Careers", href: "/careers" },
+    { label: "Press", href: "/press" },
   ],
   support: [
-    { label: "Help Center", href: "#" },
-    { label: "Contact", href: "#contact" },
-    { label: "Status", href: "#" },
-    { label: "Community", href: "#" },
+    { label: "Help Center", href: "/help" },
+    { label: "Contact", href: "/contact" },
+    { label: "Status", href: "/status" },
+    { label: "Community", href: "/community" },
   ],
   legal: [
-    { label: "Privacy", href: "#" },
-    { label: "Terms", href: "#" },
-    { label: "Cookies", href: "#" },
+    { label: "Privacy", href: "/privacy" },
+    { label: "Terms", href: "/terms" },
+    { label: "Cookies", href: "/cookies" },
   ],
 };
 
@@ -49,7 +49,7 @@ export function Footer() {
               </span>
             </a>
             <p className="text-muted-foreground text-sm mb-4 max-w-xs">
-              The ultimate platform for padel video recording and AI-powered game analysis.
+              La plateforme ultime d'enregistrement vidéo sportif et d'analyse de performance propulsée par l'IA.
             </p>
             <div className="flex items-center gap-3">
               {socialLinks.map((social) => (
@@ -64,10 +64,10 @@ export function Footer() {
               ))}
             </div>
           </div>
-          
+
           {/* Links */}
           <div>
-            <h4 className="font-semibold mb-4">Product</h4>
+            <h4 className="font-semibold mb-4">Produit</h4>
             <ul className="space-y-2">
               {footerLinks.product.map((link) => (
                 <li key={link.label}>
@@ -78,9 +78,9 @@ export function Footer() {
               ))}
             </ul>
           </div>
-          
+
           <div>
-            <h4 className="font-semibold mb-4">Company</h4>
+            <h4 className="font-semibold mb-4">Entreprise</h4>
             <ul className="space-y-2">
               {footerLinks.company.map((link) => (
                 <li key={link.label}>
@@ -91,7 +91,7 @@ export function Footer() {
               ))}
             </ul>
           </div>
-          
+
           <div>
             <h4 className="font-semibold mb-4">Support</h4>
             <ul className="space-y-2">
@@ -104,9 +104,9 @@ export function Footer() {
               ))}
             </ul>
           </div>
-          
+
           <div>
-            <h4 className="font-semibold mb-4">Legal</h4>
+            <h4 className="font-semibold mb-4">Légal</h4>
             <ul className="space-y-2">
               {footerLinks.legal.map((link) => (
                 <li key={link.label}>
@@ -118,14 +118,14 @@ export function Footer() {
             </ul>
           </div>
         </div>
-        
+
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground">
             © {new Date().getFullYear()} MySmash. All rights reserved.
           </p>
           <p className="text-sm text-muted-foreground">
-            Made with 💙 for padel players worldwide
+            Fait avec 💙 pour les sportifs du monde entier
           </p>
         </div>
       </div>

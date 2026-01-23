@@ -213,7 +213,7 @@ const EmailVerification = () => {
 
                 {/* Footer */}
                 <p className="text-center text-sm text-muted-foreground mt-6">
-                    © 2024 MySmash. Tous droits réservés.
+                    © 2026 Spovio. Tous droits réservés.
                 </p>
             </motion.div>
         </div>

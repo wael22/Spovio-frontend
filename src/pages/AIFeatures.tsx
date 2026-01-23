@@ -60,27 +60,6 @@ const features = [
   },
 ];
 
-const roadmap = [
-  {
-    phase: "Phase 1",
-    title: "Basic AI Analytics",
-    items: ["Shot detection", "Rally counting", "Basic statistics"],
-    status: "in-progress",
-  },
-  {
-    phase: "Phase 2",
-    title: "Advanced Tracking",
-    items: ["Player tracking", "Movement analysis", "Heatmaps"],
-    status: "planned",
-  },
-  {
-    phase: "Phase 3",
-    title: "Smart Features",
-    items: ["Auto highlights", "Match summaries", "Performance trends"],
-    status: "planned",
-  },
-];
-
 const AIFeaturesPage = () => {
   return (
     <Layout>
@@ -196,82 +175,6 @@ const AIFeaturesPage = () => {
                   </h3>
                   <p className="text-muted-foreground">{feature.description}</p>
                 </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Roadmap */}
-      <section className="py-24">
-        <div className="container mx-auto px-4 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center max-w-3xl mx-auto mb-16"
-          >
-            <h2 className="font-display text-3xl md:text-4xl font-bold mb-6">
-              Development <span className="text-gradient">Roadmap</span>
-            </h2>
-            <p className="text-lg text-muted-foreground">
-              Our plan to bring AI analysis to life
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            {roadmap.map((phase, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className={`p-6 rounded-2xl border ${
-                  phase.status === "in-progress"
-                    ? "bg-gradient-to-b from-accent/10 to-transparent border-accent/50"
-                    : "bg-card border-border"
-                }`}
-              >
-                <div className="flex items-center gap-2 mb-4">
-                  <span
-                    className={`px-2 py-0.5 rounded text-xs font-medium ${
-                      phase.status === "in-progress"
-                        ? "bg-accent/20 text-accent"
-                        : "bg-muted text-muted-foreground"
-                    }`}
-                  >
-                    {phase.phase}
-                  </span>
-                  {phase.status === "in-progress" && (
-                    <span className="flex items-center gap-1 text-xs text-accent">
-                      <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-                      In Progress
-                    </span>
-                  )}
-                </div>
-
-                <h3 className="font-display text-xl font-semibold mb-4">
-                  {phase.title}
-                </h3>
-
-                <ul className="space-y-2">
-                  {phase.items.map((item, i) => (
-                    <li
-                      key={i}
-                      className="flex items-center gap-2 text-sm text-muted-foreground"
-                    >
-                      <div
-                        className={`w-1.5 h-1.5 rounded-full ${
-                          phase.status === "in-progress"
-                            ? "bg-accent"
-                            : "bg-muted-foreground"
-                        }`}
-                      />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
               </motion.div>
             ))}
           </div>

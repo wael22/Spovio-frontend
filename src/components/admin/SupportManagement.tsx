@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supportService } from '@/lib/api';
+import { supportService, getAssetUrl } from '@/lib/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,8 @@ import {
     Clock,
     CheckCircle,
     AlertCircle,
-    X
+    X,
+    Image as ImageIcon
 } from 'lucide-react';
 
 interface SupportMessage {
@@ -24,6 +25,7 @@ interface SupportMessage {
     user_email: string;
     admin_response?: string;
     created_at: string;
+    images?: string[]; // Array of image URLs
 }
 
 const SupportManagement: React.FC = () => {
@@ -191,6 +193,35 @@ const SupportManagement: React.FC = () => {
                                     </div>
 
                                     <p className="text-gray-700 mb-3 whitespace-pre-wrap bg-gray-50 p-3 rounded">{msg.message}</p>
+
+                                    {/* Display Images */}
+                                    {msg.images && msg.images.length > 0 && (
+                                        <div className="mb-3">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <ImageIcon className="h-4 w-4 text-gray-500" />
+                                                <span className="text-sm font-medium text-gray-700">
+                                                    Images jointes ({msg.images.length})
+                                                </span>
+                                            </div>
+                                            <div className="grid grid-cols-3 gap-2">
+                                                {msg.images.map((imageUrl, idx) => (
+                                                    <a
+                                                        key={idx}
+                                                        href={getAssetUrl(imageUrl)}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="block aspect-square rounded-lg overflow-hidden border border-gray-200 hover:border-blue-500 transition-colors"
+                                                    >
+                                                        <img
+                                                            src={getAssetUrl(imageUrl)}
+                                                            alt={`Image ${idx + 1}`}
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                    </a>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
 
                                     {msg.admin_response ? (
                                         <div className="bg-blue-50 border-l-4 border-blue-500 p-3 mb-3">

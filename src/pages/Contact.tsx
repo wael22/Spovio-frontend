@@ -19,19 +19,19 @@ const contactInfo = [
   {
     icon: Mail,
     label: "Email",
-    value: "hello@spovio.com",
-    href: "mailto:hello@spovio.com",
+    value: "contact@spovio.net",
+    href: "mailto:contact@spovio.net",
   },
   {
     icon: Phone,
-    label: "Phone",
-    value: "+971 4 XXX XXXX",
-    href: "tel:+97140000000",
+    label: "Téléphone",
+    value: "+216 50 988 787",
+    href: "tel:+21650988787",
   },
   {
     icon: MapPin,
-    label: "Location",
-    value: "Dubai, UAE",
+    label: "Adresse",
+    value: "Sousse, Tunisie",
     href: "#",
   },
 ];
@@ -51,22 +51,42 @@ const ContactPage = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate form submission
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      const response = await fetch('http://localhost:5000/api/support/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
 
-    toast({
-      title: "Message sent!",
-      description: "We'll get back to you as soon as possible.",
-    });
+      const data = await response.json();
 
-    setFormData({
-      name: "",
-      email: "",
-      company: "",
-      type: "player",
-      message: "",
-    });
-    setIsSubmitting(false);
+      if (!response.ok) {
+        throw new Error(data.error || 'Erreur lors de l\'envoi');
+      }
+
+      toast({
+        title: "Message envoyé !",
+        description: "Nous vous répondrons dans les plus brefs délais. Un email de confirmation vous a été envoyé.",
+      });
+
+      setFormData({
+        name: "",
+        email: "",
+        company: "",
+        type: "player",
+        message: "",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message || "Une erreur est survenue",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -89,11 +109,10 @@ const ContactPage = () => {
             className="max-w-3xl mx-auto text-center"
           >
             <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-              Get in <span className="text-gradient">Touch</span>
+              Nous <span className="text-gradient">Contacter</span>
             </h1>
             <p className="text-xl text-muted-foreground">
-              Have questions? Want a demo for your club? We'd love to hear from
-              you.
+              Vous avez des questions ? Vous souhaitez une démo pour votre club ? Nous serions ravis de vous entendre.
             </p>
           </motion.div>
         </div>
@@ -112,7 +131,7 @@ const ContactPage = () => {
             >
               <div className="p-8 rounded-2xl bg-card border border-border">
                 <h2 className="font-display text-2xl font-bold mb-6">
-                  Send us a message
+                  Envoyez-nous un message
                 </h2>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
@@ -123,18 +142,16 @@ const ContactPage = () => {
                       onClick={() =>
                         setFormData({ ...formData, type: "player" })
                       }
-                      className={`p-4 rounded-xl border transition-all flex items-center gap-3 ${
-                        formData.type === "player"
+                      className={`p-4 rounded-xl border transition-all flex items-center gap-3 ${formData.type === "player"
                           ? "border-primary bg-primary/10"
                           : "border-border hover:border-muted-foreground"
-                      }`}
+                        }`}
                     >
                       <User
-                        className={`w-5 h-5 ${
-                          formData.type === "player"
+                        className={`w-5 h-5 ${formData.type === "player"
                             ? "text-primary"
                             : "text-muted-foreground"
-                        }`}
+                          }`}
                       />
                       <span
                         className={
@@ -143,24 +160,22 @@ const ContactPage = () => {
                             : "text-muted-foreground"
                         }
                       >
-                        Player
+                        Joueur
                       </span>
                     </button>
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, type: "club" })}
-                      className={`p-4 rounded-xl border transition-all flex items-center gap-3 ${
-                        formData.type === "club"
+                      className={`p-4 rounded-xl border transition-all flex items-center gap-3 ${formData.type === "club"
                           ? "border-primary bg-primary/10"
                           : "border-border hover:border-muted-foreground"
-                      }`}
+                        }`}
                     >
                       <Building2
-                        className={`w-5 h-5 ${
-                          formData.type === "club"
+                        className={`w-5 h-5 ${formData.type === "club"
                             ? "text-primary"
                             : "text-muted-foreground"
-                        }`}
+                          }`}
                       />
                       <span
                         className={
@@ -177,10 +192,10 @@ const ContactPage = () => {
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium mb-2">
-                        Name
+                        Nom
                       </label>
                       <Input
-                        placeholder="Your name"
+                        placeholder="Votre nom"
                         value={formData.name}
                         onChange={(e) =>
                           setFormData({ ...formData, name: e.target.value })
@@ -194,7 +209,7 @@ const ContactPage = () => {
                       </label>
                       <Input
                         type="email"
-                        placeholder="you@example.com"
+                        placeholder="vous@exemple.com"
                         value={formData.email}
                         onChange={(e) =>
                           setFormData({ ...formData, email: e.target.value })
@@ -207,10 +222,10 @@ const ContactPage = () => {
                   {formData.type === "club" && (
                     <div>
                       <label className="block text-sm font-medium mb-2">
-                        Club / Organization
+                        Club / Organisation
                       </label>
                       <Input
-                        placeholder="Your club name"
+                        placeholder="Nom de votre club"
                         value={formData.company}
                         onChange={(e) =>
                           setFormData({ ...formData, company: e.target.value })
@@ -224,7 +239,7 @@ const ContactPage = () => {
                       Message
                     </label>
                     <Textarea
-                      placeholder="Tell us how we can help..."
+                      placeholder="Dites-nous comment nous pouvons vous aider..."
                       rows={5}
                       value={formData.message}
                       onChange={(e) =>
@@ -242,10 +257,10 @@ const ContactPage = () => {
                     disabled={isSubmitting}
                   >
                     {isSubmitting ? (
-                      "Sending..."
+                      "Envoi en cours..."
                     ) : (
                       <>
-                        Send Message
+                        Envoyer le message
                         <Send className="w-4 h-4" />
                       </>
                     )}
@@ -264,7 +279,7 @@ const ContactPage = () => {
             >
               <div>
                 <h2 className="font-display text-2xl font-bold mb-6">
-                  Contact Information
+                  Informations de contact
                 </h2>
                 <div className="space-y-4">
                   {contactInfo.map((info, index) => (
@@ -291,14 +306,13 @@ const ContactPage = () => {
               <div className="p-6 rounded-2xl bg-gradient-to-br from-primary/10 to-accent/10 border border-primary/20">
                 <MessageSquare className="w-10 h-10 text-primary mb-4" />
                 <h3 className="font-display text-xl font-bold mb-2">
-                  Request a Demo
+                  Demander une démo
                 </h3>
                 <p className="text-muted-foreground mb-4">
-                  Interested in bringing Spovio to your club? Let us show you
-                  how our platform can transform your sports experience.
+                  Intéressé par Spovio pour votre club ? Laissez-nous vous montrer comment notre plateforme peut transformer votre expérience sportive.
                 </p>
                 <Button variant="hero">
-                  Schedule Demo
+                  Planifier une démo
                   <Send className="w-4 h-4" />
                 </Button>
               </div>
@@ -306,11 +320,10 @@ const ContactPage = () => {
               {/* FAQ Link */}
               <div className="p-6 rounded-2xl bg-card border border-border">
                 <h3 className="font-display text-lg font-bold mb-2">
-                  Looking for answers?
+                  Vous cherchez des réponses ?
                 </h3>
                 <p className="text-muted-foreground text-sm">
-                  Check out our FAQ section for quick answers to common
-                  questions about Spovio and MySmash.
+                  Consultez notre section FAQ pour des réponses rapides aux questions fréquentes sur Spovio.
                 </p>
               </div>
             </motion.div>

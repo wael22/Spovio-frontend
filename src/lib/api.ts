@@ -145,7 +145,9 @@ export const playerService = {
 
 // Support Service
 export const supportService = {
-    createMessage: (data: any) => api.post('/support/messages', data),
+    createMessage: (data: any) => api.post('/support/messages', data, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    }),
     getMyMessages: () => api.get('/support/messages'),
     getAllMessages: (params: any) => api.get('/support/admin/messages', { params }),
     updateMessage: (messageId: string, data: any) => api.patch(`/support/admin/messages/${messageId}`, data),
@@ -221,6 +223,7 @@ export const clipService = {
     deleteClip: (clipId: string) => api.delete(`/clips/${clipId}`),
     shareClip: (clipId: string, platform?: string) =>
         api.post(`/clips/${clipId}/share`, platform ? { platform } : {}),
+    downloadClip: (clipId: string) => api.get(`/clips/${clipId}/download`, { responseType: 'blob' }),
     trackDownload: (clipId: string) => api.post(`/clips/${clipId}/download`),
     getClipMeta: (clipId: string) => api.get(`/clips/${clipId}/meta`),
 };
@@ -250,6 +253,20 @@ export const adminService = {
     getAllVideos: () => api.get('/admin/videos'),
     deleteVideo: (videoId: string, mode: 'local_only' | 'cloud_only' | 'local_and_cloud' = 'local_and_cloud') =>
         api.delete(`/admin/videos/${videoId}`, { data: { mode } }),
+
+    // Video Upload Recovery
+    retryBunnyUpload: (videoId: string) =>
+        api.post(`/admin/videos/${videoId}/retry-bunny-upload`),
+    updateBunnyUrl: (videoId: string, data: { bunny_video_id: string; bunny_url?: string }) =>
+        api.patch(`/admin/videos/${videoId}/update-bunny-url`, data),
+    createManualVideo: (data: {
+        user_id: number;
+        bunny_video_id: string;
+        bunny_url?: string;
+        title: string;
+        description?: string;
+        court_id?: number;
+    }) => api.post('/admin/videos/create-manual', data),
 
     // Credits Management
     addCredits: (userId: string, credits: number) => api.post(`/admin/users/${userId}/credits`, { credits }),

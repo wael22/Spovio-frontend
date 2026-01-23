@@ -10,25 +10,26 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { 
-  Share2, 
-  Copy, 
+import {
+  Share2,
+  Copy,
   Check,
-  Twitter,
   Facebook,
   Instagram,
-  Link2
+  Link2,
+  Music
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface ShareClipModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  clipId: number;  // Changed from clipTitle to clipId
   clipTitle: string;
 }
 
 const socialPlatforms = [
-  { name: "Twitter", icon: Twitter, color: "bg-[#1DA1F2]", hoverColor: "hover:bg-[#1a8cd8]" },
+  { name: "TikTok", icon: Music, color: "bg-black", hoverColor: "hover:bg-gray-900" },
   { name: "Facebook", icon: Facebook, color: "bg-[#4267B2]", hoverColor: "hover:bg-[#375695]" },
   { name: "Instagram", icon: Instagram, color: "bg-gradient-to-br from-[#833AB4] via-[#FD1D1D] to-[#F77737]", hoverColor: "" },
 ];
@@ -36,13 +37,14 @@ const socialPlatforms = [
 export function ShareClipModal({
   open,
   onOpenChange,
+  clipId,
   clipTitle,
 }: ShareClipModalProps) {
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
-  
-  // Generate a mock share link
-  const shareLink = `https://mysmash.app/clip/${encodeURIComponent(clipTitle.toLowerCase().replace(/\s+/g, "-"))}`;
+
+  // Generate real share link using backend URL
+  const shareLink = `${window.location.protocol}//${window.location.host}/clip/${clipId}`;
 
   const handleCopyLink = async () => {
     try {
@@ -65,13 +67,19 @@ export function ShareClipModal({
   const handleShareSocial = (platform: string) => {
     let url = "";
     const text = `Regardez mon clip "${clipTitle}" sur MySmash !`;
-    
+
     switch (platform) {
-      case "Twitter":
-        url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareLink)}`;
-        break;
+      case "TikTok":
+        // TikTok doesn't have a direct share URL, show toast instead
+        toast({
+          title: "Partage TikTok",
+          description: "Copiez le lien et partagez-le sur TikTok.",
+        });
+        handleCopyLink();
+        return;
       case "Facebook":
-        url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareLink)}`;
+        // Open the clip page directly, Facebook will auto-preview with Open Graph
+        url = shareLink;
         break;
       case "Instagram":
         // Instagram doesn't have a direct share URL, show toast instead
@@ -82,11 +90,11 @@ export function ShareClipModal({
         handleCopyLink();
         return;
     }
-    
+
     if (url) {
       window.open(url, "_blank", "width=600,height=400");
     }
-    
+
     toast({
       title: `Partage sur ${platform}`,
       description: "Une nouvelle fenêtre s'est ouverte pour partager votre clip.",

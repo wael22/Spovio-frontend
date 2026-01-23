@@ -303,7 +303,7 @@ const Support = () => {
 
                       <div className="flex items-center gap-2 mt-3 text-xs text-muted-foreground">
                         <span className="capitalize">{priority}</span>
-                        <span>â€¢</span>
+                        <span>•</span>
                         <span>
                           {new Date(msg.created_at).toLocaleDateString('fr-FR', {
                             year: 'numeric',

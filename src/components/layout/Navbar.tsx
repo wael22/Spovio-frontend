@@ -9,8 +9,6 @@ import spovioLogoDark from "@/assets/spovio-logo-dark.png";
 import spovioLogoLight from "@/assets/spovio-logo-light.png";
 
 const navLinks = [
-  { name: "Home", path: "/" },
-  { name: "MySmash", path: "/mysmash" },
   { name: "AI Features", path: "/ai-features" },
   { name: "How It Works", path: "/how-it-works" },
   { name: "About", path: "/about" },
@@ -33,10 +31,10 @@ export const Navbar = () => {
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <img 
-              src={resolvedTheme === "dark" ? spovioLogoDark : spovioLogoLight} 
-              alt="Spovio" 
-              className="h-12 w-auto" 
+            <img
+              src={resolvedTheme === "dark" ? spovioLogoDark : spovioLogoLight}
+              alt="Spovio"
+              className="h-12 w-auto"
             />
           </Link>
 
@@ -46,11 +44,10 @@ export const Navbar = () => {
               <Link
                 key={link.path}
                 to={link.path}
-                className={`text-sm font-medium transition-all duration-300 hover:text-primary ${
-                  location.pathname === link.path
+                className={`text-sm font-medium transition-all duration-300 hover:text-primary ${location.pathname === link.path
                     ? "text-primary"
                     : "text-muted-foreground"
-                }`}
+                  }`}
               >
                 {link.name}
               </Link>
@@ -97,11 +94,10 @@ export const Navbar = () => {
                   key={link.path}
                   to={link.path}
                   onClick={() => setIsOpen(false)}
-                  className={`block py-2 text-sm font-medium transition-all ${
-                    location.pathname === link.path
+                  className={`block py-2 text-sm font-medium transition-all ${location.pathname === link.path
                       ? "text-primary"
                       : "text-muted-foreground"
-                  }`}
+                    }`}
                 >
                   {link.name}
                 </Link>

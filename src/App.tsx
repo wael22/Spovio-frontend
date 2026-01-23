@@ -9,7 +9,6 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 
 // Landing pages
 import Index from "./pages/Index";
-import MySmash from "./pages/MySmash";
 import AIFeatures from "./pages/AIFeatures";
 import HowItWorks from "./pages/HowItWorks";
 import About from "./pages/About";
@@ -46,7 +45,6 @@ const App = () => (
             <Routes>
               {/* Spovio Landing Pages */}
               <Route path="/" element={<Index />} />
-              <Route path="/mysmash" element={<MySmash />} />
               <Route path="/ai-features" element={<AIFeatures />} />
               <Route path="/how-it-works" element={<HowItWorks />} />
               <Route path="/about" element={<About />} />

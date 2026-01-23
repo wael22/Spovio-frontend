@@ -141,7 +141,7 @@ const Dashboard = () => {
     }
 
     try {
-      await recordingService.stopRecording(activeRecording.id);
+      await recordingService.stopRecording(activeRecording.recording_id);
       toast.success('Enregistrement arrêté avec succès');
       setActiveRecording(null);
 
@@ -269,8 +269,8 @@ const Dashboard = () => {
         {/* Active Recording Banner */}
         {activeRecording && (
           <ActiveRecordingBanner
-            court={activeRecording.court_name || "Court"}
-            club={activeRecording.club_name || "Club"}
+            court={activeRecording.court?.name || "Court"}
+            club={activeRecording.club?.name || "Club"}
             startTime={new Date(activeRecording.start_time)}
             onStop={handleStopRecording}
           />

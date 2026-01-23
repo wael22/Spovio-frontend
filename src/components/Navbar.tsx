@@ -8,10 +8,10 @@ export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
 
   const navLinks = [
-    { href: "/mysmash", label: "MySmash" },
-    { href: "#how-it-works", label: "How it Works" },
-    { href: "#pricing", label: "Pricing" },
-    { href: "#contact", label: "Contact" },
+    { href: "/ai-features", label: "AI Features" },
+    { href: "/how-it-works", label: "How It Works" },
+    { href: "/about", label: "About" },
+    { href: "/contact", label: "Contact" },
   ];
 
   return (
@@ -46,13 +46,13 @@ export function Navbar() {
             <ThemeToggle />
             <Link to="/auth?mode=login">
               <Button variant="ghost" size="sm">
-                Sign In
+                Se Connecter
               </Button>
             </Link>
-            <Link to="/mysmash">
+            <Link to="/auth">
               <Button variant="neon" size="sm" className="gap-2">
                 <Play className="w-4 h-4" />
-                Discover MySmash
+                Commencer
               </Button>
             </Link>
           </div>
@@ -88,13 +88,13 @@ export function Navbar() {
               <div className="flex flex-col gap-2 pt-4 border-t border-border/30">
                 <Link to="/auth?mode=login">
                   <Button variant="ghost" className="justify-start w-full">
-                    Sign In
+                    Se Connecter
                   </Button>
                 </Link>
-                <Link to="/mysmash">
+                <Link to="/auth">
                   <Button variant="neon" className="gap-2 w-full">
                     <Play className="w-4 h-4" />
-                    Discover MySmash
+                    Commencer
                   </Button>
                 </Link>
               </div>

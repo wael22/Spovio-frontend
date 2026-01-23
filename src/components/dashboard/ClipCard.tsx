@@ -32,6 +32,7 @@ interface ClipCardProps {
   status?: 'completed' | 'processing' | 'pending' | 'failed';
   onPlay?: () => void;
   onShare?: () => void;
+  onDownload?: () => void;
   onDelete?: () => void;
 }
 
@@ -45,6 +46,7 @@ export function ClipCard({
   status = 'completed',
   onPlay,
   onShare,
+  onDownload,
   onDelete,
 }: ClipCardProps) {
   const [isHovered, setIsHovered] = useState(false);
@@ -151,7 +153,7 @@ export function ClipCard({
               <Share2 className="h-4 w-4 mr-2" />
               Partager
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={onDownload}>
               <Download className="h-4 w-4 mr-2" />
               Télécharger
             </DropdownMenuItem>

@@ -122,11 +122,11 @@ export const Footer = () => {
             © {new Date().getFullYear()} Spovio. All rights reserved.
           </p>
           <a
-            href="mailto:hello@spovio.com"
+            href="mailto:contact@spovio.net"
             className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
           >
             <Mail size={16} />
-            hello@spovio.com
+            contact@spovio.net
           </a>
         </div>
       </div>
