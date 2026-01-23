@@ -271,7 +271,8 @@ const Dashboard = () => {
           <ActiveRecordingBanner
             court={activeRecording.court?.name || "Court"}
             club={activeRecording.club?.name || "Club"}
-            startTime={new Date(activeRecording.start_time)}
+            startTime={new Date(activeRecording.start_time.endsWith('Z') ? activeRecording.start_time : activeRecording.start_time + 'Z')}
+            duration={activeRecording.planned_duration}
             onStop={handleStopRecording}
           />
         )}
@@ -385,6 +386,7 @@ const Dashboard = () => {
                     shared={video.is_shared || false}
                     court={video.court_name || 'Court'}
                     isExpired={video.is_expired || false}
+                    processingStatus={video.processing_status}
                     onPlay={() => handlePlayVideo(video)}
                     onShare={() => handleShareVideo(video)}
                     onEdit={() => handleEditVideo(video)}
@@ -426,6 +428,9 @@ const Dashboard = () => {
       <StartRecordingModal
         open={isRecordingModalOpen}
         onOpenChange={setIsRecordingModalOpen}
+        onRecordingStarted={(session) => {
+          setActiveRecording(session);
+        }}
       />
 
       <ShareVideoModal

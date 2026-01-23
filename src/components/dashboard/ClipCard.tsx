@@ -52,6 +52,7 @@ export function ClipCard({
   const [isHovered, setIsHovered] = useState(false);
 
   const formatDate = (dateString: string) => {
+    const dateStr = dateString.endsWith('Z') ? dateString : dateString + 'Z';
     return new Date(dateString).toLocaleDateString("fr-FR", {
       day: "numeric",
       month: "short",

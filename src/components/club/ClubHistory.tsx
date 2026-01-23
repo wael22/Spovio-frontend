@@ -48,9 +48,12 @@ const ClubHistory: React.FC = () => {
         }
     };
 
-    const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString('fr-FR', {
-        day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
-    });
+    const formatDate = (dateString: string) => {
+        const dateStr = dateString.endsWith('Z') ? dateString : dateString + 'Z';
+        return new Date(dateStr).toLocaleDateString('fr-FR', {
+            day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+        });
+    };
 
     const getActionLabel = (actionType: string, details: string) => {
         try {

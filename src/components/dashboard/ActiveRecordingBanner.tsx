@@ -1,12 +1,13 @@
 ﻿import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Video, X, MapPin, Clock, StopCircle } from "lucide-react";
+import { Video, MapPin, Clock, StopCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface ActiveRecordingBannerProps {
   court: string;
   club: string;
   startTime: Date;
+  duration?: number; // Duration in minutes
   onStop?: () => void;
   onDismiss?: () => void;
 }
@@ -15,24 +16,41 @@ export function ActiveRecordingBanner({
   court,
   club,
   startTime,
+  duration, // Duration in minutes
   onStop,
   onDismiss,
 }: ActiveRecordingBannerProps) {
-  const [elapsed, setElapsed] = useState("00:00");
+  const [remaining, setRemaining] = useState("--:--");
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      const diff = Date.now() - startTime.getTime();
+    const calculateRemaining = () => {
+      if (!startTime || !duration) return;
+
+      const now = new Date();
+      // Start time is already a Date object from props
+      const start = startTime.getTime();
+      const durationMs = duration * 60 * 1000;
+      const end = start + durationMs;
+      const diff = end - now.getTime();
+
+      if (diff <= 0) {
+        setRemaining("00:00");
+        return;
+      }
+
       const minutes = Math.floor(diff / 60000);
       const seconds = Math.floor((diff % 60000) / 1000);
-      setElapsed(
+      setRemaining(
         `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
       );
-    }, 1000);
+    };
+
+    calculateRemaining(); // Initial calculation
+    const interval = setInterval(calculateRemaining, 1000);
 
     return () => clearInterval(interval);
-  }, [startTime]);
+  }, [startTime, duration]);
 
   if (!isVisible) return null;
 
@@ -42,12 +60,12 @@ export function ActiveRecordingBanner({
         initial={{ opacity: 0, y: -50 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -50 }}
-        className="relative overflow-hidden"
+        className="relative overflow-hidden z-40 pointer-events-auto"
       >
         <div className="bg-gradient-to-r from-destructive/90 via-destructive to-destructive/90 text-destructive-foreground">
           {/* Animated background pulse */}
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1),transparent_50%)] animate-pulse" />
-          
+
           <div className="container mx-auto px-4 lg:px-8 py-3">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
               {/* Left Section */}
@@ -70,7 +88,7 @@ export function ActiveRecordingBanner({
                   </div>
                   <div className="flex items-center gap-1.5">
                     <Clock className="h-4 w-4" />
-                    <span className="font-mono">{elapsed}</span>
+                    <span className="font-mono">{remaining}</span>
                   </div>
                 </div>
               </div>
@@ -81,22 +99,12 @@ export function ActiveRecordingBanner({
                   variant="outline"
                   size="sm"
                   onClick={onStop}
-                  className="bg-white/10 border-white/20 hover:bg-white/20 text-white gap-2"
+                  className="bg-white/10 border-white/20 hover:bg-white/20 text-white gap-2 relative z-50 cursor-pointer"
                 >
                   <StopCircle className="h-4 w-4" />
                   Arrêter
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => {
-                    setIsVisible(false);
-                    onDismiss?.();
-                  }}
-                  className="h-8 w-8 text-white/80 hover:text-white hover:bg-white/10"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
+
               </div>
             </div>
           </div>

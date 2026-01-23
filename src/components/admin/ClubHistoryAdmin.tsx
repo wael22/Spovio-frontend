@@ -172,7 +172,8 @@ const ClubHistoryAdmin: React.FC = () => {
     };
 
     const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleString('fr-FR', {
+        const dateStr = dateString.endsWith('Z') ? dateString : dateString + 'Z';
+        return new Date(dateStr).toLocaleString('fr-FR', {
             year: 'numeric',
             month: 'long',
             day: 'numeric',

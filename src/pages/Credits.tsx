@@ -95,10 +95,17 @@ const Credits = () => {
         ]);
 
         setPackages(packagesRes.data.packages || []);
-        setPaymentMethods(paymentRes.data.payment_methods || []);
+
+        // Filter out simulation payment method
+        const filteredMethods = (paymentRes.data.payment_methods || []).filter(
+          (method: any) => method.id !== 'simulation'
+        );
+        setPaymentMethods(filteredMethods);
 
         // Set default payment method
-        const defaultMethod = paymentRes.data.default_method || 'konnect';
+        const defaultMethod = paymentRes.data.default_method === 'simulation'
+          ? 'konnect'
+          : paymentRes.data.default_method || 'konnect';
         setSelectedPayment(defaultMethod);
       } catch (error: any) {
         console.error('Failed to load data:', error);

@@ -4,7 +4,6 @@ import {
   Play,
   MoreVertical,
   Share2,
-  Download,
   Trash2,
   Scissors,
   Clock,
@@ -30,6 +29,7 @@ interface VideoCardModernProps {
   shared?: boolean;
   court?: string;
   isExpired?: boolean;  // ✅ NOUVEAU: Indique si la vidéo est expirée (cloud supprimé)
+  processingStatus?: string; // ✅ NOUVEAU: Statut de traitement
   onPlay?: () => void;
   onShare?: () => void;
   onDelete?: () => void;
@@ -47,6 +47,7 @@ export function VideoCardModern({
   shared = false,
   court,
   isExpired = false,
+  processingStatus,
   onPlay,
   onShare,
   onDelete,
@@ -57,11 +58,15 @@ export function VideoCardModern({
   const [isHovered, setIsHovered] = useState(false);
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("fr-FR", {
+    const dateStr = dateString.endsWith('Z') ? dateString : dateString + 'Z';
+    return new Date(dateStr).toLocaleDateString("fr-FR", {
       day: "numeric",
       month: "short",
     });
   };
+
+  const isFailed = processingStatus === 'failed';
+  const isProcessing = processingStatus === 'processing' || processingStatus === 'uploading';
 
   return (
     <motion.div
@@ -114,9 +119,23 @@ export function VideoCardModern({
         )}
 
         {/* Expired Badge */}
-        {isExpired && (
+        {isExpired && !isFailed && !isProcessing && (
           <Badge className="absolute top-3 left-3 bg-destructive/90 hover:bg-destructive text-destructive-foreground">
             🔒 Expirée
+          </Badge>
+        )}
+
+        {/* Failed Badge */}
+        {isFailed && (
+          <Badge className="absolute top-3 left-3 bg-red-600 hover:bg-red-700 text-white border-red-800">
+            ⚠️ Échec
+          </Badge>
+        )}
+
+        {/* Processing Badge */}
+        {isProcessing && (
+          <Badge className="absolute top-3 left-3 bg-blue-500/90 hover:bg-blue-600 text-white animate-pulse">
+            ⚙️ Traitement...
           </Badge>
         )}
 
@@ -148,10 +167,7 @@ export function VideoCardModern({
               <Share2 className="h-4 w-4 mr-2" />
               Partager
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={onDownload}>
-              <Download className="h-4 w-4 mr-2" />
-              Télécharger
-            </DropdownMenuItem>
+
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={onDelete}

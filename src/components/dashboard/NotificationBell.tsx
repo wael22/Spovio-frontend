@@ -43,7 +43,9 @@ const getNotificationIcon = (type: string) => {
 
 // Helper to format relative time (like PadelVar)
 const formatTime = (timestamp: string) => {
-  const date = new Date(timestamp);
+  // Fix timezone issue: Treat timestamp as UTC if no timezone is provided
+  const timestampStr = timestamp.endsWith('Z') ? timestamp : timestamp + 'Z';
+  const date = new Date(timestampStr);
   const now = new Date();
   const diff = Math.floor((now.getTime() - date.getTime()) / 1000); // en secondes
 

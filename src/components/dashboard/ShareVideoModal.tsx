@@ -13,28 +13,51 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Mail, MessageSquare, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { videoService } from "@/lib/api";
 
 interface ShareVideoModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
+    videoId?: string | number;
     videoTitle: string;
 }
 
 export function ShareVideoModal({
     open,
     onOpenChange,
+    videoId,
     videoTitle,
 }: ShareVideoModalProps) {
     const { toast } = useToast();
-    const [emails, setEmails] = useState("");
+    const [email, setEmail] = useState("");
     const [message, setMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
     const handleShare = async () => {
-        if (!emails.trim()) {
+        if (!email.trim()) {
             toast({
                 title: "Erreur",
-                description: "Veuillez entrer au moins un email.",
+                description: "Veuillez entrer un email.",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        if (!videoId) {
+            toast({
+                title: "Erreur",
+                description: "ID de vidéo invalide.",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email.trim())) {
+            toast({
+                title: "Erreur",
+                description: "Format d'email invalide.",
                 variant: "destructive",
             });
             return;
@@ -42,17 +65,36 @@ export function ShareVideoModal({
 
         setIsLoading(true);
 
-        // Simulate sharing
-        setTimeout(() => {
-            setIsLoading(false);
+        try {
+            await videoService.shareVideoWithUser(
+                videoId.toString(),
+                email.trim(),
+                message.trim()
+            );
+
             toast({
-                title: "Vidéo partagée",
-                description: "Les destinataires recevront un email avec le lien de la vidéo.",
+                title: "✅ Vidéo partagée",
+                description: `La vidéo a été partagée avec ${email}. Un email de notification a été envoyé.`,
             });
-            setEmails("");
+
+            setEmail("");
             setMessage("");
             onOpenChange(false);
-        }, 1500);
+        } catch (error: any) {
+            console.error('Failed to share video:', error);
+
+            const errorMessage = error.response?.data?.error ||
+                error.message ||
+                'Erreur lors du partage';
+
+            toast({
+                title: "❌ Erreur de partage",
+                description: errorMessage,
+                variant: "destructive",
+            });
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -66,7 +108,7 @@ export function ShareVideoModal({
                         Partager la vidéo
                     </DialogTitle>
                     <DialogDescription className="text-muted-foreground">
-                        Partagez "{videoTitle}" avec d'autres joueurs. Vous pouvez entrer plusieurs emails séparés par des virgules.
+                        Partagez "{videoTitle}" avec un autre joueur MySmash. Il recevra un email de notification.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -78,19 +120,21 @@ export function ShareVideoModal({
                 >
                     {/* Email Input */}
                     <div className="space-y-2">
-                        <Label htmlFor="emails" className="flex items-center gap-2">
+                        <Label htmlFor="email" className="flex items-center gap-2">
                             <Mail className="h-4 w-4 text-muted-foreground" />
-                            Email(s) des destinataires *
+                            Email du destinataire *
                         </Label>
                         <Input
-                            id="emails"
-                            placeholder="email1@exemple.com, email2@exemple.com"
-                            value={emails}
-                            onChange={(e) => setEmails(e.target.value)}
+                            id="email"
+                            type="email"
+                            placeholder="exemple@email.com"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             className="bg-card/50"
+                            disabled={isLoading}
                         />
                         <p className="text-xs text-muted-foreground">
-                            Séparez plusieurs emails par des virgules (,) ou points-virgules (;)
+                            Le destinataire doit avoir un compte MySmash
                         </p>
                     </div>
 
@@ -107,6 +151,7 @@ export function ShareVideoModal({
                             onChange={(e) => setMessage(e.target.value)}
                             className="bg-card/50 min-h-[100px] resize-none"
                             maxLength={500}
+                            disabled={isLoading}
                         />
                         <p className="text-xs text-muted-foreground text-right">
                             {message.length}/500 caractères
@@ -115,7 +160,11 @@ export function ShareVideoModal({
 
                     {/* Actions */}
                     <div className="flex justify-end gap-3 pt-2">
-                        <Button variant="ghost" onClick={() => onOpenChange(false)}>
+                        <Button
+                            variant="ghost"
+                            onClick={() => onOpenChange(false)}
+                            disabled={isLoading}
+                        >
                             Annuler
                         </Button>
                         <Button

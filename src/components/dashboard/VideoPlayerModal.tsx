@@ -131,25 +131,15 @@ export function VideoPlayerModal({ isOpen, onClose, video }: VideoPlayerModalPro
                 <DialogContent className="max-w-5xl p-0">
                     <div className="flex items-center justify-between p-4 border-b">
                         <h3 className="font-semibold text-lg">{video.title || 'Lecteur vidéo'}</h3>
-                        <div className="flex items-center gap-2">
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setClipEditorOpen(true)}
-                                className="gap-2"
-                            >
-                                <Scissors className="h-4 w-4" />
-                                Créer un Clip
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={onClose}
-                                className="h-8 w-8"
-                            >
-                                <X className="h-4 w-4" />
-                            </Button>
-                        </div>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setClipEditorOpen(true)}
+                            className="gap-2"
+                        >
+                            <Scissors className="h-4 w-4" />
+                            Créer un Clip
+                        </Button>
                     </div>
 
                     <div className="relative bg-black">
