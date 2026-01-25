@@ -197,7 +197,16 @@ const Dashboard = () => {
 
       try {
         const { adminService } = await import('@/lib/api');
-        const response = await adminService.deleteVideo(video.id, selectedMode as 'database' | 'bunny' | 'both');
+
+        // Map UI modes to API modes
+        const modeMap: Record<string, 'local_only' | 'cloud_only' | 'local_and_cloud'> = {
+          'database': 'local_only',
+          'bunny': 'cloud_only',
+          'both': 'local_and_cloud'
+        };
+
+        const apiMode = modeMap[selectedMode] || 'local_and_cloud';
+        const response = await adminService.deleteVideo(video.id, apiMode);
 
         // Remove from UI if deleted from database
         if (selectedMode === 'database' || selectedMode === 'both') {
@@ -228,10 +237,58 @@ const Dashboard = () => {
   };
 
   const handleDownloadVideo = async (video: any) => {
-    // Bunny Stream ne supporte que le streaming HLS, pas les téléchargements MP4
-    toast.info('Les vidéos complètes sont disponibles en streaming uniquement. Créez un clip pour télécharger et partager!', {
-      duration: 5000,
-    });
+    // Check if video is expired or deleted
+    if (video.is_expired || video.processing_status !== 'ready') {
+      toast.error('Cette vidéo n\'est pas disponible pour téléchargement');
+      return;
+    }
+
+    // Check if video has bunny_video_id
+    if (!video.bunny_video_id) {
+      toast.error('Cette vidéo n\'a pas été uploadée sur Bunny Stream');
+      return;
+    }
+
+    try {
+      // Build direct MP4 URL from bunny_video_id
+      const bunnyHostname = 'vz-cc4565cd-4e9.b-cdn.net';
+      const finalUrl = `https://${bunnyHostname}/${video.bunny_video_id}/play_720p.mp4`;
+
+      toast.loading('Téléchargement en cours...', { id: 'download-toast' });
+
+      // Fetch the file as a blob to force download
+      const response = await fetch(finalUrl);
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      // Create download link
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${video.title || 'video'}.mp4`;
+      document.body.appendChild(link);
+      link.click();
+
+      // Cleanup
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(link);
+
+      toast.dismiss('download-toast');
+      toast.success('Téléchargement terminé !');
+    } catch (error) {
+      console.error('Download error:', error);
+      toast.dismiss('download-toast');
+
+      // Fallback: If fetch fails (e.g. CORS), open in new tab
+      const bunnyHostname = 'vz-cc4565cd-4e9.b-cdn.net';
+      const finalUrl = `https://${bunnyHostname}/${video.bunny_video_id}/play_720p.mp4`;
+      window.open(finalUrl, '_blank');
+      toast.error('Téléchargement direct échoué, ouverture du lien...');
+    }
   };
 
   const handleCreateClip = (video: any) => {

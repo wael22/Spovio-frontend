@@ -47,7 +47,7 @@ const MyClips = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isPlayerModalOpen, setIsPlayerModalOpen] = useState(false);
-  const [selectedClip, setSelectedClip] = useState<{ id: number; title: string; file_url?: string } | null>(null);
+  const [selectedClip, setSelectedClip] = useState<{ id: number; title: string; file_url?: string; bunny_video_id?: string } | null>(null);
   const [selectedVideo, setSelectedVideo] = useState<{ id: string; title: string; file_url?: string } | null>(null);
   const [clips, setClips] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -90,7 +90,7 @@ const MyClips = () => {
     clip.title?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleShareClip = (clip: { id: number; title: string }) => {
+  const handleShareClip = (clip: { id: number; title: string; bunny_video_id?: string }) => {
     setSelectedClip(clip);
     setIsShareModalOpen(true);
   };
@@ -105,12 +105,33 @@ const MyClips = () => {
   };
 
   const handleDownloadClip = async (clip: any) => {
-    try {
-      toast.loading('Téléchargement en cours...');
-      const response = await clipService.downloadClip(clip.id);
+    // Check if clip  is ready
+    if (clip.status !== 'completed') {
+      toast.error('Ce clip n\'est pas encore prêt pour téléchargement');
+      return;
+    }
 
-      // Create blob URL
-      const blob = new Blob([response.data], { type: 'video/mp4' });
+    // Check if clip has bunny_video_id (required for MP4 download)
+    if (!clip.bunny_video_id) {
+      toast.error('Ce clip n\'a pas été uploadé sur Bunny Stream');
+      return;
+    }
+
+    try {
+      // Build direct MP4 URL from bunny_video_id
+      const bunnyHostname = 'vz-cc4565cd-4e9.b-cdn.net';
+      const finalUrl = `https://${bunnyHostname}/${clip.bunny_video_id}/play_720p.mp4`;
+
+      toast.loading('Téléchargement en cours...', { id: 'download-toast' });
+
+      // Fetch the file as a blob to force download
+      const response = await fetch(finalUrl);
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
 
       // Create download link
@@ -121,15 +142,20 @@ const MyClips = () => {
       link.click();
 
       // Cleanup
-      document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
+      document.body.removeChild(link);
 
-      toast.dismiss();
-      toast.success('Clip téléchargé avec succès');
-    } catch (error: any) {
-      console.error('Failed to download clip:', error);
-      toast.dismiss();
-      toast.error('Erreur lors du téléchargement du clip');
+      toast.dismiss('download-toast');
+      toast.success('Téléchargement terminé !');
+    } catch (error) {
+      console.error('Download error:', error);
+      toast.dismiss('download-toast');
+
+      // Fallback: If fetch fails (e.g. CORS), open in new tab
+      const bunnyHostname = 'vz-cc4565cd-4e9.b-cdn.net';
+      const finalUrl = `https://${bunnyHostname}/${clip.bunny_video_id}/play_720p.mp4`;
+      window.open(finalUrl, '_blank');
+      toast.error('Téléchargement direct échoué, ouverture du lien...');
     }
   };
 
@@ -225,7 +251,11 @@ const MyClips = () => {
                     videoTitle={clip.video_title || 'Vidéo'}
                     status={clip.status}
                     onPlay={() => handlePlayClip(clip)}
-                    onShare={() => handleShareClip({ id: clip.id, title: clip.title })}
+                    onShare={() => handleShareClip({
+                      id: clip.id,
+                      title: clip.title,
+                      bunny_video_id: clip.bunny_video_id
+                    })}
                     onDownload={() => handleDownloadClip(clip)}
                     onDelete={() => handleDeleteClip(clip.id)}
                   />
@@ -266,6 +296,7 @@ const MyClips = () => {
         onOpenChange={setIsShareModalOpen}
         clipId={selectedClip?.id || 0}
         clipTitle={selectedClip?.title || ""}
+        bunnyVideoId={selectedClip?.bunny_video_id}
       />
 
       {/* Video Player Modal */}

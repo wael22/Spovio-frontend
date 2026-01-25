@@ -24,8 +24,9 @@ import { useToast } from "@/hooks/use-toast";
 interface ShareClipModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  clipId: number;  // Changed from clipTitle to clipId
+  clipId: number;
   clipTitle: string;
+  bunnyVideoId?: string; // Added optional bunnyVideoId
 }
 
 const socialPlatforms = [
@@ -39,12 +40,15 @@ export function ShareClipModal({
   onOpenChange,
   clipId,
   clipTitle,
+  bunnyVideoId,
 }: ShareClipModalProps) {
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
 
-  // Generate real share link using backend URL
-  const shareLink = `${window.location.protocol}//${window.location.host}/clip/${clipId}`;
+  // Generate real share link using backend URL or CDN MP4 if available
+  const shareLink = bunnyVideoId
+    ? `https://vz-cc4565cd-4e9.b-cdn.net/${bunnyVideoId}/play_720p.mp4`
+    : `${window.location.protocol}//${window.location.host}/clip/${clipId}`;
 
   const handleCopyLink = async () => {
     try {
@@ -52,7 +56,7 @@ export function ShareClipModal({
       setCopied(true);
       toast({
         title: "Lien copié",
-        description: "Le lien a été copié dans le presse-papiers.",
+        description: "Le lien direct MP4 a été copié.",
       });
       setTimeout(() => setCopied(false), 2000);
     } catch {
@@ -66,26 +70,25 @@ export function ShareClipModal({
 
   const handleShareSocial = (platform: string) => {
     let url = "";
-    const text = `Regardez mon clip "${clipTitle}" sur MySmash !`;
 
     switch (platform) {
       case "TikTok":
-        // TikTok doesn't have a direct share URL, show toast instead
+        // TikTok doesn't handle web links well, suggest copy
         toast({
           title: "Partage TikTok",
-          description: "Copiez le lien et partagez-le sur TikTok.",
+          description: "Copiez le lien MP4 pour le poster sur TikTok.",
         });
         handleCopyLink();
         return;
       case "Facebook":
-        // Open the clip page directly, Facebook will auto-preview with Open Graph
-        url = shareLink;
+        // Use Facebook Sharer with the MP4 URL
+        url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareLink)}`;
         break;
       case "Instagram":
-        // Instagram doesn't have a direct share URL, show toast instead
+        // Instagram doesn't handle web links, suggest copy
         toast({
           title: "Partage Instagram",
-          description: "Copiez le lien et partagez-le sur Instagram.",
+          description: "Copiez le lien MP4 pour le poster sur Instagram.",
         });
         handleCopyLink();
         return;
@@ -94,11 +97,6 @@ export function ShareClipModal({
     if (url) {
       window.open(url, "_blank", "width=600,height=400");
     }
-
-    toast({
-      title: `Partage sur ${platform}`,
-      description: "Une nouvelle fenêtre s'est ouverte pour partager votre clip.",
-    });
   };
 
   return (

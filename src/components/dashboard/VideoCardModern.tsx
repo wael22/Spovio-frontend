@@ -8,7 +8,8 @@ import {
   Scissors,
   Clock,
   MapPin,
-  Edit
+  Edit,
+  Download
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -166,6 +167,10 @@ export function VideoCardModern({
             <DropdownMenuItem onClick={onShare}>
               <Share2 className="h-4 w-4 mr-2" />
               Partager
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={onDownload} disabled={isExpired}>
+              <Download className="h-4 w-4 mr-2" />
+              {isExpired ? "Téléchargement non disponible" : "Télécharger MP4"}
             </DropdownMenuItem>
 
             <DropdownMenuSeparator />
