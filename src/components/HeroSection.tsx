@@ -46,19 +46,11 @@ export function HeroSection() {
                 <Trophy className="w-6 h-6 text-primary" />
                 <div className="text-left">
                   <div className="font-semibold">MySmash</div>
-                  <div className="text-xs text-muted-foreground">Padel</div>
+                  <div className="text-xs text-muted-foreground">Padel & Tennis</div>
                 </div>
               </div>
             </div>
-            <div className="p-4 rounded-xl glass border border-primary/20 transition-all">
-              <div className="flex items-center gap-3">
-                <Trophy className="w-6 h-6 text-primary" />
-                <div className="text-left">
-                  <div className="font-semibold">MyServe</div>
-                  <div className="text-xs text-muted-foreground">Tennis</div>
-                </div>
-              </div>
-            </div>
+
             <div className="p-4 rounded-xl glass border border-border/50 opacity-60">
               <div className="flex items-center gap-3">
                 <Trophy className="w-6 h-6 text-muted-foreground" />
@@ -111,27 +103,7 @@ export function HeroSection() {
             </Button>
           </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-3 gap-8 mt-16 pt-16 border-t border-border/30 animate-slide-up animation-delay-400">
-            <div className="text-center">
-              <div className="font-display text-3xl md:text-4xl font-bold gradient-text mb-2">
-                1K+
-              </div>
-              <div className="text-sm text-muted-foreground">Joueurs Actifs</div>
-            </div>
-            <div className="text-center">
-              <div className="font-display text-3xl md:text-4xl font-bold gradient-text-accent mb-2">
-                5K+
-              </div>
-              <div className="text-sm text-muted-foreground">Heures Enregistrées</div>
-            </div>
-            <div className="text-center">
-              <div className="font-display text-3xl md:text-4xl font-bold gradient-text mb-2">
-                10+
-              </div>
-              <div className="text-sm text-muted-foreground">Clubs Partenaires</div>
-            </div>
-          </div>
+
         </div>
       </div>
 

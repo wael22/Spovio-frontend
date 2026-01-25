@@ -18,6 +18,9 @@ import NotFound from "./pages/NotFound";
 // Auth pages
 import Auth from "./pages/Auth";
 import EmailVerification from "./pages/EmailVerification";
+import GoogleAuthCallback from "./pages/GoogleAuthCallback";
+
+// ...
 
 // Protected MySmash App pages
 import Dashboard from './pages/Dashboard';
@@ -26,6 +29,7 @@ import Clubs from './pages/Clubs';
 import Credits from './pages/Credits';
 import Profile from './pages/Profile';
 import Support from './pages/Support';
+import Settings from './pages/Settings';
 
 // Admin & Club pages
 import Admin from './pages/Admin';
@@ -53,6 +57,7 @@ const App = () => (
               {/* Authentication */}
               <Route path="/auth" element={<Auth />} />
               <Route path="/verify-email" element={<EmailVerification />} />
+              <Route path="/google-auth-callback" element={<GoogleAuthCallback />} />
               <Route path="/super-secret-login" element={<SuperAdminLogin />} />
 
               {/* Protected Admin & Club Routes */}
@@ -119,6 +124,14 @@ const App = () => (
                 element={
                   <ProtectedRoute requiredRole="player">
                     <Support />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/settings"
+                element={
+                  <ProtectedRoute requiredRole="player">
+                    <Settings />
                   </ProtectedRoute>
                 }
               />

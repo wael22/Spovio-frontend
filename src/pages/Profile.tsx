@@ -16,12 +16,12 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { authService } from "@/lib/api";
+import { authService, getAssetUrl } from "@/lib/api";
 import { useEffect } from "react";
 
 const Profile = () => {
   const { toast } = useToast();
-  const { user, refreshUser } = useAuth();
+  const { user, fetchUser } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [profile, setProfile] = useState({
@@ -43,6 +43,8 @@ const Profile = () => {
         phone: user.phone || '',
         avatar: user.avatar || '',
       });
+      console.log('Profile updated from user:', user);
+      console.log('Avatar URL:', getAssetUrl(user.avatar || ''));
     }
   }, [user]);
 
@@ -63,7 +65,7 @@ const Profile = () => {
         phone: profile.phone,
       });
 
-      await refreshUser();
+      await fetchUser();
 
       toast({
         title: "Profil mis à jour",
@@ -111,6 +113,51 @@ const Profile = () => {
     }
   };
 
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "Fichier trop volumineux",
+        description: "L'image ne doit pas dépasser 5 Mo.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setIsUploadingAvatar(true);
+      const formData = new FormData();
+      formData.append('avatar', file);
+
+      await authService.uploadAvatar(formData);
+
+      // Refresh user data to get new avatar URL
+      await fetchUser();
+
+      toast({
+        title: "Photo mise à jour",
+        description: "Votre photo de profil a été modifiée avec succès.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.response?.data?.error || "Impossible de mettre à jour la photo",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploadingAvatar(false);
+      // Reset input
+      if (event.target) {
+        event.target.value = '';
+      }
+    }
+  };
+
   const initials = profile.firstName && profile.lastName
     ? `${profile.firstName[0]}${profile.lastName[0]}`.toUpperCase()
     : user?.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
@@ -151,18 +198,33 @@ const Profile = () => {
             <div className="flex flex-col sm:flex-row items-center gap-6 mb-8 pb-8 border-b border-border/50">
               <div className="relative">
                 <Avatar className="h-24 w-24 border-4 border-primary/30">
-                  <AvatarImage src={profile.avatar} alt={`${profile.firstName} ${profile.lastName}`} />
+                  <AvatarImage src={getAssetUrl(profile.avatar)} alt={`${profile.firstName} ${profile.lastName}`} />
                   <AvatarFallback className="bg-primary/10 text-primary font-bold text-2xl">
                     {initials}
                   </AvatarFallback>
                 </Avatar>
-                <Button
-                  variant="neon"
-                  size="icon"
-                  className="absolute -bottom-2 -right-2 h-10 w-10 rounded-full"
-                >
-                  <Camera className="h-4 w-4" />
-                </Button>
+                <div className="absolute -bottom-2 -right-2">
+                  <input
+                    type="file"
+                    id="avatar-upload"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleAvatarUpload}
+                  />
+                  <Button
+                    variant="neon"
+                    size="icon"
+                    className="h-10 w-10 rounded-full"
+                    onClick={() => document.getElementById('avatar-upload')?.click()}
+                    disabled={isUploadingAvatar}
+                  >
+                    {isUploadingAvatar ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                    ) : (
+                      <Camera className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
               </div>
               <div className="text-center sm:text-left">
                 <h2 className="text-2xl font-bold">{profile.firstName} {profile.lastName}</h2>
@@ -319,8 +381,8 @@ const Profile = () => {
             </div>
           </motion.div>
         </div>
-      </main>
-    </div>
+      </main >
+    </div >
   );
 };
 

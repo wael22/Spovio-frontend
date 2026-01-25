@@ -4,15 +4,11 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Link } from "react-router-dom";
 
+import { NAV_LINKS } from "@/lib/constants";
+
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-
-  const navLinks = [
-    { href: "/ai-features", label: "AI Features" },
-    { href: "/how-it-works", label: "How It Works" },
-    { href: "/about", label: "About" },
-    { href: "/contact", label: "Contact" },
-  ];
+  const navLinks = NAV_LINKS;
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-border/30">

@@ -22,8 +22,14 @@ export const getAssetUrl = (path: string): string => {
     if (path.startsWith('http')) return path;
 
     const cleanPath = path.startsWith('/') ? path.slice(1) : path;
-    const baseUrl = API_BASE_URL.replace(/\/api$/, '');
 
+    // Use manual proxy for avatars to guarantee CORS
+    if (cleanPath.includes('uploads/avatars/')) {
+        const filename = cleanPath.split('/').pop();
+        return `${API_BASE_URL}/static/avatars/${filename}`;
+    }
+
+    const baseUrl = API_BASE_URL.replace(/\/api$/, '');
     return `${baseUrl}/${cleanPath}`;
 };
 
@@ -88,6 +94,13 @@ export const authService = {
     changePassword: (passwordData: any) => api.post('/auth/change-password', passwordData),
     verifyEmail: (email: string, code: string) => api.post('/auth/verify-email', { email, code }),
     resendVerificationCode: (email: string) => api.post('/auth/resend-verification', { email }),
+    getGoogleAuthUrl: () => api.get('/auth/google-auth-url'),
+    googleAuthenticate: (token: string) => api.post('/auth/google/authenticate', { token }),
+    uploadAvatar: (formData: FormData) => api.post('/auth/upload-avatar', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    }),
 };
 
 // Video Service

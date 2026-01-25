@@ -10,40 +10,10 @@ import {
 } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
+import { MILESTONES } from "@/lib/constants";
+import { ValuesList } from "@/components/shared/ValuesList";
 
-const values = [
-  {
-    icon: Target,
-    title: "Innovation First",
-    description:
-      "We push the boundaries of sports technology, constantly exploring new ways to enhance athletic performance.",
-  },
-  {
-    icon: Users,
-    title: "Athlete-Centric",
-    description:
-      "Everything we build is designed with athletes in mind, from amateur players to professionals.",
-  },
-  {
-    icon: Lightbulb,
-    title: "Accessible Technology",
-    description:
-      "We believe advanced sports analysis should be available to everyone, not just elite athletes.",
-  },
-  {
-    icon: Globe,
-    title: "Global Vision",
-    description:
-      "We're building for athletes worldwide, starting with MENA and expanding across Europe and beyond.",
-  },
-];
 
-const milestones = [
-  { year: "2023", title: "Founded", description: "Spovio was born with a vision to democratize sports video" },
-  { year: "2024", title: "MySmash Launch", description: "First product launched for padel courts" },
-  { year: "2024", title: "50+ Clubs", description: "Partnership milestone reached" },
-  { year: "2025", title: "AI Features", description: "Next-generation analysis in development" },
-];
 
 const AboutPage = () => {
   return (
@@ -71,11 +41,10 @@ const AboutPage = () => {
             className="max-w-3xl mx-auto text-center"
           >
             <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-              About <span className="text-gradient">Spovio</span>
+              À Propos de <span className="text-gradient">Spovio</span>
             </h1>
             <p className="text-xl text-muted-foreground">
-              Democratizing intelligent sports video and AI analysis for
-              athletes everywhere
+              Démocratiser la vidéo sportive intelligente et l'analyse IA pour les athlètes partout
             </p>
           </motion.div>
         </div>
@@ -92,23 +61,16 @@ const AboutPage = () => {
               transition={{ duration: 0.6 }}
             >
               <h2 className="font-display text-3xl md:text-4xl font-bold mb-6">
-                Our <span className="text-gradient">Vision</span>
+                Notre <span className="text-gradient">Vision</span>
               </h2>
               <p className="text-lg text-muted-foreground mb-6">
-                We believe every athlete deserves access to the same video
-                analysis tools used by professionals. Spovio is building the
-                future of sports technology – making it simple, accessible, and
-                powerful for everyone.
+                Nous pensons que chaque athlète mérite d'avoir accès aux mêmes outils d'analyse vidéo que les professionnels. Spovio construit le futur de la technologie sportive – simple, accessible et puissant pour tous.
               </p>
               <p className="text-lg text-muted-foreground mb-6">
-                Starting with padel and expanding across multiple sports, we're
-                creating a unified platform that combines automated video
-                capture with AI-powered performance insights.
+                En commençant par le padel et en s'étendant à plusieurs sports, nous créons une plateforme unifiée qui combine capture vidéo automatisée et insights de performance par IA.
               </p>
               <p className="text-lg text-muted-foreground">
-                Our focus on MENA, Europe, and global markets positions us to
-                serve athletes in some of the fastest-growing sports regions in
-                the world.
+                Notre focus sur la région MENA, l'Europe et les marchés mondiaux nous positionne pour servir les athlètes dans les régions sportives à la croissance la plus rapide.
               </p>
             </motion.div>
 
@@ -160,33 +122,18 @@ const AboutPage = () => {
             className="text-center max-w-3xl mx-auto mb-16"
           >
             <h2 className="font-display text-3xl md:text-4xl font-bold mb-6">
-              Our <span className="text-gradient">Values</span>
+              Nos <span className="text-gradient">Valeurs</span>
             </h2>
             <p className="text-lg text-muted-foreground">
               The principles that guide everything we do
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {values.map((value, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="p-6 rounded-2xl bg-card border border-border hover:border-primary/30 transition-all"
-              >
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
-                  <value.icon className="w-6 h-6 text-primary" />
-                </div>
-                <h3 className="font-display text-xl font-semibold mb-3">
-                  {value.title}
-                </h3>
-                <p className="text-muted-foreground">{value.description}</p>
-              </motion.div>
-            ))}
+
+          <div className="mb-16">
+            <ValuesList />
           </div>
+
         </div>
       </section>
 
@@ -200,7 +147,7 @@ const AboutPage = () => {
             className="text-center max-w-3xl mx-auto mb-16"
           >
             <h2 className="font-display text-3xl md:text-4xl font-bold mb-6">
-              Our <span className="text-gradient">Journey</span>
+              Notre <span className="text-gradient">Parcours</span>
             </h2>
           </motion.div>
 
@@ -209,25 +156,23 @@ const AboutPage = () => {
               {/* Timeline Line */}
               <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-px bg-border" />
 
-              {milestones.map((milestone, index) => (
+              {MILESTONES.map((milestone, index) => (
                 <motion.div
                   key={index}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
-                  className={`relative flex items-center gap-8 pb-12 ${
-                    index % 2 === 0 ? "md:flex-row-reverse" : ""
-                  }`}
+                  className={`relative flex items-center gap-8 pb-12 ${index % 2 === 0 ? "md:flex-row-reverse" : ""
+                    }`}
                 >
                   {/* Dot */}
                   <div className="absolute left-4 md:left-1/2 w-3 h-3 -ml-1.5 rounded-full bg-primary" />
 
                   {/* Content */}
                   <div
-                    className={`ml-12 md:ml-0 md:w-[calc(50%-2rem)] ${
-                      index % 2 === 0 ? "md:text-right" : ""
-                    }`}
+                    className={`ml-12 md:ml-0 md:w-[calc(50%-2rem)] ${index % 2 === 0 ? "md:text-right" : ""
+                      }`}
                   >
                     <div className="font-display text-primary font-bold mb-1">
                       {milestone.year}
@@ -235,9 +180,9 @@ const AboutPage = () => {
                     <h3 className="font-display text-xl font-semibold mb-2">
                       {milestone.title}
                     </h3>
-                    <p className="text-muted-foreground">
+                    <div className="text-muted-foreground w-full">
                       {milestone.description}
-                    </p>
+                    </div>
                   </div>
                 </motion.div>
               ))}
@@ -257,21 +202,21 @@ const AboutPage = () => {
           >
             <Rocket className="w-12 h-12 text-primary mx-auto mb-6" />
             <h2 className="font-display text-3xl md:text-4xl font-bold mb-6">
-              Join the <span className="text-gradient">Revolution</span>
+              Rejoignez la <span className="text-gradient">Révolution</span>
             </h2>
             <p className="text-lg text-muted-foreground mb-8">
-              Be part of the future of sports technology
+              Faites partie du futur de la technologie sportive
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Link to="/auth?mode=signup">
                 <Button variant="hero" size="xl" className="group">
-                  Get Started
+                  Commencer
                   <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
                 </Button>
               </Link>
               <Link to="/contact">
-                <Button variant="heroOutline" size="xl">
-                  Contact Us
+                <Button variant="neonOutline" size="xl">
+                  Nous Contacter
                 </Button>
               </Link>
             </div>

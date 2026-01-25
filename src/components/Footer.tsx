@@ -1,30 +1,8 @@
 ﻿import { Video, Twitter, Instagram, Youtube, Linkedin } from "lucide-react";
 
-const footerLinks = {
-  product: [
-    { label: "Features", href: "/features" },
-    { label: "Pricing", href: "/#pricing" },
-    { label: "For Clubs", href: "/#pricing" },
-    { label: "API", href: "/api" },
-  ],
-  company: [
-    { label: "About", href: "/about" },
-    { label: "Blog", href: "/blog" },
-    { label: "Careers", href: "/careers" },
-    { label: "Press", href: "/press" },
-  ],
-  support: [
-    { label: "Help Center", href: "/help" },
-    { label: "Contact", href: "/contact" },
-    { label: "Status", href: "/status" },
-    { label: "Community", href: "/community" },
-  ],
-  legal: [
-    { label: "Privacy", href: "/privacy" },
-    { label: "Terms", href: "/terms" },
-    { label: "Cookies", href: "/cookies" },
-  ],
-};
+import { FOOTER_LINKS } from "@/lib/constants";
+
+const footerLinks = FOOTER_LINKS;
 
 const socialLinks = [
   { icon: Twitter, href: "#", label: "Twitter" },
@@ -45,7 +23,7 @@ export function Footer() {
                 <Video className="w-5 h-5 text-primary-foreground" />
               </div>
               <span className="font-display font-bold text-xl tracking-tight">
-                <span className="gradient-text">My</span>Smash
+                <span className="gradient-text">Spovio</span>
               </span>
             </a>
             <p className="text-muted-foreground text-sm mb-4 max-w-xs">
@@ -122,7 +100,7 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} MySmash. All rights reserved.
+            © {new Date().getFullYear()} Spovio. All rights reserved.
           </p>
           <p className="text-sm text-muted-foreground">
             Fait avec 💙 pour les sportifs du monde entier

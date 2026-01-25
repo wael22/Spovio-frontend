@@ -1,28 +1,13 @@
 import { motion } from "framer-motion";
-import { Target, Zap, Users, Globe } from "lucide-react";
+import { Target, Zap, Users, Globe, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
-const values = [
-    {
-        icon: Target,
-        title: "Notre Mission",
-        description: "Démocratiser l'analyse vidéo sportive pour tous les joueurs, du amateur au professionnel."
-    },
-    {
-        icon: Zap,
-        title: "Innovation",
-        description: "Utiliser la technologie IA pour transformer l'expérience sportive et aider les athlètes à progresser."
-    },
-    {
-        icon: Users,
-        title: "Communauté",
-        description: "Créer une plateforme où les sportifs peuvent partager, apprendre et s'améliorer ensemble."
-    },
-    {
-        icon: Globe,
-        title: "Expansion",
-        description: "Du padel au tennis, et bientôt tous les sports. Notre vision est globale."
-    }
-];
+import { ValuesList } from "@/components/shared/ValuesList";
+
+// Removed local values array as we now use shared constants via ValuesList (single source of truth)
+
+
 
 export const AboutSection = () => {
     return (
@@ -48,27 +33,8 @@ export const AboutSection = () => {
                 </motion.div>
 
                 {/* Values Grid */}
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
-                    {values.map((value, index) => (
-                        <motion.div
-                            key={index}
-                            initial={{ opacity: 0, y: 30 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.5, delay: index * 0.1 }}
-                            className="text-center"
-                        >
-                            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center mx-auto mb-4">
-                                <value.icon className="w-8 h-8 text-white" />
-                            </div>
-                            <h3 className="font-display text-xl font-semibold mb-3">
-                                {value.title}
-                            </h3>
-                            <p className="text-muted-foreground">
-                                {value.description}
-                            </p>
-                        </motion.div>
-                    ))}
+                <div className="mb-16">
+                    <ValuesList />
                 </div>
 
                 {/* Story */}
@@ -93,14 +59,20 @@ export const AboutSection = () => {
                                 aurions aimé avoir.
                             </p>
                             <p>
-                                Aujourd'hui, <span className="text-foreground font-semibold">MySmash</span> pour
-                                le padel et <span className="text-foreground font-semibold">MyServe</span> pour
-                                le tennis permettent à des centaines de joueurs d'enregistrer, analyser et partager
-                                leurs matchs. Et ce n'est que le début.
+                                Aujourd'hui, <span className="text-foreground font-semibold">Spovio</span> couvre le padel et le tennis, permettant à des centaines de joueurs d'enregistrer, analyser et partager leurs matchs. Et ce n'est que le début.
                             </p>
                             <p className="text-foreground font-semibold pt-4 text-center">
                                 Rejoignez-nous dans cette aventure sportive ! 🎾⚽🏀
                             </p>
+                        </div>
+
+                        <div className="mt-8 text-center">
+                            <Link to="/about">
+                                <Button variant="outline" size="lg" className="group">
+                                    En savoir plus sur Spovio
+                                    <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+                                </Button>
+                            </Link>
                         </div>
                     </div>
                 </motion.div>

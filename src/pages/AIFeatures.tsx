@@ -2,63 +2,13 @@
 import { motion } from "framer-motion";
 import {
   Brain,
-  BarChart3,
-  MapPin,
-  Activity,
-  Sparkles,
-  Clock,
-  TrendingUp,
   Zap,
   ArrowRight,
 } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import aiNetworkImage from "@/assets/ai-network.jpg";
-
-const features = [
-  {
-    icon: BarChart3,
-    title: "AI Match Statistics",
-    description:
-      "Comprehensive analytics for every point, game, and set. Understand your win rates, error patterns, and shot selection.",
-    status: "coming",
-  },
-  {
-    icon: MapPin,
-    title: "Player Position Tracking",
-    description:
-      "Real-time tracking of player positions on the court. Analyze court coverage and positioning strategies.",
-    status: "coming",
-  },
-  {
-    icon: Activity,
-    title: "Speed & Movement Heatmaps",
-    description:
-      "Visualize player movement patterns, speed zones, and court coverage with detailed heatmaps.",
-    status: "coming",
-  },
-  {
-    icon: Sparkles,
-    title: "Automatic Highlights",
-    description:
-      "AI identifies and clips the best moments from your matches. Share your highlights instantly.",
-    status: "coming",
-  },
-  {
-    icon: Clock,
-    title: "Smart Match Summary",
-    description:
-      "Get a complete match summary with key statistics, turning points, and performance insights.",
-    status: "coming",
-  },
-  {
-    icon: TrendingUp,
-    title: "Performance Evolution",
-    description:
-      "Track your improvement over time with trend analysis and milestone achievements.",
-    status: "coming",
-  },
-];
+import { AI_FEATURES } from "@/lib/constants";
 
 const AIFeaturesPage = () => {
   return (
@@ -109,24 +59,23 @@ const AIFeaturesPage = () => {
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-accent/30 bg-accent/10 mb-6">
               <Brain className="w-4 h-4 text-accent" />
               <span className="text-sm font-medium text-accent">
-                Coming Soon
+                Bientôt Disponible
               </span>
             </div>
 
             <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-              <span className="text-gradient">AI-Powered</span>
+              Analyse de Performance
               <br />
-              Performance Analysis
+              <span className="text-gradient">Propulsée par l'IA</span>
             </h1>
 
             <p className="text-xl text-muted-foreground mb-8">
-              Next-generation artificial intelligence will transform how you
-              understand, analyze, and improve your game.
+              L'intelligence artificielle de nouvelle génération transformera votre façon de comprendre, d'analyser et d'améliorer votre jeu.
             </p>
 
             <Link to="/auth?mode=signup">
               <Button variant="neon" size="xl" className="group">
-                Get Early Access
+                Obtenir un Accès Anticipé
                 <Zap className="w-5 h-5" />
               </Button>
             </Link>
@@ -144,15 +93,15 @@ const AIFeaturesPage = () => {
             className="text-center max-w-3xl mx-auto mb-16"
           >
             <h2 className="font-display text-3xl md:text-4xl font-bold mb-6">
-              Upcoming <span className="text-gradient">AI Features</span>
+              Fonctionnalités IA <span className="text-gradient">à Venir</span>
             </h2>
             <p className="text-lg text-muted-foreground">
-              We're building the most advanced sports analysis platform
+              Nous construisons la plateforme d'analyse sportive la plus avancée
             </p>
           </motion.div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((feature, index) => (
+            {AI_FEATURES.map((feature, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 30 }}
@@ -163,7 +112,7 @@ const AIFeaturesPage = () => {
               >
                 <div className="p-6 rounded-2xl bg-card border border-border h-full backdrop-blur-sm hover:border-accent/30 transition-all">
                   <div className="absolute -top-2 -right-2 px-2 py-0.5 rounded-full bg-accent/20 border border-accent/30 text-[10px] font-medium text-accent">
-                    Coming Soon
+                    Bientôt
                   </div>
 
                   <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center mb-4 group-hover:bg-accent/20 transition-colors">
@@ -191,16 +140,15 @@ const AIFeaturesPage = () => {
             className="max-w-3xl mx-auto text-center"
           >
             <h2 className="font-display text-3xl md:text-4xl font-bold mb-6">
-              Be the First to Experience{" "}
-              <span className="text-gradient">AI Analysis</span>
+              Soyez le Premier à Expérimenter{" "}
+              <span className="text-gradient">l'Analyse IA</span>
             </h2>
             <p className="text-lg text-muted-foreground mb-8">
-              Create your account now to get early access when AI features
-              launch
+              Créez votre compte maintenant pour obtenir un accès anticipé au lancement des fonctionnalités IA
             </p>
             <Link to="/auth?mode=signup">
               <Button variant="hero" size="xl" className="group">
-                Get Early Access
+                Obtenir un Accès Anticipé
                 <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
               </Button>
             </Link>

@@ -1,68 +1,9 @@
 ﻿import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import {
-  QrCode,
-  Video,
-  Cloud,
-  Film,
-  Share2,
-  Brain,
-  ArrowRight,
-} from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
-
-const steps = [
-  {
-    number: "01",
-    icon: QrCode,
-    title: "Scan QR Code",
-    description:
-      "Walk up to any Spovio-equipped court and scan the QR code displayed near the court entrance. The system instantly recognizes you.",
-    color: "primary",
-  },
-  {
-    number: "02",
-    icon: Video,
-    title: "Start Recording",
-    description:
-      "The camera automatically starts recording when you confirm. Multiple angles capture every moment of your match.",
-    color: "primary",
-  },
-  {
-    number: "03",
-    icon: Cloud,
-    title: "Auto Cloud Save",
-    description:
-      "Your match is automatically saved to the cloud. No manual uploads needed - it's ready when your match ends.",
-    color: "primary",
-  },
-  {
-    number: "04",
-    icon: Film,
-    title: "Watch & Clip",
-    description:
-      "Review your full match, create clips of your best moments, and mark key points for easy reference.",
-    color: "primary",
-  },
-  {
-    number: "05",
-    icon: Share2,
-    title: "Share Easily",
-    description:
-      "Share your matches and highlights with teammates, coaches, or on social media with a single click.",
-    color: "primary",
-  },
-  {
-    number: "06",
-    icon: Brain,
-    title: "AI Analysis",
-    description:
-      "Coming soon: Get AI-powered insights, statistics, and performance recommendations to improve your game.",
-    color: "accent",
-    badge: "Coming Soon",
-  },
-];
+import { HOW_IT_WORKS_STEPS } from "@/lib/constants";
 
 const HowItWorksPage = () => {
   return (
@@ -87,11 +28,10 @@ const HowItWorksPage = () => {
             className="max-w-3xl mx-auto text-center"
           >
             <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-              How <span className="text-gradient">Spovio</span> Works
+              Comment <span className="text-gradient">Spovio</span> Marche
             </h1>
             <p className="text-xl text-muted-foreground">
-              From scan to share in minutes. Experience the simplest way to
-              record and analyze your matches.
+              Du scan au partage en quelques minutes. Découvrez la façon la plus simple d'enregistrer et analyser vos matchs.
             </p>
           </motion.div>
         </div>
@@ -101,7 +41,7 @@ const HowItWorksPage = () => {
       <section className="pb-24">
         <div className="container mx-auto px-4 lg:px-8">
           <div className="max-w-4xl mx-auto">
-            {steps.map((step, index) => (
+            {HOW_IT_WORKS_STEPS.map((step, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, x: index % 2 === 0 ? -30 : 30 }}
@@ -111,7 +51,7 @@ const HowItWorksPage = () => {
                 className="relative"
               >
                 {/* Connector Line */}
-                {index < steps.length - 1 && (
+                {index < HOW_IT_WORKS_STEPS.length - 1 && (
                   <div className="absolute left-8 top-24 bottom-0 w-px bg-gradient-to-b from-border to-transparent" />
                 )}
 
@@ -119,26 +59,23 @@ const HowItWorksPage = () => {
                   {/* Number & Icon */}
                   <div className="relative flex-shrink-0">
                     <div
-                      className={`w-16 h-16 rounded-2xl flex items-center justify-center ${
-                        step.color === "accent"
-                          ? "bg-accent/10 border border-accent/30"
-                          : "bg-primary/10 border border-primary/30"
-                      }`}
+                      className={`w-16 h-16 rounded-2xl flex items-center justify-center ${step.color === "accent"
+                        ? "bg-accent/10 border border-accent/30"
+                        : "bg-primary/10 border border-primary/30"
+                        }`}
                     >
                       <step.icon
-                        className={`w-7 h-7 ${
-                          step.color === "accent"
-                            ? "text-accent"
-                            : "text-primary"
-                        }`}
+                        className={`w-7 h-7 ${step.color === "accent"
+                          ? "text-accent"
+                          : "text-primary"
+                          }`}
                       />
                     </div>
                     <div
-                      className={`absolute -top-2 -left-2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                        step.color === "accent"
-                          ? "bg-accent text-accent-foreground"
-                          : "bg-primary text-primary-foreground"
-                      }`}
+                      className={`absolute -top-2 -left-2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${step.color === "accent"
+                        ? "bg-accent text-accent-foreground"
+                        : "bg-primary text-primary-foreground"
+                        }`}
                     >
                       {step.number}
                     </div>
@@ -172,10 +109,10 @@ const HowItWorksPage = () => {
         <div className="container mx-auto px-4 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {[
-              { value: "<10s", label: "Setup Time" },
-              { value: "1080p", label: "Video Quality" },
-              { value: "∞", label: "Cloud Storage" },
-              { value: "1-Click", label: "Share Time" },
+              { value: "<10s", label: "Temps d'Install." },
+              { value: "1080p", label: "Qualité Vidéo" },
+              { value: "∞", label: "Stockage Cloud" },
+              { value: "1-Clic", label: "Partage" },
             ].map((stat, index) => (
               <motion.div
                 key={index}
@@ -205,21 +142,21 @@ const HowItWorksPage = () => {
             className="max-w-3xl mx-auto text-center"
           >
             <h2 className="font-display text-3xl md:text-4xl font-bold mb-6">
-              Ready to Get <span className="text-gradient">Started</span>?
+              Prêt à <span className="text-gradient">Commencer</span> ?
             </h2>
             <p className="text-lg text-muted-foreground mb-8">
-              Create your account and start recording your matches today
+              Créez votre compte et commencez à enregistrer vos matchs dès aujourd'hui
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Link to="/auth?mode=signup">
                 <Button variant="hero" size="xl" className="group">
-                  Create Account
+                  Créer un Compte
                   <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
                 </Button>
               </Link>
               <Link to="/contact">
-                <Button variant="heroOutline" size="xl">
-                  Contact Sales
+                <Button variant="neonOutline" size="xl">
+                  Contacter les Ventes
                 </Button>
               </Link>
             </div>

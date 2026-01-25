@@ -1,8 +1,8 @@
 ﻿import { Link, useNavigate } from "react-router-dom";
-import { 
-  User, 
-  Settings, 
-  CreditCard, 
+import {
+  User,
+  Settings,
+  CreditCard,
   LogOut,
   ChevronDown
 } from "lucide-react";
@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
+import { getAssetUrl } from "@/lib/api";
 
 interface UserDropdownProps {
   user?: {
@@ -25,15 +26,15 @@ interface UserDropdownProps {
   };
 }
 
-export function UserDropdown({ 
-  user = { 
-    name: "Thomas Martin", 
-    email: "thomas@example.com" 
-  } 
+export function UserDropdown({
+  user = {
+    name: "Thomas Martin",
+    email: "thomas@example.com"
+  }
 }: UserDropdownProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
-  
+
   const initials = user.name
     .split(" ")
     .map((n) => n[0])
@@ -51,12 +52,12 @@ export function UserDropdown({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button 
-          variant="ghost" 
+        <Button
+          variant="ghost"
           className="relative h-10 gap-2 px-2 hover:bg-primary/10"
         >
           <Avatar className="h-8 w-8 border-2 border-primary/30">
-            <AvatarImage src={user.avatar} alt={user.name} />
+            <AvatarImage src={getAssetUrl(user.avatar || '')} alt={user.name} />
             <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
               {initials}
             </AvatarFallback>
@@ -67,8 +68,8 @@ export function UserDropdown({
           <ChevronDown className="h-4 w-4 text-muted-foreground hidden lg:block" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent 
-        align="end" 
+      <DropdownMenuContent
+        align="end"
         className="w-56 glass border-border/50"
       >
         <div className="px-3 py-3 border-b border-border/50">
@@ -83,25 +84,24 @@ export function UserDropdown({
               Mon Profil
             </Link>
           </DropdownMenuItem>
-          
+
           <DropdownMenuItem asChild>
             <Link to="/credits" className="flex items-center cursor-pointer">
               <CreditCard className="h-4 w-4 mr-3 text-accent" />
               Acheter des crédits
             </Link>
           </DropdownMenuItem>
-          
-          <DropdownMenuItem asChild>
+          {/* <DropdownMenuItem asChild>
             <Link to="/settings" className="flex items-center cursor-pointer">
               <Settings className="h-4 w-4 mr-3 text-muted-foreground" />
               Paramètres
             </Link>
-          </DropdownMenuItem>
+          </DropdownMenuItem> */}
         </div>
 
         <DropdownMenuSeparator />
-        
-        <DropdownMenuItem 
+
+        <DropdownMenuItem
           className="cursor-pointer text-destructive focus:text-destructive"
           onClick={handleLogout}
         >
