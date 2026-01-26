@@ -1,8 +1,9 @@
 ﻿import { useState } from "react";
-import { Menu, X, Play, Video } from "lucide-react";
+import { Menu, X, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Link } from "react-router-dom";
+import spovioLogo from "@/assets/spovio-logo-new.png";
 
 import { NAV_LINKS } from "@/lib/constants";
 
@@ -16,12 +17,11 @@ export function Navbar() {
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group">
-            <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-neon-cyan flex items-center justify-center group-hover:shadow-[0_0_20px_hsl(var(--primary)/0.5)] transition-all duration-300">
-              <Video className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <span className="font-display font-bold text-xl tracking-tight">
-              <span className="gradient-text">Spovio</span>
-            </span>
+            <img
+              src={spovioLogo}
+              alt="Spovio Logo"
+              className="h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+            />
           </Link>
 
           {/* Desktop Navigation */}

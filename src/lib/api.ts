@@ -108,6 +108,8 @@ export const authService = {
             'Content-Type': 'multipart/form-data',
         },
     }),
+    forgotPassword: (email: string) => api.post('/auth/forgot-password', { email }),
+    resetPassword: (token: string, newPassword: string) => api.post('/auth/reset-password', { token, new_password: newPassword }),
 };
 
 // Video Service

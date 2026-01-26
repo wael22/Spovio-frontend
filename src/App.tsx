@@ -19,6 +19,8 @@ import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import EmailVerification from "./pages/EmailVerification";
 import GoogleAuthCallback from "./pages/GoogleAuthCallback";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 // ...
 
@@ -58,6 +60,8 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/verify-email" element={<EmailVerification />} />
               <Route path="/google-auth-callback" element={<GoogleAuthCallback />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/super-secret-login" element={<SuperAdminLogin />} />
 
               {/* Protected Admin & Club Routes */}
