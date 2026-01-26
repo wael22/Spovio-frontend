@@ -24,6 +24,9 @@ const SuperAdminLogin: React.FC = () => {
             if (response.data.requires_2fa) {
                 setStep('2fa');
             } else {
+                if (response.data.token) {
+                    localStorage.setItem('token', response.data.token);
+                }
                 navigate('/admin');
             }
         } catch (error: any) {

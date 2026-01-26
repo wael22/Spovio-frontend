@@ -28,31 +28,24 @@ const GoogleAuthCallback = () => {
                 // Call backend to verify token and get user session
                 const response = await authService.googleAuthenticate(token);
 
-                if (response.data && response.data.user) {
-                    // Manually force a reload or re-fetch of auth state if needed
-                    // But usually the backend sets a session cookie
+                if (response.data && response.data.token) {
+                    // 1. Stocker le token explicitement
+                    localStorage.setItem('token', response.data.token);
+
+                    // 2. Mettre à jour le contexte d'authentification si possible
+                    // (On suppose que login() gère ça, sinon on reloading)
 
                     toast({
                         title: "Connexion réussie",
                         description: `Bienvenue ${response.data.user.name}!`,
                     });
 
-                    // Redirect based on role
+                    // 3. Redirection
                     const role = response.data.user.role;
-                    if (role === 'super_admin') {
-                        navigate("/admin");
-                    } else if (role === 'club_admin') {
-                        navigate("/club");
-                    } else {
-                        navigate("/dashboard");
-                    }
+                    const dest = role === 'super_admin' ? "/admin" : (role === 'club_admin' ? "/club" : "/dashboard");
 
-                    // Ideally we should update the useAuth context here
-                    // Since useAuth likely checks /auth/me on mount, a page reload might be safest 
-                    // or if useAuth exposes a setUser method.
-                    // For now, let's assume session cookie + redirect works.
-                    // To be safe, we can reload to trigger useAuth init:
-                    window.location.href = role === 'player' ? '/dashboard' : (role === 'club_admin' ? '/club' : '/admin');
+                    // Force refresh to ensure all axios interceptors pick up the new token
+                    window.location.href = dest;
                 }
             } catch (error) {
                 console.error("Google auth error:", error);

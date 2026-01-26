@@ -45,8 +45,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             const response = await authService.login({ email, password });
             setUser(response.data.user);
 
-            // 🆕 Token is automatically stored by axios interceptor
-            console.log('[AuthContext] Login successful, token stored');
+            if (response.data.token) {
+                localStorage.setItem('token', response.data.token);
+                console.log('[AuthContext] Login successful, token stored');
+            }
         } catch (error: any) {
             console.error('Login failed:', error);
             throw new Error(error.response?.data?.message || 'Login failed');
@@ -58,8 +60,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             const response = await authService.register(userData);
             setUser(response.data.user);
 
-            // 🆕 Token is automatically stored by axios interceptor
-            console.log('[AuthContext] Registration successful, token stored');
+            if (response.data.token) {
+                localStorage.setItem('token', response.data.token);
+                console.log('[AuthContext] Registration successful, token stored');
+            } else {
+                console.log('[AuthContext] Registration successful, verification required');
+            }
         } catch (error: any) {
             console.error('Registration failed:', error);
             throw new Error(error.response?.data?.message || 'Registration failed');
@@ -74,6 +80,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         } finally {
             setUser(null);
             // Session cleared by backend automatically
+            localStorage.removeItem('token');
             console.log('[AuthContext] Logout complete, token cleared');
         }
     };

@@ -35,13 +35,20 @@ export const getAssetUrl = (path: string): string => {
 
 let isRedirecting = false;
 
-// Request interceptor - Simple logging (sessions handle authentication via cookies)
+// Request interceptor - Add JWT token if available and logging
 api.interceptors.request.use(
     (config) => {
+        // Add JWT token if available in localStorage
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+
         console.log('[API DEBUG] Request:', {
             url: config.url,
             baseURL: config.baseURL,
-            method: config.method
+            method: config.method,
+            hasAuth: !!token
         });
         return config;
     },
@@ -67,7 +74,7 @@ api.interceptors.response.use(
 
         // Redirect to /auth on 401 (session expired or not authenticated)
         if (error.response?.status === 401) {
-            const publicRoutes = ['/login', '/register', '/auth', '/super-secret-login', '/forgot-password', '/reset-password', '/verify-email'];
+            const publicRoutes = ['/login', '/register', '/auth', '/super-secret-login', '/forgot-password', '/reset-password', '/verify-email', '/google-auth-callback'];
             const isPublicRoute = publicRoutes.some(route => window.location.pathname.startsWith(route));
 
             if (!isRedirecting && !isPublicRoute) {

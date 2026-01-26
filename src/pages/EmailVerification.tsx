@@ -48,7 +48,11 @@ const EmailVerification = () => {
         setIsLoading(true);
 
         try {
-            await authService.verifyEmail(email, code);
+            const response = await authService.verifyEmail(email, code);
+
+            if (response.data.token) {
+                localStorage.setItem('token', response.data.token);
+            }
 
             toast({
                 title: "Email vérifié !",
