@@ -89,19 +89,7 @@ export function HeroSection() {
             </div>
           </div>
 
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-slide-up animation-delay-300">
-            <Link to="/mysmash">
-              <Button variant="hero" size="xl" className="group">
-                <Play className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
-                Découvrir MySmash
-              </Button>
-            </Link>
-            <Button variant="neonOutline" size="xl" className="group">
-              <Video className="w-5 h-5 mr-2" />
-              Voir la Démo
-            </Button>
-          </div>
+          {/* CTA Buttons (Removed) */}
 
 
         </div>
