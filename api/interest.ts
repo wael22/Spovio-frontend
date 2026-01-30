@@ -2,6 +2,33 @@
 import { sql } from '@vercel/postgres';
 
 export default async function handler(request: Request) {
+    // Handle CORS
+    if (request.method === 'OPTIONS') {
+        return new Response(null, {
+            status: 200,
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type',
+            },
+        });
+    }
+
+    if (request.method === 'GET') {
+        try {
+            const result = await sql`SELECT * FROM player_interests ORDER BY created_at DESC;`;
+            return new Response(JSON.stringify(result.rows), {
+                status: 200,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'no-store'
+                },
+            });
+        } catch (error) {
+            return new Response(JSON.stringify({ error: 'Database error' }), { status: 500 });
+        }
+    }
+
     if (request.method !== 'POST') {
         return new Response(JSON.stringify({ error: 'Method Not Allowed' }), {
             status: 405,
