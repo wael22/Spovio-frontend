@@ -11,7 +11,7 @@ interface Player {
     id: string;
     first_name: string;
     last_name: string;
-    sport: "padel" | "tennis";
+    sport: "padel" | "tennis" | "both";
     city: string;
 }
 
@@ -52,8 +52,8 @@ const InterestDashboard = () => {
     }, []);
 
     const totalPlayers = players.length;
-    const padelPlayers = players.filter((p) => p.sport === "padel").length;
-    const tennisPlayers = players.filter((p) => p.sport === "tennis").length;
+    const padelPlayers = players.filter((p) => p.sport === "padel" || p.sport === "both").length;
+    const tennisPlayers = players.filter((p) => p.sport === "tennis" || p.sport === "both").length;
 
     return (
         <div className="min-h-screen bg-background flex flex-col">

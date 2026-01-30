@@ -33,7 +33,7 @@ const formSchema = z.object({
         const num = parseInt(val);
         return !isNaN(num) && num > 0 && num < 120;
     }, "L'âge doit être un nombre valide"),
-    sport: z.enum(["padel", "tennis"], {
+    sport: z.enum(["padel", "tennis", "both"], {
         required_error: "Veuillez sélectionner un sport",
     }),
     city: z.string().min(1, "La ville est obligatoire").max(100),
@@ -207,6 +207,7 @@ const PlayerInterestForm = () => {
                                         <SelectContent className="bg-popover border border-border z-50">
                                             <SelectItem value="padel">Padel</SelectItem>
                                             <SelectItem value="tennis">Tennis</SelectItem>
+                                            <SelectItem value="both">Padel + Tennis</SelectItem>
                                         </SelectContent>
                                     </Select>
                                     <FormMessage />

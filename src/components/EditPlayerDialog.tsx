@@ -33,7 +33,7 @@ import { useForm } from "react-hook-form";
 const formSchema = z.object({
     first_name: z.string().min(2, "Le prénom doit faire au moins 2 caractères"),
     last_name: z.string().min(2, "Le nom doit faire au moins 2 caractères"),
-    sport: z.enum(["padel", "tennis"]),
+    sport: z.enum(["padel", "tennis", "both"]),
     city: z.string().min(2, "La ville doit faire au moins 2 caractères"),
 });
 
@@ -41,7 +41,7 @@ interface Player {
     id: string;
     first_name: string;
     last_name: string;
-    sport: "padel" | "tennis";
+    sport: "padel" | "tennis" | "both";
     city: string;
 }
 
@@ -150,6 +150,7 @@ const EditPlayerDialog = ({ player, open, onOpenChange, onSuccess }: EditPlayerD
                                         <SelectContent className="z-50 bg-popover">
                                             <SelectItem value="padel">Padel</SelectItem>
                                             <SelectItem value="tennis">Tennis</SelectItem>
+                                            <SelectItem value="both">Padel + Tennis</SelectItem>
                                         </SelectContent>
                                     </Select>
                                     <FormMessage />

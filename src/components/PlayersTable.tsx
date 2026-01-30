@@ -30,7 +30,7 @@ interface Player {
     id: string;
     first_name: string;
     last_name: string;
-    sport: "padel" | "tennis";
+    sport: "padel" | "tennis" | "both";
     city: string;
 }
 
@@ -97,7 +97,9 @@ const PlayersTable = ({ players, onUpdate, isAuthenticated }: PlayersTableProps)
                                     <Badge
                                         variant="outline"
                                     >
-                                        {player.sport === "padel" ? "Padel" : "Tennis"}
+                                        {player.sport === "both"
+                                            ? "Padel + Tennis"
+                                            : (player.sport === "padel" ? "Padel" : "Tennis")}
                                     </Badge>
                                 </TableCell>
                                 <TableCell>{player.city}</TableCell>
