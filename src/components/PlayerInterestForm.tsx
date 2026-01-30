@@ -108,16 +108,24 @@ const PlayerInterestForm = () => {
                 <p className="text-muted-foreground">
                     Votre intérêt pour MySmash a bien été enregistré.
                 </p>
-                <Button
-                    variant="outline"
-                    className="mt-6"
-                    onClick={() => {
-                        setIsSubmitted(false);
-                        form.reset();
-                    }}
-                >
-                    Envoyer une autre réponse
-                </Button>
+                <div className="flex flex-col gap-3 mt-6">
+                    <Button
+                        variant="outline"
+                        onClick={() => {
+                            setIsSubmitted(false);
+                            form.reset();
+                        }}
+                    >
+                        Envoyer une autre réponse
+                    </Button>
+                    <Button
+                        variant="default"
+                        className="bg-primary text-primary-foreground hover:bg-primary/90"
+                        onClick={() => window.location.href = '/interest-dashboard'}
+                    >
+                        Voir le Dashboard (Résultats)
+                    </Button>
+                </div>
             </div>
         );
     }
