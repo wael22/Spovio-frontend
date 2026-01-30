@@ -128,9 +128,17 @@ const PlayerInterestForm = () => {
                 <h1 className="text-2xl font-semibold text-foreground mb-2">
                     Rejoignez MySmash
                 </h1>
-                <p className="text-muted-foreground text-sm">
+                <p className="text-muted-foreground text-sm mb-4">
                     Manifestez votre intérêt pour notre plateforme de padel et tennis.
                 </p>
+                <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 mb-6">
+                    <p className="text-sm text-foreground/80 leading-relaxed">
+                        <strong>MySmash</strong> est la solution ultime pour les passionnés de sports de raquette.
+                        Enregistrez vos matchs en haute définition, analysez vos performances grâce à notre
+                        Intelligence Artificielle avancée, et revivez vos meilleurs points.
+                        Rejoignez la liste d'attente pour transformer votre jeu ! 🚀
+                    </p>
+                </div>
             </div>
 
             <Form {...form}>
