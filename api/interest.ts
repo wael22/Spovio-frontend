@@ -16,6 +16,21 @@ export default async function handler(request: Request) {
 
     if (request.method === 'GET') {
         try {
+            // Create table if not exists (lazy initialization for GET too)
+            await sql`
+          CREATE TABLE IF NOT EXISTS player_interests (
+            id SERIAL PRIMARY KEY,
+            first_name VARCHAR(100) NOT NULL,
+            last_name VARCHAR(100) NOT NULL,
+            phone VARCHAR(20) NOT NULL,
+            age INTEGER NOT NULL,
+            sport VARCHAR(20) NOT NULL,
+            city VARCHAR(100) NOT NULL,
+            club VARCHAR(200),
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          );
+        `;
+
             const result = await sql`SELECT * FROM player_interests ORDER BY created_at DESC;`;
             return new Response(JSON.stringify(result.rows), {
                 status: 200,
@@ -25,6 +40,7 @@ export default async function handler(request: Request) {
                 },
             });
         } catch (error) {
+            console.error('Database error:', error);
             return new Response(JSON.stringify({ error: 'Database error' }), { status: 500 });
         }
     }
