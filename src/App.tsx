@@ -21,6 +21,7 @@ import EmailVerification from "./pages/EmailVerification";
 import GoogleAuthCallback from "./pages/GoogleAuthCallback";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import PlayerInterest from "./pages/PlayerInterest";
 
 // ...
 
@@ -63,6 +64,7 @@ const App = () => (
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/super-secret-login" element={<SuperAdminLogin />} />
+              <Route path="/player-interest" element={<PlayerInterest />} />
 
               {/* Protected Admin & Club Routes */}
               <Route
