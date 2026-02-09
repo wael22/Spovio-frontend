@@ -118,9 +118,13 @@ const MyClips = () => {
     }
 
     try {
-      // Build direct MP4 URL from bunny_video_id
-      const bunnyHostname = 'vz-cc4565cd-4e9.b-cdn.net';
-      const finalUrl = `https://${bunnyHostname}/${clip.bunny_video_id}/play_720p.mp4`;
+      toast.loading('Recherche de la meilleure qualité...', { id: 'download-toast' });
+
+      // Importer le helper
+      const { getWorkingVideoUrl } = await import('@/lib/bunnyVideoHelper');
+
+      // Trouver l'URL qui fonctionne avec fallback automatique
+      const finalUrl = await getWorkingVideoUrl(clip.bunny_video_id, '720p');
 
       toast.loading('Téléchargement en cours...', { id: 'download-toast' });
 
@@ -151,10 +155,8 @@ const MyClips = () => {
       console.error('Download error:', error);
       toast.dismiss('download-toast');
 
-      // Fallback: If fetch fails (e.g. CORS), open in new tab
-      const bunnyHostname = 'vz-cc4565cd-4e9.b-cdn.net';
-      const finalUrl = `https://${bunnyHostname}/${clip.bunny_video_id}/play_720p.mp4`;
-      window.open(finalUrl, '_blank');
+      // Fallback: Open in new tab with default resolution
+      window.open(`https://vz-9b857324-07d.b-cdn.net/${clip.bunny_video_id}/play_720p.mp4`, '_blank');
       toast.error('Téléchargement direct échoué, ouverture du lien...');
     }
   };

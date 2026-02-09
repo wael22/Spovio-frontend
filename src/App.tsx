@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { AuthProvider } from "@/hooks/useAuth";
+import { TutorialProvider } from "@/contexts/TutorialContext";
+import { TutorialOverlay } from "@/components/tutorial";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
 // Landing pages
@@ -13,6 +15,8 @@ import AIFeatures from "./pages/AIFeatures";
 import HowItWorks from "./pages/HowItWorks";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
 import NotFound from "./pages/NotFound";
 
 // Auth pages
@@ -50,103 +54,109 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <Routes>
-              {/* Spovio Landing Pages */}
-              <Route path="/" element={<Index />} />
-              <Route path="/ai-features" element={<AIFeatures />} />
-              <Route path="/how-it-works" element={<HowItWorks />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<Contact />} />
+            <TutorialProvider>
+              {/* Tutorial Overlay - rendered globally for all routes */}
+              <TutorialOverlay />
+              <Routes>
+                {/* Spovio Landing Pages */}
+                <Route path="/" element={<Index />} />
+                <Route path="/ai-features" element={<AIFeatures />} />
+                <Route path="/how-it-works" element={<HowItWorks />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/terms" element={<Terms />} />
+                <Route path="/privacy" element={<Privacy />} />
 
-              {/* Authentication */}
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/verify-email" element={<EmailVerification />} />
-              <Route path="/google-auth-callback" element={<GoogleAuthCallback />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/super-secret-login" element={<SuperAdminLogin />} />
-              <Route path="/player-interest" element={<PlayerInterest />} />
-              <Route path="/interest-dashboard" element={<InterestDashboard />} />
+                {/* Authentication */}
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/verify-email" element={<EmailVerification />} />
+                <Route path="/google-auth-callback" element={<GoogleAuthCallback />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/super-secret-login" element={<SuperAdminLogin />} />
+                <Route path="/player-interest" element={<PlayerInterest />} />
+                <Route path="/interest-dashboard" element={<InterestDashboard />} />
 
-              {/* Protected Admin & Club Routes */}
-              <Route
-                path="/admin"
-                element={
-                  <ProtectedRoute requiredRole="super_admin">
-                    <Admin />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/club"
-                element={
-                  <ProtectedRoute requiredRole="club">
-                    <Club />
-                  </ProtectedRoute>
-                }
-              />
+                {/* Protected Admin & Club Routes */}
+                <Route
+                  path="/admin"
+                  element={
+                    <ProtectedRoute requiredRole="super_admin">
+                      <Admin />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/club"
+                  element={
+                    <ProtectedRoute requiredRole="club">
+                      <Club />
+                    </ProtectedRoute>
+                  }
+                />
 
-              {/* Protected MySmash App Routes */}
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute requiredRole="player">
-                    <Dashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/my-clips"
-                element={
-                  <ProtectedRoute requiredRole="player">
-                    <MyClips />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/clubs"
-                element={
-                  <ProtectedRoute requiredRole="player">
-                    <Clubs />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/credits"
-                element={
-                  <ProtectedRoute requiredRole="player">
-                    <Credits />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/profile"
-                element={
-                  <ProtectedRoute requiredRole="player">
-                    <Profile />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/support"
-                element={
-                  <ProtectedRoute requiredRole="player">
-                    <Support />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/settings"
-                element={
-                  <ProtectedRoute requiredRole="player">
-                    <Settings />
-                  </ProtectedRoute>
-                }
-              />
+                {/* Protected MySmash App Routes */}
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute requiredRole="player">
+                      <Dashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/my-clips"
+                  element={
+                    <ProtectedRoute requiredRole="player">
+                      <MyClips />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/clubs"
+                  element={
+                    <ProtectedRoute requiredRole="player">
+                      <Clubs />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/credits"
+                  element={
+                    <ProtectedRoute requiredRole="player">
+                      <Credits />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/profile"
+                  element={
+                    <ProtectedRoute requiredRole="player">
+                      <Profile />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/support"
+                  element={
+                    <ProtectedRoute requiredRole="player">
+                      <Support />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/settings"
+                  element={
+                    <ProtectedRoute requiredRole="player">
+                      <Settings />
+                    </ProtectedRoute>
+                  }
+                />
 
-              {/* 404 */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+                {/* 404 */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </TutorialProvider>
           </BrowserRouter>
         </TooltipProvider>
       </ThemeProvider>

@@ -311,12 +311,12 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted }: 
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-card border-border/50">
+        <DialogContent className="sm:max-w-2xl max-h-[95vh] overflow-y-auto bg-card border-border/50">
           <DialogHeader>
-            <DialogTitle className="text-xl font-orbitron">
+            <DialogTitle className="w-full max-w-[calc(100vw-4rem)] sm:max-w-none text-lg sm:text-xl font-orbitron break-words pr-8">
               Nouvel Enregistrement avec Durée
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-sm break-words">
               Configurez votre enregistrement de match avec une durée personnalisée
             </DialogDescription>
           </DialogHeader>
@@ -361,14 +361,14 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted }: 
                 <Clock className="h-4 w-4 text-primary" />
                 Durée d'enregistrement
               </Label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                 {durations.map((duration) => (
                   <motion.button
                     key={duration.value}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => setSelectedDuration(duration.value)}
-                    className={`p-3 rounded-xl border text-left transition-all ${selectedDuration === duration.value
+                    className={`p-2 sm:p-3 rounded-xl border text-left transition-all ${selectedDuration === duration.value
                       ? "border-primary bg-primary/10 shadow-[0_0_20px_hsl(var(--primary)/0.2)]"
                       : "border-border/50 bg-background/30 hover:border-primary/50"
                       }`}
@@ -379,11 +379,11 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted }: 
                       ) : (
                         <Clock className="h-4 w-4 text-muted-foreground" />
                       )}
-                      <span className="font-medium">{duration.label}</span>
+                      <div>
+                        <p className="text-sm font-medium">{duration.label}</p>
+                        <p className="text-xs text-muted-foreground">{duration.description}</p>
+                      </div>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {duration.description}
-                    </p>
                   </motion.button>
                 ))}
               </div>
@@ -478,11 +478,11 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted }: 
           </div>
 
           {/* Actions */}
-          <div className="flex gap-3 pt-4 border-t border-border/50">
+          <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border/50">
             <Button
               variant="ghost"
               onClick={() => onOpenChange(false)}
-              className="flex-1"
+              className="flex-1 w-full"
             >
               Annuler
             </Button>
@@ -496,17 +496,19 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted }: 
                 !qrCode ||
                 selectedCourtObj?.available === false
               }
-              className="flex-1 gap-2"
+              className="flex-1 gap-2 w-full"
             >
               {starting ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Démarrage...
+                  <span className="hidden sm:inline">Démarrage...</span>
+                  <span className="sm:hidden">Démarrage...</span>
                 </>
               ) : (
                 <>
                   <Play className="h-4 w-4" />
-                  Démarrer l'enregistrement
+                  <span className="hidden sm:inline">Démarrer l'enregistrement</span>
+                  <span className="sm:hidden">Démarrer</span>
                 </>
               )}
             </Button>

@@ -2,6 +2,7 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useTutorialContext } from "@/contexts/TutorialContext";
 import { videoService, recordingService } from "@/lib/api";
 import { DashboardNavbar } from "@/components/dashboard/DashboardNavbar";
 import { StatCardModern } from "@/components/dashboard/StatCardModern";
@@ -13,6 +14,7 @@ import { VideoClipEditor } from "@/components/dashboard/VideoClipEditor";
 
 import { VideoPlayerModal } from "@/components/dashboard/VideoPlayerModal";
 import { EditVideoTitleModal } from "@/components/dashboard/EditVideoTitleModal";
+import QRScannerModal from "@/components/dashboard/QRScannerModal";
 import { Button } from "@/components/ui/button";
 import {
   Video,
@@ -24,7 +26,8 @@ import {
   Filter,
   Search,
   QrCode,
-  Loader2
+  Loader2,
+  GraduationCap
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -54,6 +57,7 @@ const itemVariants = {
 const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { startTutorial } = useTutorialContext();
   const [searchQuery, setSearchQuery] = useState("");
   const [isRecordingModalOpen, setIsRecordingModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
@@ -66,6 +70,15 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [clipsCount, setClipsCount] = useState(0);
   const [isClipEditorOpen, setIsClipEditorOpen] = useState(false);
+
+  // Fonction pour démarrer le tutoriel manuellement
+  const handleStartTutorial = () => {
+    // Effacer localStorage pour forcer le redémarrage
+    localStorage.removeItem('mysmash_tutorial_completed');
+    localStorage.removeItem('mysmash_tutorial_status');
+    startTutorial();
+    toast.success('Tutoriel démarré !');
+  };
 
   // Format duration from seconds to mm:ss
   const formatDuration = (seconds: number | string): string => {
@@ -111,24 +124,24 @@ const Dashboard = () => {
   }, []);
 
 
-
-  // Fetch active recording
-  useEffect(() => {
-    const fetchActiveRecording = async () => {
-      try {
-        const response = await recordingService.getMyActiveRecording();
-        if (response.data.active_recording) {
-          setActiveRecording(response.data.active_recording);
-        } else {
-          setActiveRecording(null);
-        }
-      } catch (error) {
-        console.error('Failed to fetch active recording:', error);
+  // Fetch active recording - extracted so it can be called from callbacks
+  const fetchActiveRecording = async () => {
+    try {
+      const response = await recordingService.getMyActiveRecording();
+      if (response.data.active_recording) {
+        setActiveRecording(response.data.active_recording);
+      } else {
+        setActiveRecording(null);
       }
-    };
+    } catch (error) {
+      console.error('Failed to fetch active recording:', error);
+    }
+  };
 
+  // Poll active recording status
+  useEffect(() => {
     fetchActiveRecording();
-    const interval = setInterval(fetchActiveRecording, 30000); // Check every 30s
+    const interval = setInterval(fetchActiveRecording, 5000); // Check every 5s (faster sync)
     return () => clearInterval(interval);
   }, []);
 
@@ -154,9 +167,26 @@ const Dashboard = () => {
     }
   };
 
-  const filteredVideos = videos.filter((video) =>
-    video.title?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter videos by search query AND processing status
+  // Hide videos being actively processed/uploaded on Bunny (0:00 duration videos)
+  // Show: 'ready', null, undefined, 'pending', and even 'failed' (user can see what went wrong)
+  const filteredVideos = videos.filter((video) => {
+    // Only hide videos that are actively being processed or uploaded RIGHT NOW
+    // This prevents showing unplayable 0:00 duration videos
+    if (video.processing_status === 'processing' || video.processing_status === 'uploading') {
+      return false;
+    }
+
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      const matchesTitle = video.title?.toLowerCase().includes(query);
+      const matchesCourt = video.court_name?.toLowerCase().includes(query);
+      return matchesTitle || matchesCourt;
+    }
+
+    return true;
+  });
 
   const handlePlayVideo = (video: any) => {
     setSelectedVideo(video);
@@ -250,9 +280,13 @@ const Dashboard = () => {
     }
 
     try {
-      // Build direct MP4 URL from bunny_video_id
-      const bunnyHostname = 'vz-cc4565cd-4e9.b-cdn.net';
-      const finalUrl = `https://${bunnyHostname}/${video.bunny_video_id}/play_720p.mp4`;
+      toast.loading('Recherche de la meilleure qualité...', { id: 'download-toast' });
+
+      // Importer le helper
+      const { getWorkingVideoUrl } = await import('@/lib/bunnyVideoHelper');
+
+      // Trouver l'URL qui fonctionne avec fallback automatique
+      const finalUrl = await getWorkingVideoUrl(video.bunny_video_id, '720p');
 
       toast.loading('Téléchargement en cours...', { id: 'download-toast' });
 
@@ -283,10 +317,8 @@ const Dashboard = () => {
       console.error('Download error:', error);
       toast.dismiss('download-toast');
 
-      // Fallback: If fetch fails (e.g. CORS), open in new tab
-      const bunnyHostname = 'vz-cc4565cd-4e9.b-cdn.net';
-      const finalUrl = `https://${bunnyHostname}/${video.bunny_video_id}/play_720p.mp4`;
-      window.open(finalUrl, '_blank');
+      // Fallback: Open in new tab with default resolution
+      window.open(`https://vz-9b857324-07d.b-cdn.net/${video.bunny_video_id}/play_720p.mp4`, '_blank');
       toast.error('Téléchargement direct échoué, ouverture du lien...');
     }
   };
@@ -385,13 +417,22 @@ const Dashboard = () => {
               <Play className="h-4 w-4" />
               Démarrer un enregistrement
             </Button>
-            <Button variant="neonOutline" className="gap-2" onClick={() => setIsQRScannerOpen(true)}>
+            <Button
+              variant="neonOutline"
+              className="gap-2"
+              onClick={() => setIsQRScannerOpen(true)}
+              disabled={!!activeRecording}
+            >
               <QrCode className="h-4 w-4" />
               Scanner QR
             </Button>
             <Button variant="neonOutline" className="gap-2" onClick={() => navigate('/credits')}>
               <Plus className="h-4 w-4" />
               Acheter des crédits
+            </Button>
+            <Button variant="outline" className="gap-2" onClick={handleStartTutorial}>
+              <GraduationCap className="h-4 w-4" />
+              Relancer le tutoriel
             </Button>
           </motion.div>
 
@@ -485,8 +526,11 @@ const Dashboard = () => {
       <StartRecordingModal
         open={isRecordingModalOpen}
         onOpenChange={setIsRecordingModalOpen}
-        onRecordingStarted={(session) => {
+        onRecordingStarted={async (session) => {
+          // Set immediately for instant UI feedback
           setActiveRecording(session);
+          // Also fetch to get full recording details from server
+          setTimeout(fetchActiveRecording, 1000);
         }}
       />
 
@@ -537,6 +581,16 @@ const Dashboard = () => {
           const { clipService } = await import('@/lib/api');
           const response = await clipService.getMyClips();
           setClipsCount(response.data.clips?.length || 0);
+        }}
+      />
+
+      <QRScannerModal
+        isOpen={isQRScannerOpen}
+        onClose={() => setIsQRScannerOpen(false)}
+        onCodeScanned={(qrCode) => {
+          setIsQRScannerOpen(false);
+          setIsRecordingModalOpen(true);
+          // The QR code will be handled by StartRecordingModal
         }}
       />
     </div>

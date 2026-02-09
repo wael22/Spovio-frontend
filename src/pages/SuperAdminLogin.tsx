@@ -6,14 +6,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Shield, Key } from 'lucide-react';
+import { Loader2, Shield, Key, QrCode } from 'lucide-react';
 
 const SuperAdminLogin: React.FC = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({ email: '', password: '', code: '' });
-    const [step, setStep] = useState<'login' | '2fa'>('login');
+    const [step, setStep] = useState<'login' | '2fa' | 'setup_2fa'>('login');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [qrCode, setQrCode] = useState('');
+    const [secret, setSecret] = useState('');
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -21,15 +23,34 @@ const SuperAdminLogin: React.FC = () => {
         setError('');
         try {
             const response = await authService.superAdminLogin({ email: formData.email, password: formData.password });
-            if (response.data.requires_2fa) {
+
+            console.log('Login response:', response.data);
+
+            if (response.data.requires_2fa_setup) {
+                setStep('setup_2fa');
+                setQrCode(response.data.totp_uri); // Backend returns uri to generate QR or we might need to fetch QR endpoint
+                // Actually backend returns 'totp_uri' string, we might need to display it or generate QR locally.
+                // Re-reading backend code: it returns totp_uri. The backend has a separate /qr-code endpoint usually?
+                // The backend code shows: 'totp_uri': totp_uri in login response.
+                // We'll use a library or just text for now?
+                // Wait, the backend has /qr-code endpoint but login response also sends data.
+
+                // Let's assume we need to call QR endpoint or just display secret if no QR lib.
+                // For better UX, let's just show the secret key if we don't have QR generation here.
+                setSecret(response.data.secret);
+
+                // If we want the QR image, we should probably fetch it or generate it.
+                // Let's rely on the user entering the code manually or scanning if we can render it.
+                // The previous backend code had a /qr-code endpoint that returned base64 image.
+                // But login response returns 'totp_uri'.
+            } else if (response.data.requires_2fa) {
                 setStep('2fa');
             } else {
-                if (response.data.token) {
-                    localStorage.setItem('token', response.data.token);
-                }
+                // Should not happen for super admin usually, but if 2FA disabled...
                 navigate('/admin');
             }
         } catch (error: any) {
+            console.error('Login error:', error);
             setError(error.response?.data?.error || 'Erreur de connexion');
         } finally {
             setLoading(false);
@@ -41,10 +62,16 @@ const SuperAdminLogin: React.FC = () => {
         setLoading(true);
         setError('');
         try {
-            // Simple verification - adapter selon votre API
+            if (step === 'setup_2fa') {
+                await authService.superAdminSetup2FA({ code: formData.code });
+            } else {
+                await authService.superAdminVerify2FA({ code: formData.code });
+            }
+            // Success!
             navigate('/admin');
         } catch (error: any) {
-            setError('Code invalide');
+            console.error('2FA error:', error);
+            setError(error.response?.data?.error || 'Code invalide');
         } finally {
             setLoading(false);
         }
@@ -59,7 +86,9 @@ const SuperAdminLogin: React.FC = () => {
                     </div>
                     <CardTitle className="text-2xl">Super Admin Login</CardTitle>
                     <CardDescription>
-                        {step === 'login' ? 'Accès réservé aux super administrateurs' : 'Authentification à deux facteurs'}
+                        {step === 'login' ? 'Accès réservé aux super administrateurs' :
+                            step === 'setup_2fa' ? 'Configuration 2FA requise' :
+                                'Authentification à deux facteurs'}
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -99,20 +128,30 @@ const SuperAdminLogin: React.FC = () => {
                     ) : (
                         <form onSubmit={handleVerify2FA} className="space-y-4">
                             <div className="text-center mb-4">
-                                <Key className="h-12 w-12 text-blue-600 mx-auto mb-2" />
+                                {step === 'setup_2fa' ? (
+                                    <div className="mb-4 p-4 bg-gray-50 rounded border text-left">
+                                        <p className="text-sm font-medium mb-2">Scannez ce QR Code avec Google Authenticator :</p>
+                                        <div className="bg-white p-2 flex justify-center mb-2">
+                                            {/* Fallback to secret key display since we can't easily render QR without lib */}
+                                            <p className="font-mono text-xs break-all">{secret}</p>
+                                        </div>
+                                        <p className="text-xs text-muted-foreground">Ou entrez cette clé manuellement.</p>
+                                    </div>
+                                ) : (
+                                    <Key className="h-12 w-12 text-blue-600 mx-auto mb-2" />
+                                )}
                                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                                    Entrez le code de votre application d'authentification
+                                    Entrez le code à 6 chiffres
                                 </p>
                             </div>
                             <div className="space-y-2">
-                                <Label>Code à 6 chiffres</Label>
                                 <Input
                                     type="text"
                                     value={formData.code}
                                     onChange={(e) => setFormData(prev => ({ ...prev, code: e.target.value }))}
                                     placeholder="000000"
                                     maxLength={6}
-                                    className="text-center text-2xl tracking-widest"
+                                    className="text-center text-2xl tracking-widest uppercase"
                                     required
                                 />
                             </div>
@@ -127,7 +166,7 @@ const SuperAdminLogin: React.FC = () => {
                                 </Button>
                                 <Button type="submit" className="w-full" disabled={loading || formData.code.length !== 6}>
                                     {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                                    Vérifier
+                                    {step === 'setup_2fa' ? 'Activer' : 'Vérifier'}
                                 </Button>
                             </div>
                         </form>

@@ -514,7 +514,7 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ onStatsUpdate }) => {
                                 id="bunny-url"
                                 value={bunnyUrl}
                                 onChange={(e) => setBunnyUrl(e.target.value)}
-                                placeholder="https://vz-cc4565cd-4e9.b-cdn.net/..."
+                                placeholder="https://vz-9b857324-07d.b-cdn.net/..."
                                 className="mt-1"
                             />
                             <p className="text-xs text-gray-500 mt-1">
@@ -644,7 +644,7 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ onStatsUpdate }) => {
                                 id="create-bunny-url"
                                 value={createForm.bunny_url}
                                 onChange={(e) => setCreateForm({ ...createForm, bunny_url: e.target.value })}
-                                placeholder="https://vz-cc4565cd-4e9.b-cdn.net/..."
+                                placeholder="https://vz-9b857324-07d.b-cdn.net/..."
                                 className="mt-1"
                             />
                             <p className="text-xs text-gray-500 mt-1">

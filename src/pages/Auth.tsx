@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+﻿import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -39,6 +39,13 @@ const Auth = () => {
     email: "",
     password: "",
     confirmPassword: "",
+    termsAccepted: false,
+  });
+
+  const [googleTermsAccepted, setGoogleTermsAccepted] = useState(() => {
+    // Charger la valeur depuis localStorage au montage du composant
+    const savedAcceptance = localStorage.getItem('spovio_google_terms_accepted');
+    return savedAcceptance === 'true';
   });
 
   /* 
@@ -46,6 +53,11 @@ const Auth = () => {
    * global state and trigger redirects in ProtectedRoute
    */
   const { login, register } = useAuth();
+
+  // Sauvegarder l'acceptation des CGU dans localStorage
+  useEffect(() => {
+    localStorage.setItem('spovio_google_terms_accepted', googleTermsAccepted.toString());
+  }, [googleTermsAccepted]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,6 +104,15 @@ const Auth = () => {
       toast({
         title: "Erreur",
         description: "Les mots de passe ne correspondent pas.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!registerForm.termsAccepted) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez accepter les conditions générales et la politique de confidentialité.",
         variant: "destructive",
       });
       return;
@@ -155,6 +176,18 @@ const Auth = () => {
 
 
   const handleGoogleLogin = async () => {
+    // Vérifier selon le mode actuel
+    const termsAccepted = mode === 'register' ? registerForm.termsAccepted : googleTermsAccepted;
+
+    if (!termsAccepted) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez accepter les conditions générales et la politique de confidentialité.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       setIsLoading(true);
       const response = await authService.getGoogleAuthUrl();
@@ -325,12 +358,33 @@ const Auth = () => {
                     </div>
                   </div>
 
+                  <div className="flex items-start space-x-2 mb-4">
+                    <input
+                      type="checkbox"
+                      id="google-terms-login"
+                      checked={googleTermsAccepted}
+                      onChange={(e) => setGoogleTermsAccepted(e.target.checked)}
+                      className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                    />
+                    <Label htmlFor="google-terms-login" className="text-xs text-muted-foreground leading-tight cursor-pointer">
+                      J'accepte les{" "}
+                      <Link to="/terms" className="text-primary hover:underline">
+                        Conditions Générales d'Utilisation
+                      </Link>{" "}
+                      et la{" "}
+                      <Link to="/privacy" className="text-primary hover:underline">
+                        Politique de Confidentialité
+                      </Link>{" "}
+                      de SPOVIO / MySmash.
+                    </Label>
+                  </div>
+
                   <Button
                     type="button"
                     variant="outline"
                     className="w-full gap-2"
                     onClick={handleGoogleLogin}
-                    disabled={isLoading}
+                    disabled={isLoading || !googleTermsAccepted}
                   >
                     <svg className="h-5 w-5" viewBox="0 0 24 24">
                       <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -433,6 +487,29 @@ const Auth = () => {
                     />
                   </div>
 
+                  {/* Checkbox CGU unique pour inscription classique ET Google */}
+                  <div className="flex items-start space-x-2 my-4">
+                    <input
+                      type="checkbox"
+                      id="terms"
+                      checked={registerForm.termsAccepted}
+                      onChange={(e) => setRegisterForm({ ...registerForm, termsAccepted: e.target.checked })}
+                      className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                      required
+                    />
+                    <Label htmlFor="terms" className="text-xs text-muted-foreground leading-tight cursor-pointer">
+                      J'accepte les{" "}
+                      <Link to="/terms" className="text-primary hover:underline">
+                        Conditions Générales d'Utilisation
+                      </Link>{" "}
+                      et la{" "}
+                      <Link to="/privacy" className="text-primary hover:underline">
+                        Politique de Confidentialité
+                      </Link>{" "}
+                      de SPOVIO / MySmash.
+                    </Label>
+                  </div>
+
                   <Button
                     type="submit"
                     variant="neon"
@@ -464,7 +541,7 @@ const Auth = () => {
                     variant="outline"
                     className="w-full gap-2"
                     onClick={handleGoogleLogin}
-                    disabled={isLoading}
+                    disabled={isLoading || !registerForm.termsAccepted}
                   >
                     <svg className="h-5 w-5" viewBox="0 0 24 24">
                       <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -474,17 +551,6 @@ const Auth = () => {
                     </svg>
                     Continuer avec Google
                   </Button>
-
-                  <p className="text-center text-xs text-muted-foreground">
-                    En vous inscrivant, vous acceptez nos{" "}
-                    <Link to="/terms" className="text-primary hover:underline">
-                      conditions d'utilisation
-                    </Link>{" "}
-                    et notre{" "}
-                    <Link to="/privacy" className="text-primary hover:underline">
-                      politique de confidentialité
-                    </Link>
-                  </p>
                 </motion.form>
               )}
             </AnimatePresence>

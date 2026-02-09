@@ -47,21 +47,21 @@ export function StatCardModern({
     <motion.div
       whileHover={{ scale: 1.02, y: -4 }}
       transition={{ duration: 0.2 }}
-      className={`group relative p-6 rounded-2xl glass border ${colors.border} ${colors.glow} transition-all duration-300 cursor-pointer`}
+      className={`group relative p-4 sm:p-6 rounded-2xl glass border ${colors.border} ${colors.glow} transition-all duration-300 cursor-pointer`}
     >
       {/* Background Gradient */}
       <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-br from-transparent via-transparent to-primary/5" />
-      
-      <div className="relative flex items-center gap-4">
+
+      <div className="relative flex items-center gap-2 sm:gap-4">
         {/* Icon Container */}
-        <div className={`p-3 rounded-xl ${colors.bg}`}>
-          <Icon className={`h-6 w-6 ${colors.icon}`} />
+        <div className={`p-2 sm:p-3 rounded-xl ${colors.bg} shrink-0`}>
+          <Icon className={`h-5 w-5 sm:h-6 sm:w-6 ${colors.icon}`} />
         </div>
 
         {/* Content */}
-        <div>
-          <p className="text-2xl lg:text-3xl font-bold font-orbitron">{value}</p>
-          <p className="text-sm text-muted-foreground">{label}</p>
+        <div className="flex-1 min-w-0">
+          <p className="text-xl sm:text-2xl lg:text-3xl font-bold font-orbitron">{value}</p>
+          <p className="text-xs sm:text-sm text-muted-foreground truncate">{label}</p>
         </div>
       </div>
     </motion.div>

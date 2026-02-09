@@ -128,7 +128,7 @@ export function VideoPlayerModal({ isOpen, onClose, video }: VideoPlayerModalPro
     return (
         <>
             <Dialog open={isOpen} onOpenChange={onClose}>
-                <DialogContent className="max-w-5xl p-0">
+                <DialogContent className="sm:max-w-4xl md:max-w-5xl p-0">
                     <div className="flex items-center justify-between p-4 border-b">
                         <h3 className="font-semibold text-lg">{video.title || 'Lecteur vidéo'}</h3>
                         <Button

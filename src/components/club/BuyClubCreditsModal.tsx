@@ -57,7 +57,11 @@ const BuyClubCreditsModal: React.FC<BuyClubCreditsModalProps> = ({ open, onClose
                 clubService.getPaymentMethods()
             ]);
             setCreditPackages(packagesResponse.data.packages || []);
-            setPaymentMethods(paymentResponse.data.payment_methods || []);
+            setCreditPackages(packagesResponse.data.packages || []);
+            const filteredMethods = (paymentResponse.data.payment_methods || [])
+                .filter((m: any) => m.id !== 'simulation')
+                .map((m: any) => ({ ...m, enabled: false }));
+            setPaymentMethods(filteredMethods);
             setSelectedPaymentMethod(paymentResponse.data.default_method || 'konnect');
         } catch (error) {
             console.error('Erreur chargement packages/paiements:', error);
@@ -255,7 +259,7 @@ const BuyClubCreditsModal: React.FC<BuyClubCreditsModalProps> = ({ open, onClose
                         </button>
                         <button
                             onClick={handlePurchase}
-                            disabled={isLoading || !getSelectedPackage()}
+                            disabled={isLoading || !getSelectedPackage() || !paymentMethods.find(m => m.id === selectedPaymentMethod)?.enabled}
                             className="px-6 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
                         >
                             {isLoading ? (

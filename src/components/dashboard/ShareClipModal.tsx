@@ -46,8 +46,9 @@ export function ShareClipModal({
   const [copied, setCopied] = useState(false);
 
   // Generate real share link using backend URL or CDN MP4 if available
+  // Using 480p instead of 720p as it's more universally available across all video sizes
   const shareLink = bunnyVideoId
-    ? `https://vz-cc4565cd-4e9.b-cdn.net/${bunnyVideoId}/play_720p.mp4`
+    ? `https://vz-9b857324-07d.b-cdn.net/${bunnyVideoId}/play_480p.mp4`
     : `${window.location.protocol}//${window.location.host}/clip/${clipId}`;
 
   const handleCopyLink = async () => {

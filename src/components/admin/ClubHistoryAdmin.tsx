@@ -138,6 +138,9 @@ const ClubHistoryAdmin: React.FC = () => {
             'follow_club': 'Suivi du club',
             'unfollow_club': 'Arrêt du suivi',
             'add_credits': 'Ajout de crédits',
+            'club_add_credits': 'Crédits offerts (Club)',
+            'admin_add_credits': 'Crédits offerts (Admin)',
+            'receive_credits_from_admin': 'Reçu de l\'Admin',
             'buy_credits': 'Achat de crédits',
             'update_player': 'Modification joueur',
             'create_player': 'Création joueur',
@@ -149,6 +152,36 @@ const ClubHistoryAdmin: React.FC = () => {
 
         const normalizedKey = actionType?.toLowerCase().replace(/\s+/g, '_');
         return labels[normalizedKey] || actionType || 'Action inconnue';
+    };
+
+    const getActionDetails = (entry: HistoryEntry) => {
+        if (!entry.action_details) return entry.action_summary || null;
+
+        try {
+            const details = typeof entry.action_details === 'string'
+                ? JSON.parse(entry.action_details)
+                : entry.action_details;
+            const type = entry.action_type;
+
+            if (['admin_add_credits', 'club_add_credits', 'add_credits'].includes(type)) {
+                const credits = details.credits_added || details.credits || details.credits_involved || 0;
+                return `+${credits} crédits offerts`;
+            }
+
+            if (type === 'receive_credits_from_admin') {
+                const credits = details.credits_received || details.credits_added || details.credits || 0;
+                return `+${credits} crédits reçus`;
+            }
+
+            if (type === 'buy_credits') {
+                const credits = details.credits_bought || details.credits || details.credits_involved || 0;
+                return `+${credits} crédits achetés`;
+            }
+
+            return entry.action_summary || null;
+        } catch (e) {
+            return entry.action_summary || null;
+        }
     };
 
     const getActionVariant = (actionType: string): "default" | "destructive" | "secondary" | "outline" => {
@@ -322,9 +355,9 @@ const ClubHistoryAdmin: React.FC = () => {
                                                 <span className="text-muted-foreground">par {entry.performed_by_name}</span>
                                             </div>
 
-                                            {entry.action_summary && (
+                                            {(entry.action_summary || getActionDetails(entry)) && (
                                                 <div className="text-sm text-muted-foreground bg-muted p-2 rounded">
-                                                    {entry.action_summary}
+                                                    {entry.action_summary || getActionDetails(entry)}
                                                 </div>
                                             )}
                                         </div>

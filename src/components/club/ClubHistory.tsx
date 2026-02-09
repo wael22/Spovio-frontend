@@ -30,14 +30,8 @@ const ClubHistory: React.FC = () => {
 
             // Filter to show ONLY credits offered by THIS club to its players
             const filteredHistory = allHistory.filter((entry: HistoryEntry) => {
-                // Show only "add_credits" actions (credits offered to players)
-                // This excludes:
-                // - buy_credits (player purchases)
-                // - receive_credits_from_admin (admin giving credits to club)
-                // - follow_club, unfollow_club (player actions)
-                // - stop_recording (player/club recording actions)
-                // - add_player, update_player (should show if needed)
-                return entry.action_type === 'add_credits';
+                // Show ONLY credits offered by the club itself
+                return ['add_credits', 'club_add_credits'].includes(entry.action_type);
             });
 
             setHistory(filteredHistory);
@@ -70,11 +64,21 @@ const ClubHistory: React.FC = () => {
             }
 
             // Credits offered to players
-            if (actionType === 'add_credits') {
+            if (actionType === 'add_credits' || actionType === 'club_add_credits') {
                 const credits = parsedDetails.credits_added || parsedDetails.credits || 0;
                 return {
                     text: `+${credits} crédits offerts`,
                     color: 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400',
+                    amount: credits
+                };
+            }
+
+            // Credits offered by ADMIN (to player)
+            if (actionType === 'admin_add_credits') {
+                const credits = parsedDetails.credits_added || parsedDetails.credits || 0;
+                return {
+                    text: `+${credits} offerts (Admin)`,
+                    color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400',
                     amount: credits
                 };
             }

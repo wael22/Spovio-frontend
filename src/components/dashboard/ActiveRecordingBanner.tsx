@@ -1,6 +1,6 @@
 ﻿import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Video, MapPin, Clock, StopCircle } from "lucide-react";
+import { Video, MapPin, Clock, StopCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface ActiveRecordingBannerProps {
@@ -22,6 +22,7 @@ export function ActiveRecordingBanner({
 }: ActiveRecordingBannerProps) {
   const [remaining, setRemaining] = useState("--:--");
   const [isVisible, setIsVisible] = useState(true);
+  const [stopping, setStopping] = useState(false);
 
   useEffect(() => {
     const calculateRemaining = () => {
@@ -52,6 +53,19 @@ export function ActiveRecordingBanner({
     return () => clearInterval(interval);
   }, [startTime, duration]);
 
+  const handleStop = async () => {
+    if (stopping || !onStop) return;
+
+    setStopping(true);
+    try {
+      await onStop();
+    } catch (error) {
+      console.error("Error stopping recording:", error);
+      setStopping(false);
+    }
+    // Note: stopping state will reset when component unmounts/re-renders after stop
+  };
+
   if (!isVisible) return null;
 
   return (
@@ -66,46 +80,74 @@ export function ActiveRecordingBanner({
           {/* Animated background pulse */}
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1),transparent_50%)] animate-pulse" />
 
-          <div className="container mx-auto px-4 lg:px-8 py-3">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-              {/* Left Section */}
-              <div className="flex items-center gap-4">
+          <div className="container mx-auto px-3 py-2 sm:px-4 sm:py-3">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+              {/* Top Section - Always visible */}
+              <div className="flex items-center justify-between gap-2">
                 {/* Recording Indicator */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 min-w-0 flex-shrink-0">
                   <span className="relative flex h-3 w-3">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
                     <span className="relative inline-flex rounded-full h-3 w-3 bg-white" />
                   </span>
-                  <Video className="h-5 w-5" />
-                  <span className="font-semibold">EN DIRECT</span>
+                  <Video className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <span className="font-semibold text-sm sm:text-base">EN DIRECT</span>
                 </div>
 
-                {/* Info */}
-                <div className="hidden sm:flex items-center gap-4 text-sm">
-                  <div className="flex items-center gap-1.5">
-                    <MapPin className="h-4 w-4" />
-                    <span>{court} • {club}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Clock className="h-4 w-4" />
-                    <span className="font-mono">{remaining}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Right Section */}
-              <div className="flex items-center gap-2">
+                {/* Mobile: Stop button inline */}
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={onStop}
-                  className="bg-white/10 border-white/20 hover:bg-white/20 text-white gap-2 relative z-50 cursor-pointer"
+                  onClick={handleStop}
+                  disabled={stopping}
+                  className="bg-white/10 border-white/20 hover:bg-white/20 text-white gap-1.5 relative z-50 cursor-pointer sm:hidden text-xs disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <StopCircle className="h-4 w-4" />
-                  Arrêter
+                  {stopping ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      Arrêt...
+                    </>
+                  ) : (
+                    <>
+                      <StopCircle className="h-3.5 w-3.5" />
+                      Arrêter
+                    </>
+                  )}
                 </Button>
-
               </div>
+
+              {/* Info Section - Mobile: Second row, Desktop: Same row */}
+              <div className="flex items-center gap-3 text-xs sm:text-sm flex-wrap sm:flex-nowrap">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                  <span className="truncate">{court} • {club}</span>
+                </div>
+                <div className="flex items-center gap-1.5 flex-shrink-0">
+                  <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <span className="font-mono">{remaining}</span>
+                </div>
+              </div>
+
+              {/* Desktop: Stop button */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleStop}
+                disabled={stopping}
+                className="hidden sm:flex bg-white/10 border-white/20 hover:bg-white/20 text-white gap-2 relative z-50 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {stopping ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Arrêt en cours...
+                  </>
+                ) : (
+                  <>
+                    <StopCircle className="h-4 w-4" />
+                    Arrêter
+                  </>
+                )}
+              </Button>
             </div>
           </div>
         </div>

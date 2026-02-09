@@ -96,10 +96,10 @@ const Credits = () => {
 
         setPackages(packagesRes.data.packages || []);
 
-        // Filter out simulation payment method
-        const filteredMethods = (paymentRes.data.payment_methods || []).filter(
-          (method: any) => method.id !== 'simulation'
-        );
+        // Filter out simulation payment method and disable others
+        const filteredMethods = (paymentRes.data.payment_methods || [])
+          .filter((method: any) => method.id !== 'simulation')
+          .map((method: any) => ({ ...method, enabled: false })); // Disable all for now
         setPaymentMethods(filteredMethods);
 
         // Set default payment method

@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import api from "@/lib/api";
 
 const contactInfo = [
   {
@@ -52,19 +53,7 @@ const ContactPage = () => {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('http://localhost:5000/api/support/contact', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Erreur lors de l\'envoi');
-      }
+      await api.post('/support/contact', formData);
 
       toast({
         title: "Message envoyé !",
@@ -143,14 +132,14 @@ const ContactPage = () => {
                         setFormData({ ...formData, type: "player" })
                       }
                       className={`p-4 rounded-xl border transition-all flex items-center gap-3 ${formData.type === "player"
-                          ? "border-primary bg-primary/10"
-                          : "border-border hover:border-muted-foreground"
+                        ? "border-primary bg-primary/10"
+                        : "border-border hover:border-muted-foreground"
                         }`}
                     >
                       <User
                         className={`w-5 h-5 ${formData.type === "player"
-                            ? "text-primary"
-                            : "text-muted-foreground"
+                          ? "text-primary"
+                          : "text-muted-foreground"
                           }`}
                       />
                       <span
@@ -167,14 +156,14 @@ const ContactPage = () => {
                       type="button"
                       onClick={() => setFormData({ ...formData, type: "club" })}
                       className={`p-4 rounded-xl border transition-all flex items-center gap-3 ${formData.type === "club"
-                          ? "border-primary bg-primary/10"
-                          : "border-border hover:border-muted-foreground"
+                        ? "border-primary bg-primary/10"
+                        : "border-border hover:border-muted-foreground"
                         }`}
                     >
                       <Building2
                         className={`w-5 h-5 ${formData.type === "club"
-                            ? "text-primary"
-                            : "text-muted-foreground"
+                          ? "text-primary"
+                          : "text-muted-foreground"
                           }`}
                       />
                       <span

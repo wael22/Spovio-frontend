@@ -45,7 +45,7 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
     const [selectedCourt, setSelectedCourt] = useState<any>(null);
     const [clubCourts, setClubCourts] = useState<any[]>([]);
     const [clubFormData, setClubFormData] = useState({
-        name: '', address: '', phone_number: '', email: '', password: ''
+        name: '', address: '', phone_number: '', email: '', password: '', credits_balance: 0
     });
     const [courtFormData, setCourtFormData] = useState({
         name: '', camera_url: '', qr_code: ''
@@ -98,7 +98,14 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            await adminService.updateClub(selectedClub!.id, clubFormData);
+            await adminService.updateClub(selectedClub!.id, {
+                name: clubFormData.name,
+                address: clubFormData.address,
+                phone_number: clubFormData.phone_number,
+                email: clubFormData.email,
+                credits_balance: clubFormData.credits_balance
+            });
+
             setShowEditModal(false);
             resetForm();
             loadClubs();
@@ -136,7 +143,7 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
     };
 
     const resetForm = () => {
-        setClubFormData({ name: '', address: '', phone_number: '', email: '', password: '' });
+        setClubFormData({ name: '', address: '', phone_number: '', email: '', password: '', credits_balance: 0 });
         setSelectedClub(null);
     };
 
@@ -147,7 +154,9 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
             address: club.address || '',
             phone_number: club.phone_number || '',
             email: club.email || '',
-            password: ''
+
+            password: '',
+            credits_balance: club.credits_balance || 0
         });
         setShowEditModal(true);
     };
@@ -385,6 +394,23 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                             <Label>Email</Label>
                             <Input type="email" value={clubFormData.email} onChange={(e) => setClubFormData(prev => ({ ...prev, email: e.target.value }))} />
                         </div>
+                        <div className="space-y-2 bg-yellow-50 p-3 rounded-md border border-yellow-200">
+                            <Label className="flex items-center gap-2 text-yellow-800">
+                                <Coins className="h-4 w-4" />
+                                Solde de Crédits
+                            </Label>
+                            <Input
+                                type="number"
+                                min="0"
+                                value={clubFormData.credits_balance}
+                                onChange={(e) => setClubFormData(prev => ({ ...prev, credits_balance: parseInt(e.target.value) || 0 }))}
+                                placeholder="0"
+                                className="bg-white"
+                            />
+                            <p className="text-xs text-yellow-700">
+                                Modifiez directement le solde de crédits du club.
+                            </p>
+                        </div>
                         <div className="flex justify-end space-x-2">
                             <Button type="button" variant="outline" onClick={() => setShowEditModal(false)}>Annuler</Button>
                             <Button type="submit" disabled={isSubmitting}>
@@ -560,7 +586,7 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
 
                         setIsSubmitting(true);
                         try {
-                            await adminService.updateCourt(selectedClub.id, selectedCourt.id, courtFormData);
+                            await adminService.updateCourt(selectedCourt.id, courtFormData);
                             setShowEditCourtModal(false);
                             await loadClubCourts(selectedClub.id);
                         } catch (error) {

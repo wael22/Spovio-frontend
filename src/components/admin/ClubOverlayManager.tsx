@@ -135,14 +135,28 @@ const ClubOverlayManager: React.FC<ClubOverlayManagerProps> = ({ club, isOpen, o
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (!file) return;
+        if (!file || !club) return;
 
         try {
             setIsSubmitting(true);
-            setFormData(prev => ({ ...prev, image_url: URL.createObjectURL(file) }));
-        } catch (err) {
+            setError('');
+
+            // Create FormData for file upload
+            const uploadFormData = new FormData();
+            uploadFormData.append('file', file);
+
+            // Upload file to backend
+            const response = await adminService.uploadOverlayImage(club.id, uploadFormData);
+
+            // Set the returned server URL
+            setFormData(prev => ({
+                ...prev,
+                image_url: response.data.image_url
+            }));
+
+        } catch (err: any) {
             console.error('Erreur upload:', err);
-            setError("Erreur lors de l'upload de l'image.");
+            setError(err.response?.data?.error || "Erreur lors de l'upload de l'image.");
         } finally {
             setIsSubmitting(false);
         }

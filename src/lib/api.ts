@@ -4,10 +4,9 @@
 import axios, { AxiosInstance } from 'axios';
 
 // LOCAL DEVELOPMENT - Backend on localhost:5000
-const API_BASE_URL = 'http://localhost:5000/api';
-
-// Production Railway URL (commented out)
-// const API_BASE_URL = 'https://spovio-backend-main-production.up.railway.app/api';
+// Use environment variable VITE_API_URL if defined, otherwise default to localhost
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+console.log('🔧 [CONFIG] API Base URL:', API_BASE_URL);
 
 const api: AxiosInstance = axios.create({
     baseURL: API_BASE_URL,
@@ -73,9 +72,22 @@ api.interceptors.response.use(
         });
 
         // Redirect to /auth on 401 (session expired or not authenticated)
+        // Redirect to /auth on 401 (session expired or not authenticated)
         if (error.response?.status === 401) {
-            const publicRoutes = ['/login', '/register', '/auth', '/super-secret-login', '/forgot-password', '/reset-password', '/verify-email', '/google-auth-callback'];
-            const isPublicRoute = publicRoutes.some(route => window.location.pathname.startsWith(route));
+            // 🛑 IGNORE 401 for check-auth endpoint - this is expected for guests calling /auth/me
+            if (error.config?.url?.includes('/auth/me')) {
+                return Promise.reject(error);
+            }
+
+            const publicRoutes = [
+                '/login', '/register', '/auth', '/super-secret-login', '/forgot-password',
+                '/reset-password', '/verify-email', '/google-auth-callback',
+                '/about', '/contact', '/ai-features', '/how-it-works', '/player-interest', '/interest-dashboard'
+            ];
+
+            // Special handling for root path to avoid matching everything with startsWith('/')
+            const isHomePage = window.location.pathname === '/';
+            const isPublicRoute = isHomePage || publicRoutes.some(route => window.location.pathname.startsWith(route));
 
             if (!isRedirecting && !isPublicRoute) {
                 isRedirecting = true;
@@ -94,7 +106,9 @@ api.interceptors.response.use(
 export const authService = {
     register: (userData: any) => api.post('/auth/register', userData),
     login: (credentials: any) => api.post('/auth/login', credentials),
-    superAdminLogin: (credentials: any) => api.post('/auth/super-admin-login', credentials),
+    superAdminLogin: (credentials: any) => api.post('/auth/super-admin/login', credentials),
+    superAdminVerify2FA: (data: any) => api.post('/auth/super-admin/verify-2fa', data),
+    superAdminSetup2FA: (data: any) => api.post('/auth/super-admin/setup-2fa', data),
     logout: () => api.post('/auth/logout'),
     getCurrentUser: () => api.get('/auth/me'),
     updateProfile: (profileData: any) => api.put('/auth/update-profile', profileData),
@@ -328,6 +342,10 @@ export const adminService = {
         api.put(`/admin/clubs/${clubId}/overlays/${overlayId}`, data),
     deleteClubOverlay: (clubId: string, overlayId: string) =>
         api.delete(`/admin/clubs/${clubId}/overlays/${overlayId}`),
+    uploadOverlayImage: (clubId: string, formData: FormData) =>
+        api.post(`/admin/clubs/${clubId}/overlays/upload`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        }),
 };
 
 // Settings Service
