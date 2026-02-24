@@ -19,11 +19,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
-import { Scissors, Play, Pause, Loader2, CheckCircle2, Download, Upload, AlertCircle } from 'lucide-react';
-import { ffmpegService } from '@/services/ffmpegService';
+import { Scissors, Play, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { clipService } from '@/lib/api';
 import { toast } from 'sonner';
-import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
+import { useTranslation } from "react-i18next";
 
 interface VideoClipEditorProps {
     isOpen: boolean;
@@ -37,9 +36,10 @@ interface VideoClipEditorProps {
     onClipCreated?: (clip: any) => void;
 }
 
-type ProcessingStep = 'ffmpeg-load' | 'download' | 'cut' | 'upload' | '';
+type ProcessingStep = 'upload' | '';
 
 export function VideoClipEditor({ isOpen, onClose, video, onClipCreated }: VideoClipEditorProps) {
+    const { t } = useTranslation();
     // UI States
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -197,73 +197,28 @@ export function VideoClipEditor({ isOpen, onClose, video, onClipCreated }: Video
     };
 
     /**
-     * Download video segment using MediaRecorder
-     */
-    const downloadVideoSegment = async (videoUrl: string, start: number, end: number): Promise<Blob> => {
-        return new Promise((resolve, reject) => {
-            const tempVideo = document.createElement('video');
-            tempVideo.crossOrigin = 'anonymous';
-            tempVideo.src = videoUrl;
-
-            const chunks: Blob[] = [];
-            let mediaRecorder: MediaRecorder;
-
-            tempVideo.onloadedmetadata = () => {
-                tempVideo.currentTime = start;
-            };
-
-            tempVideo.onseeked = () => {
-                const stream = tempVideo.captureStream();
-                mediaRecorder = new MediaRecorder(stream, {
-                    mimeType: 'video/webm;codecs=vp8,opus'
-                });
-
-                mediaRecorder.ondataavailable = (e) => {
-                    if (e.data.size > 0) {
-                        chunks.push(e.data);
-                    }
-                };
-
-                mediaRecorder.onstop = () => {
-                    const blob = new Blob(chunks, { type: 'video/webm' });
-                    resolve(blob);
-                };
-
-                mediaRecorder.start();
-                tempVideo.play();
-
-                setTimeout(() => {
-                    mediaRecorder.stop();
-                    tempVideo.pause();
-                }, (end - start) * 1000);
-            };
-
-            tempVideo.onerror = () => reject(new Error('Video download failed'));
-        });
-    };
-
-    /**
-     * Create clip with FFmpeg.wasm processing
+     * Create clip by sending request to backend (Server-Side Processing)
+     * This ensures high quality output (Original Resolution) instead of low-quality client recording
      */
     const handleCreateClip = async () => {
         // Validation
         if (!title.trim()) {
-            setError('Veuillez entrer un titre');
+            setError(t('components.clipEditor.errors.titleRequired'));
             return;
         }
 
         if (endTime - startTime < 1) {
-            setError('Le clip doit durer au moins 1 seconde');
+            setError(t('components.clipEditor.errors.minDuration'));
             return;
         }
 
         if (endTime - startTime > 60) {
-            setError('Le clip ne peut pas durer plus de 60 secondes');
+            setError(t('components.clipEditor.errors.maxDuration'));
             return;
         }
 
         if (!video) {
-            setError('Aucune vidéo sélectionnée');
+            setError(t('components.clipEditor.errors.noVideo'));
             return;
         }
 
@@ -272,67 +227,36 @@ export function VideoClipEditor({ isOpen, onClose, video, onClipCreated }: Video
         setProgress(0);
 
         try {
-            // Step 1: Load FFmpeg
-            setProcessingStep('ffmpeg-load');
-            if (!ffmpegService.isLoaded()) {
-                toast.info('Chargement de FFmpeg...');
-                await ffmpegService.load((p) => setProgress(p * 25));
-            } else {
-                setProgress(25);
-            }
+            setProcessingStep('upload'); // Reuse existing step for UI
+            toast.info(t('components.clipEditor.processing'));
 
-            // Step 2: Download video segment
-            setProcessingStep('download');
-            setProgress(30);
-            toast.info('Téléchargement du segment vidéo...');
-
-            const videoUrl = video.file_url || '';
-            const videoBlob = await downloadVideoSegment(videoUrl, startTime, endTime);
-            setProgress(50);
-
-            // Step 3: Cut with FFmpeg
-            setProcessingStep('cut');
-            toast.info('Découpage avec FFmpeg...');
-            const clipBlob = await ffmpegService.cutVideo(
-                videoBlob,
-                0, // Start from 0 since we already downloaded the segment
-                endTime - startTime,
-                (p) => setProgress(50 + p * 25)
-            );
-            setProgress(75);
-
-            // Step 4: Upload to backend
-            setProcessingStep('upload');
-            toast.info('Upload vers le serveur...');
-            const formData = new FormData();
-            formData.append('file', clipBlob, `clip_${Date.now()}.mp4`);
-            formData.append('video_id', video.id);
-            formData.append('title', title.trim());
-            formData.append('description', description.trim());
-            formData.append('start_time', startTime.toString());
-            formData.append('end_time', endTime.toString());
-
-            const response = await clipService.uploadDirectClip(formData);
+            // Server-side creation
+            const response = await clipService.createClip({
+                video_id: video.id,
+                start_time: startTime,
+                end_time: endTime,
+                title: title.trim(),
+                description: description.trim()
+            });
 
             setProgress(100);
             setSuccess(true);
-            toast.success('Clip créé avec succès !');
+            toast.success(t('components.clipEditor.success'));
 
             if (onClipCreated) {
                 onClipCreated(response.data.clip);
             }
 
-            setTimeout(() => {
-                onClose();
-                setSuccess(false);
-                setTitle('');
-                setDescription('');
-                setProcessingStep('');
-            }, 2000);
+            // Fermer immédiatement pour ne pas bloquer l'utilisateur
+            onClose();
+            setSuccess(false);
+            setTitle('');
+            setDescription('');
+            setProcessingStep('');
 
         } catch (err: any) {
             console.error('[Clip] Creation error:', err);
-            const errorMessage = err.response?.data?.error || err.message || 'Erreur lors de la création du clip';
+            const errorMessage = err.response?.data?.error || err.message || t('components.clipEditor.error');
             setError(errorMessage);
             toast.error(errorMessage);
         } finally {
@@ -342,22 +266,13 @@ export function VideoClipEditor({ isOpen, onClose, video, onClipCreated }: Video
 
     const getStepLabel = (): string => {
         switch (processingStep) {
-            case 'ffmpeg-load': return 'Chargement FFmpeg...';
-            case 'download': return 'Téléchargement vidéo...';
-            case 'cut': return 'Découpage...';
-            case 'upload': return 'Upload...';
-            default: return 'Traitement...';
+            case 'upload': return t('components.clipEditor.uploading');
+            default: return t('components.clipEditor.processing');
         }
     };
 
     const getStepIcon = () => {
-        switch (processingStep) {
-            case 'ffmpeg-load': return <Download className="h-4 w-4 mr-2" />;
-            case 'download': return <Download className="h-4 w-4 mr-2" />;
-            case 'cut': return <Scissors className="h-4 w-4 mr-2" />;
-            case 'upload': return <Upload className="h-4 w-4 mr-2" />;
-            default: return <Loader2 className="h-4 w-4 mr-2 animate-spin" />;
-        }
+        return <Loader2 className="h-4 w-4 mr-2 animate-spin" />;
     };
 
     if (!video) return null;
@@ -368,17 +283,17 @@ export function VideoClipEditor({ isOpen, onClose, video, onClipCreated }: Video
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <Scissors className="h-5 w-5" />
-                        Créer un Clip
+                        {t('components.clipEditor.title')}
                     </DialogTitle>
                     <DialogDescription>
-                        Sélectionnez un segment et créez votre meilleur moment
+                        {t('components.clipEditor.subtitle')}
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="space-y-6">
                     {/* Video Player */}
                     <div className="space-y-2">
-                        <Label>Vidéo</Label>
+                        <Label>{t('components.clipEditor.videoLabel')}</Label>
                         <div className="relative bg-black rounded-lg overflow-hidden">
                             <video
                                 ref={videoCallbackRef}
@@ -388,7 +303,7 @@ export function VideoClipEditor({ isOpen, onClose, video, onClipCreated }: Video
                                 onLoadedMetadata={handleVideoLoaded}
                                 onTimeUpdate={handleTimeUpdate}
                             >
-                                Votre navigateur ne supporte pas la lecture vidéo.
+                                {t('components.clipEditor.unsupported')}
                             </video>
 
                             {/* Visual selection indicator */}
@@ -435,7 +350,7 @@ export function VideoClipEditor({ isOpen, onClose, video, onClipCreated }: Video
                     {/* Time Selection */}
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
-                            <Label>Sélection ({formatTime(endTime - startTime)})</Label>
+                            <Label>{t('components.clipEditor.selection')} ({formatTime(endTime - startTime)})</Label>
                             <div className="flex items-center gap-2">
                                 <span className="text-sm text-muted-foreground">
                                     {formatTime(startTime)} - {formatTime(endTime)}
@@ -449,14 +364,14 @@ export function VideoClipEditor({ isOpen, onClose, video, onClipCreated }: Video
                                     className="gap-1.5"
                                 >
                                     <Play className="h-3.5 w-3.5" />
-                                    Prévisualiser
+                                    {t('components.clipEditor.preview')}
                                 </Button>
                             </div>
                         </div>
 
                         <div className="space-y-2">
                             <div className="flex items-center justify-between">
-                                <Label className="text-sm">Début</Label>
+                                <Label className="text-sm">{t('components.clipEditor.startTime') || "Début"}</Label>
                                 <Button
                                     type="button"
                                     variant="ghost"
@@ -464,7 +379,7 @@ export function VideoClipEditor({ isOpen, onClose, video, onClipCreated }: Video
                                     onClick={goToStart}
                                     className="h-6 px-2 text-xs"
                                 >
-                                    Aller au début
+                                    {t('components.clipEditor.goToStart')}
                                 </Button>
                             </div>
                             <Slider
@@ -478,7 +393,7 @@ export function VideoClipEditor({ isOpen, onClose, video, onClipCreated }: Video
 
                         <div className="space-y-2">
                             <div className="flex items-center justify-between">
-                                <Label className="text-sm">Fin</Label>
+                                <Label className="text-sm">{t('components.clipEditor.endTime') || "Fin"}</Label>
                                 <Button
                                     type="button"
                                     variant="ghost"
@@ -486,7 +401,7 @@ export function VideoClipEditor({ isOpen, onClose, video, onClipCreated }: Video
                                     onClick={goToEnd}
                                     className="h-6 px-2 text-xs"
                                 >
-                                    Aller à la fin
+                                    {t('components.clipEditor.goToEnd')}
                                 </Button>
                             </div>
                             <Slider
@@ -502,10 +417,10 @@ export function VideoClipEditor({ isOpen, onClose, video, onClipCreated }: Video
                     {/* Metadata */}
                     <div className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="clip-title">Titre *</Label>
+                            <Label htmlFor="clip-title">{t('components.clipEditor.titleLabel')} *</Label>
                             <Input
                                 id="clip-title"
-                                placeholder="Mon meilleur point"
+                                placeholder={t('components.clipEditor.titlePlaceholder')}
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
                                 disabled={loading}
@@ -513,10 +428,10 @@ export function VideoClipEditor({ isOpen, onClose, video, onClipCreated }: Video
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="clip-description">Description</Label>
+                            <Label htmlFor="clip-description">{t('components.clipEditor.descriptionLabel')}</Label>
                             <Textarea
                                 id="clip-description"
-                                placeholder="Description optionnelle..."
+                                placeholder={t('components.clipEditor.descriptionPlaceholder')}
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
                                 disabled={loading}
@@ -549,7 +464,7 @@ export function VideoClipEditor({ isOpen, onClose, video, onClipCreated }: Video
                         <Alert className="border-green-500 bg-green-50">
                             <CheckCircle2 className="h-4 w-4 text-green-600" />
                             <AlertDescription className="text-green-600">
-                                Clip créé avec succès !
+                                {t('components.clipEditor.success')}
                             </AlertDescription>
                         </Alert>
                     )}
@@ -561,7 +476,7 @@ export function VideoClipEditor({ isOpen, onClose, video, onClipCreated }: Video
                             onClick={onClose}
                             disabled={loading}
                         >
-                            Annuler
+                            {t('components.clipEditor.cancel')}
                         </Button>
                         <Button
                             onClick={handleCreateClip}
@@ -571,12 +486,12 @@ export function VideoClipEditor({ isOpen, onClose, video, onClipCreated }: Video
                             {loading ? (
                                 <>
                                     <Loader2 className="h-4 w-4 animate-spin" />
-                                    Traitement...
+                                    {t('components.clipEditor.processing')}
                                 </>
                             ) : (
                                 <>
                                     <Scissors className="h-4 w-4" />
-                                    Créer le Clip
+                                    {t('components.clipEditor.create')}
                                 </>
                             )}
                         </Button>

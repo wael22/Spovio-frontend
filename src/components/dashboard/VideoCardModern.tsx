@@ -20,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
+import { useTranslation } from "react-i18next";
 
 interface VideoCardModernProps {
   id: string;
@@ -29,8 +30,8 @@ interface VideoCardModernProps {
   date: string;
   shared?: boolean;
   court?: string;
-  isExpired?: boolean;  // ✅ NOUVEAU: Indique si la vidéo est expirée (cloud supprimé)
-  processingStatus?: string; // ✅ NOUVEAU: Statut de traitement
+  isExpired?: boolean;
+  processingStatus?: string;
   onPlay?: () => void;
   onShare?: () => void;
   onDelete?: () => void;
@@ -56,11 +57,12 @@ export function VideoCardModern({
   onEdit,
   onDownload,
 }: VideoCardModernProps) {
+  const { t, i18n } = useTranslation();
   const [isHovered, setIsHovered] = useState(false);
 
   const formatDate = (dateString: string) => {
     const dateStr = dateString.endsWith('Z') ? dateString : dateString + 'Z';
-    return new Date(dateStr).toLocaleDateString("fr-FR", {
+    return new Date(dateStr).toLocaleDateString(i18n.language, {
       day: "numeric",
       month: "short",
     });
@@ -115,28 +117,35 @@ export function VideoCardModern({
         {shared && !isExpired && (
           <Badge className="absolute top-3 left-3 bg-accent/80 hover:bg-accent text-accent-foreground">
             <Share2 className="h-3 w-3 mr-1" />
-            Partagée
+            {t('components.videoCard.badges.shared')}
           </Badge>
         )}
 
         {/* Expired Badge */}
         {isExpired && !isFailed && !isProcessing && (
           <Badge className="absolute top-3 left-3 bg-destructive/90 hover:bg-destructive text-destructive-foreground">
-            🔒 Expirée
+            {t('components.videoCard.badges.expired')}
           </Badge>
         )}
 
         {/* Failed Badge */}
         {isFailed && (
           <Badge className="absolute top-3 left-3 bg-red-600 hover:bg-red-700 text-white border-red-800">
-            ⚠️ Échec
+            {t('components.videoCard.badges.failed')}
           </Badge>
         )}
 
         {/* Processing Badge */}
         {isProcessing && (
           <Badge className="absolute top-3 left-3 bg-blue-500/90 hover:bg-blue-600 text-white animate-pulse">
-            ⚙️ Traitement...
+            {t('components.videoCard.badges.processing')}
+          </Badge>
+        )}
+
+        {/* Pending Badge */}
+        {processingStatus === 'pending' && (
+          <Badge className="absolute top-3 left-3 bg-yellow-500/90 hover:bg-yellow-600 text-white">
+            {t('components.videoCard.badges.pending')}
           </Badge>
         )}
 
@@ -154,23 +163,23 @@ export function VideoCardModern({
           <DropdownMenuContent align="end" className="w-48">
             <DropdownMenuItem onClick={onPlay} disabled={isExpired}>
               <Play className="h-4 w-4 mr-2" />
-              {isExpired ? "Vidéo expirée" : "Lire"}
+              {isExpired ? t('components.videoCard.menu.playExpired') : t('components.videoCard.menu.play')}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onCreateClip} disabled={isExpired}>
               <Scissors className="h-4 w-4 mr-2" />
-              {isExpired ? "Clip non disponible" : "Créer un clip"}
+              {isExpired ? t('components.videoCard.menu.createClipUnavailable') : t('components.videoCard.menu.createClip')}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onEdit}>
               <Edit className="h-4 w-4 mr-2" />
-              Modifier le titre
+              {t('components.videoCard.menu.editTitle')}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onShare}>
               <Share2 className="h-4 w-4 mr-2" />
-              Partager
+              {t('components.videoCard.menu.share')}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onDownload} disabled={isExpired}>
               <Download className="h-4 w-4 mr-2" />
-              {isExpired ? "Téléchargement non disponible" : "Télécharger MP4"}
+              {isExpired ? t('components.videoCard.menu.downloadUnavailable') : t('components.videoCard.menu.download')}
             </DropdownMenuItem>
 
             <DropdownMenuSeparator />
@@ -179,7 +188,7 @@ export function VideoCardModern({
               className="text-destructive focus:text-destructive"
             >
               <Trash2 className="h-4 w-4 mr-2" />
-              Supprimer
+              {t('components.videoCard.menu.delete')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

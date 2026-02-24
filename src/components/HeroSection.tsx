@@ -1,8 +1,11 @@
 ﻿import { Play, Video, Zap, ChevronRight, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 export function HeroSection() {
+  const { t } = useTranslation();
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
       {/* Background Effects */}
@@ -20,23 +23,21 @@ export function HeroSection() {
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-primary/30 mb-8 animate-slide-up">
             <Zap className="w-4 h-4 text-primary" />
             <span className="text-sm font-medium text-muted-foreground">
-              Plateforme d'Analyse Sportive Propulsée par l'IA
+              {t("landing.hero.badge")}
             </span>
             <ChevronRight className="w-4 h-4 text-primary" />
           </div>
 
           {/* Main Heading */}
           <h1 className="font-display text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 animate-slide-up animation-delay-100">
-            Révolutionnez Votre Sport avec
+            {t("landing.hero.title")}
             <br />
             <span className="gradient-text">Spovio</span>
           </h1>
 
           {/* Subheading */}
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 animate-slide-up animation-delay-200">
-            La plateforme complète propulsée par l'IA pour enregistrer,
-            analyser et améliorer votre jeu. Du padel au football,
-            nous couvrons tous vos sports.
+            {t("landing.hero.subtitle")}
           </p>
 
           {/* Sport Products Grid */}
@@ -45,8 +46,8 @@ export function HeroSection() {
               <div className="flex items-center gap-3">
                 <Trophy className="w-6 h-6 text-primary" />
                 <div className="text-left">
-                  <div className="font-semibold">MySmash</div>
-                  <div className="text-xs text-muted-foreground">Padel & Tennis</div>
+                  <div className="font-semibold">{t("landing.hero.products.mysmash.title")}</div>
+                  <div className="text-xs text-muted-foreground">{t("landing.hero.products.mysmash.desc")}</div>
                 </div>
               </div>
             </div>
@@ -55,8 +56,8 @@ export function HeroSection() {
               <div className="flex items-center gap-3">
                 <Trophy className="w-6 h-6 text-muted-foreground" />
                 <div className="text-left">
-                  <div className="font-semibold">MyGoal</div>
-                  <div className="text-xs text-muted-foreground">Football</div>
+                  <div className="font-semibold">{t("landing.hero.products.mygoal.title")}</div>
+                  <div className="text-xs text-muted-foreground">{t("landing.hero.products.mygoal.desc")}</div>
                 </div>
               </div>
             </div>
@@ -64,8 +65,8 @@ export function HeroSection() {
               <div className="flex items-center gap-3">
                 <Trophy className="w-6 h-6 text-muted-foreground" />
                 <div className="text-left">
-                  <div className="font-semibold">MyDunk</div>
-                  <div className="text-xs text-muted-foreground">Basketball</div>
+                  <div className="font-semibold">{t("landing.hero.products.mydunk.title")}</div>
+                  <div className="text-xs text-muted-foreground">{t("landing.hero.products.mydunk.desc")}</div>
                 </div>
               </div>
             </div>
@@ -73,8 +74,8 @@ export function HeroSection() {
               <div className="flex items-center gap-3">
                 <Trophy className="w-6 h-6 text-muted-foreground" />
                 <div className="text-left">
-                  <div className="font-semibold">MyShot</div>
-                  <div className="text-xs text-muted-foreground">Handball</div>
+                  <div className="font-semibold">{t("landing.hero.products.myshot.title")}</div>
+                  <div className="text-xs text-muted-foreground">{t("landing.hero.products.myshot.desc")}</div>
                 </div>
               </div>
             </div>
@@ -82,8 +83,8 @@ export function HeroSection() {
               <div className="flex items-center gap-3">
                 <Trophy className="w-6 h-6 text-muted-foreground" />
                 <div className="text-left">
-                  <div className="font-semibold">More</div>
-                  <div className="text-xs text-muted-foreground">Coming Soon</div>
+                  <div className="font-semibold">{t("landing.hero.products.more.title")}</div>
+                  <div className="text-xs text-muted-foreground">{t("landing.hero.products.more.desc")}</div>
                 </div>
               </div>
             </div>
@@ -100,4 +101,3 @@ export function HeroSection() {
     </section>
   );
 }
-

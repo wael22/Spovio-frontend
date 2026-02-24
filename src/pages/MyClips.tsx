@@ -9,6 +9,7 @@ import { ShareClipModal } from "@/components/dashboard/ShareClipModal";
 import { VideoPlayerModal } from "@/components/dashboard/VideoPlayerModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useTranslation } from "react-i18next";
 import {
   Scissors,
   Search,
@@ -42,6 +43,7 @@ const itemVariants = {
 };
 
 const MyClips = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
@@ -71,8 +73,48 @@ const MyClips = () => {
     loadClips();
   }, []);
 
+  // Poll for clip status updates
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    const checkStatus = async () => {
+      // Only poll if we have clips that are processing or pending
+      const hasProcessingClips = clips.some(
+        c => ['processing', 'pending'].includes(c.status)
+      );
+
+      if (!hasProcessingClips) return;
+
+      try {
+        const response = await clipService.getMyClips();
+        const newClips = response.data.clips || [];
+
+        // Check for completions to notify user
+        newClips.forEach((newClip: any) => {
+          const oldClip = clips.find(c => c.id === newClip.id);
+          if (oldClip && ['processing', 'pending'].includes(oldClip.status) && newClip.status === 'completed') {
+            toast.success(`Votre clip "${newClip.title}" est prêt ! 🎬`);
+            // Play a notification sound if we had one
+          }
+        });
+
+        // Update list
+        setClips(newClips);
+      } catch (error) {
+        console.error('Error polling clips:', error);
+      }
+    };
+
+    // Check every 5 seconds if needed
+    if (clips.some(c => ['processing', 'pending'].includes(c.status))) {
+      interval = setInterval(checkStatus, 5000);
+    }
+
+    return () => clearInterval(interval);
+  }, [clips]); // Dependencies: clips (re-run effect when clips change)
+
   const handleDeleteClip = async (clipId: string) => {
-    if (!confirm('ÃŠtes-vous sÃ»r de vouloir supprimer ce clip ?')) {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce clip ?')) {
       return;
     }
 
@@ -96,6 +138,12 @@ const MyClips = () => {
   };
 
   const handlePlayClip = (clip: any) => {
+    // If pending/processing, show info instead of playing
+    if (clip.status !== 'completed') {
+      toast.info('Ce clip est en cours de traitement. Veuillez patienter.');
+      return;
+    }
+
     setSelectedVideo({
       id: clip.id,
       title: clip.title,
@@ -166,7 +214,7 @@ const MyClips = () => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary mb-4" />
-          <p className="text-muted-foreground">Chargement des clips...</p>
+          <p className="text-muted-foreground">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -190,11 +238,11 @@ const MyClips = () => {
                 <Scissors className="h-6 w-6 text-accent" />
               </div>
               <h1 className="text-3xl lg:text-4xl font-bold font-orbitron">
-                Mes <span className="gradient-text-accent">Clips</span>
+                {t('myClips.title').split(' ')[0]} <span className="gradient-text-accent">{t('myClips.title').split(' ').slice(1).join(' ')}</span>
               </h1>
             </div>
             <p className="text-muted-foreground text-lg">
-              Tes meilleurs moments en un clic
+              {t('myClips.subtitle')}
             </p>
           </motion.div>
 
@@ -209,7 +257,7 @@ const MyClips = () => {
               <div className="relative flex-1 sm:max-w-sm">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Rechercher un clip..."
+                  placeholder={t('myClips.searchPlaceholder')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10 bg-card/50 border-border/50 focus:border-primary/50"
@@ -226,7 +274,7 @@ const MyClips = () => {
               onClick={() => navigate('/dashboard')}
             >
               <Plus className="h-4 w-4" />
-              Créer un clip
+              {t('myClips.createClip')}
             </Button>
           </motion.div>
 
@@ -273,11 +321,11 @@ const MyClips = () => {
               <div className="inline-flex p-4 rounded-full bg-accent/10 mb-4">
                 <Scissors className="h-12 w-12 text-accent/50" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">Aucun clip trouvé</h3>
+              <h3 className="text-xl font-semibold mb-2">{t('myClips.noClips')}</h3>
               <p className="text-muted-foreground mb-6">
                 {searchQuery
-                  ? "Aucun clip ne correspond Ã  ta recherche"
-                  : "Crée ton premier clip Ã  partir d'une Vidéo"}
+                  ? t('myClips.noClipsMatch')
+                  : t('myClips.createFirstClip')}
               </p>
               <Button
                 variant="neonGreen"
@@ -285,7 +333,7 @@ const MyClips = () => {
                 onClick={() => navigate('/dashboard')}
               >
                 <Video className="h-4 w-4" />
-                Voir mes Vidéos
+                {t('myClips.viewVideos')}
               </Button>
             </motion.div>
           )}

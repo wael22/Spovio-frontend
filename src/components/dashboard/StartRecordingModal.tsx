@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+﻿import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import {
   Dialog,
@@ -30,28 +30,34 @@ import {
   AlertCircle,
   CheckCircle,
   User,
-  Infinity
+  Infinity,
+  Camera
 } from "lucide-react";
 import { playerService, recordingService, videoService } from "@/lib/api";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
+import { useTranslation } from "react-i18next";
 import QRScannerModal from "./QRScannerModal";
 
 interface StartRecordingModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onRecordingStarted?: (session: any) => void;
+  initialQrCode?: string; // 🆕 Added prop
 }
 
-const durations = [
-  { value: 60, label: "60 minutes", description: "Match court" },
-  { value: 90, label: "90 minutes", description: "Durée standard" },
-  { value: 120, label: "120 minutes", description: "Match long" },
-  { value: 200, label: "MAX (200 min)", description: "Durée maximale" },
-];
+// Durations moved inside component for translation
 
-export function StartRecordingModal({ open, onOpenChange, onRecordingStarted }: StartRecordingModalProps) {
+export function StartRecordingModal({ open, onOpenChange, onRecordingStarted, initialQrCode }: StartRecordingModalProps) {
+  const { t } = useTranslation();
   const { user } = useAuth();
+
+  const durations = [
+    { value: 60, label: "60 minutes", description: t('modals.startRecording.durations.short') },
+    { value: 90, label: "90 minutes", description: t('modals.startRecording.durations.standard') },
+    { value: 120, label: "120 minutes", description: t('modals.startRecording.durations.long') },
+    { value: 200, label: t('modals.startRecording.durations.max'), description: t('modals.startRecording.durations.max') },
+  ];
 
   // Form state
   const [title, setTitle] = useState("");
@@ -68,22 +74,60 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted }: 
   const [loadingCourts, setLoadingCourts] = useState(false);
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState("");
-  const [isQRScannerOpen, setIsQRScannerOpen] = useState(false);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
 
-  // Load FOLLOWED clubs when modal opens
+  // 🆕 Ref to store the court we need to inject/select after loading
+  const pendingScannedCourt = useRef<any>(null);
+
+  // 🆕 Ref to prevent multiple resets during the same "open" session
+  const initializedRef = useRef(false);
+
+  // Load FOLLOWED clubs when modal opens and reset form
   useEffect(() => {
-    if (open) {
-      loadFollowedClubs();
-      // Reset form
+    if (open && !initializedRef.current) {
+      console.log('🔄 Modal opened - performing one-time initialization');
+      initializedRef.current = true;
+
+      // Only load clubs if we DON'T have an initial QR code
+      // If we do, handleQRCodeScanned will handle loading to prevent race conditions
+      if (!initialQrCode) {
+        console.log('📡 No initial QR code, loading followed clubs');
+        loadFollowedClubs();
+      }
+
+      // Reset form fields
       setTitle("");
       setDescription("");
       setSelectedDuration(90);
       setSelectedClub("");
       setSelectedCourt("");
-      setQrCode("");
+
+      // Only clear QR code state if we don't have an initial one
+      if (!initialQrCode) {
+        setQrCode("");
+        pendingScannedCourt.current = null;
+      }
       setError("");
+    } else if (!open) {
+      // Reset the initialization guard when modal closes
+      if (initializedRef.current) {
+        console.log('🚪 Modal closed - resetting initializedRef');
+        initializedRef.current = false;
+      }
     }
-  }, [open]);
+  }, [open, initialQrCode]);
+
+  // Handle initial QR code separate effect
+  useEffect(() => {
+    if (open && initialQrCode) {
+      console.log('⚡ Handling initialQrCode prop:', initialQrCode);
+      // Ensure this runs after the reset
+      const timer = setTimeout(() => {
+        handleQRCodeScanned(initialQrCode);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [open, initialQrCode]);
 
   // Load courts when club is selected
   useEffect(() => {
@@ -95,22 +139,40 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted }: 
     }
   }, [selectedClub]);
 
+  // 🆕 Effect to auto-select pending court once loaded
+  useEffect(() => {
+    if (pendingScannedCourt.current && courts.length > 0) {
+      const targetId = pendingScannedCourt.current.id.toString();
+      const exists = courts.some(c => c.id.toString() === targetId);
+
+      if (exists) {
+        console.log('🎯 Auto-selecting pending court:', targetId);
+        setSelectedCourt(targetId);
+        // We clear it to avoid re-selecting if user changes manually and we reload.
+        pendingScannedCourt.current = null;
+      }
+    }
+  }, [courts]);
+
   const loadFollowedClubs = async () => {
     setLoadingClubs(true);
     try {
       // 🆕 Use playerService.getFollowedClubs instead of getAvailableClubs
       const response = await playerService.getFollowedClubs();
-      setClubs(response.data.clubs || []);
+      const clubList = response.data.clubs || [];
+      setClubs(clubList);
 
-      if ((response.data.clubs || []).length === 0) {
-        setError('Vous ne suivez aucun club. Rendez-vous dans l\'onglet "Clubs" pour suivre un club.');
+      if (clubList.length === 0) {
+        setError(t('modals.startRecording.errors.noClubFollowed'));
       } else {
         setError("");
       }
+      return clubList;
     } catch (error: any) {
       console.error('Failed to load followed clubs:', error);
       toast.error('Impossible de charger vos clubs suivis');
       setError('Erreur lors du chargement de vos clubs suivis');
+      return [];
     } finally {
       setLoadingClubs(false);
     }
@@ -121,10 +183,27 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted }: 
     setError("");
     try {
       const response = await recordingService.getClubCourtsForPlayers(clubId);
-      setCourts(response.data.courts || []);
+      let fetchedCourts = response.data.courts || [];
 
-      if (!response.data.courts || response.data.courts.length === 0) {
-        setError('Aucun terrain trouvé pour ce club');
+      // 🆕 Inject pending court if strictly needed and missing
+      if (pendingScannedCourt.current && pendingScannedCourt.current.club.id.toString() === clubId) {
+        const exists = fetchedCourts.some((c: any) => c.id.toString() === pendingScannedCourt.current.id.toString());
+        if (!exists) {
+          console.log('💉 Injecting pending court into list:', pendingScannedCourt.current);
+          // Ensure minimal structure
+          const courtToInject = {
+            ...pendingScannedCourt.current,
+            available: true,
+            name: pendingScannedCourt.current.name || `Terrain ${pendingScannedCourt.current.number || pendingScannedCourt.current.id}`
+          };
+          fetchedCourts = [...fetchedCourts, courtToInject];
+        }
+      }
+
+      setCourts(fetchedCourts);
+
+      if (fetchedCourts.length === 0) {
+        setError(t('modals.startRecording.errors.noCourts'));
       }
     } catch (error: any) {
       console.error('Failed to load courts:', error);
@@ -140,27 +219,63 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted }: 
   const handleQRCodeScanned = async (code: string) => {
     console.log('✅ QR Code scanné:', code);
     setQrCode(code);
-    setIsQRScannerOpen(false);
+    setIsScannerOpen(false);
     setError("");
     setStarting(true);
 
     try {
-      // Validate QR code and get court/club info
-      const response = await videoService.scanQrCode(code);
-      const { court, club } = response.data;
-
-      console.log('✅ QR Code validé - Club:', club?.name, 'Terrain:', court?.name);
-
-      // Auto-fill club and court fields
-      setSelectedClub(club?.id?.toString() || "");
-      setSelectedCourt(court?.id?.toString() || "");
-
-      // Load courts for this club if not already loaded
-      if (club?.id && courts.length === 0) {
-        await loadCourts(club.id.toString());
+      // 1. Load clubs first to ensure we have the base list
+      // But only if we haven't loaded them yet or if we want to refresh
+      // We await it so we can merge the scanned club later without race conditions
+      let currentClubs = clubs;
+      if (clubs.length === 0) {
+        currentClubs = await loadFollowedClubs();
       }
 
-      toast.success(`Code QR validé: ${club?.name} - ${court?.name}`);
+      // 2. Validate QR code
+      console.log('📡 Calling videoService.scanQrCode with:', code);
+      const response = await videoService.scanQrCode(code);
+      console.log('📥 Raw scanQrCode response:', response);
+
+      const data = response.data || response;
+      const { club, court } = data;
+
+      console.log('✅ QR Code validé - parsed:', { club, court });
+
+      if (!club || !court) {
+        console.error('❌ Missing club or court in response');
+        toast.error(t('modals.common.error'));
+        return;
+      }
+
+      // 3. Store in Ref for injection/selection
+      console.log('💾 Storing pending court in ref:', court);
+      pendingScannedCourt.current = { ...court, club };
+
+      // 3. Inject missing club if needed
+      if (club?.id) {
+        const exists = currentClubs.some(c => c.id.toString() === club.id.toString());
+        if (!exists) {
+          console.log('➕ Club manquant, ajout à la liste:', club);
+          const newClubList = [...currentClubs, club];
+          setClubs(newClubList);
+          // Update local reference for checking later if needed
+          currentClubs = newClubList;
+        }
+      }
+
+      // 4. Auto-fill club and court fields
+      const clubIdStr = club?.id?.toString() || "";
+      console.log(`🎯 Setting selected club to: ${clubIdStr}`);
+
+      // 🆕 Robust Delay: Ensure Select component has time to render new options if injected
+      setTimeout(() => {
+        setSelectedClub(clubIdStr);
+        toast.success(`Code QR validé: ${club?.name} - ${court?.name}`);
+      }, 1000);
+
+      // 5. Auto-selection will happen via Effects
+      // pendingScannedCourt ref -> loadCourts -> setCourts -> Effect(court) -> setSelectedCourt
     } catch (err: any) {
       console.error('❌ Erreur validation QR:', err);
       if (err.response?.status === 404) {
@@ -168,6 +283,7 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted }: 
       } else {
         setError('Erreur lors de la validation du QR code. Veuillez réessayer.');
       }
+      pendingScannedCourt.current = null;
     } finally {
       setStarting(false);
     }
@@ -176,14 +292,14 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted }: 
   const handleStartRecording = async () => {
     // Validations
     if (!selectedClub || !selectedCourt) {
-      setError("Veuillez sélectionner un club et un terrain");
-      toast.error("Veuillez sélectionner un club et un terrain");
+      setError(t('modals.startRecording.errors.selectClubCourt'));
+      toast.error(t('modals.startRecording.errors.selectClubCourt'));
       return;
     }
 
     if (!qrCode) {
-      setError("Le code QR du terrain est requis");
-      toast.error("Le code QR du terrain est requis");
+      setError(t('modals.startRecording.errors.qrRequired'));
+      toast.error(t('modals.startRecording.errors.qrRequired'));
       return;
     }
 
@@ -195,8 +311,8 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted }: 
 
     // 🆕 Check if user has enough credits (if user.credits exists)
     if (user.credits !== undefined && user.credits < 1) {
-      setError("Crédit insuffisant. Veuillez acheter des crédits.");
-      toast.error("Crédit insuffisant. Veuillez acheter des crédits.");
+      setError(t('modals.startRecording.errors.credits'));
+      toast.error(t('modals.startRecording.errors.credits'));
       return;
     }
 
@@ -208,8 +324,8 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted }: 
       const qrValidation = await videoService.scanQrCode(qrCode);
 
       if (qrValidation.data.court.id.toString() !== selectedCourt) {
-        setError(`Le code QR ne correspond pas au terrain sélectionné. Ce code est pour le terrain "${qrValidation.data.court.name}"`);
-        toast.error(`Le code QR ne correspond pas au terrain sélectionné`);
+        setError(t('modals.startRecording.errors.qrMismatch'));
+        toast.error(t('modals.startRecording.errors.qrMismatch'));
         setStarting(false);
         return;
       }
@@ -271,12 +387,12 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted }: 
         {court.available ? (
           <Badge variant="secondary" className="flex items-center gap-1">
             <CheckCircle className="h-3 w-3 text-green-600" />
-            <span>Disponible</span>
+            <span>{t('modals.startRecording.courtStatus.available')}</span>
           </Badge>
         ) : (
           <Badge variant="destructive" className="flex items-center gap-1">
             <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-            <span>Occupé</span>
+            <span>{t('modals.startRecording.courtStatus.occupied')}</span>
           </Badge>
         )}
       </div>
@@ -286,12 +402,12 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted }: 
         <div className="mt-2 p-2 bg-red-50 rounded border text-xs">
           <div className="flex items-center gap-1 text-red-700">
             <User className="h-3 w-3" />
-            <span className="font-medium">{court.recording_info.player_name || 'En cours'}</span>
+            <span className="font-medium">{court.recording_info.player_name || t('modals.startRecording.courtStatus.inProgress')}</span>
           </div>
           {court.recording_info.remaining_minutes && (
             <div className="flex items-center gap-1 text-red-600 mt-1">
               <Clock className="h-3 w-3" />
-              <span>Reste: {court.recording_info.remaining_minutes} min</span>
+              <span>{t('modals.startRecording.courtStatus.remaining', { min: court.recording_info.remaining_minutes })}</span>
             </div>
           )}
         </div>
@@ -299,7 +415,7 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted }: 
 
       {!court.available && !court.recording_info && (
         <div className="mt-2 text-xs text-red-600">
-          <p>⚠️ Terrain temporairement indisponible</p>
+          <p>⚠️ {t('modals.startRecording.courtStatus.unavailable')}</p>
         </div>
       )}
     </motion.button>
@@ -314,10 +430,10 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted }: 
         <DialogContent className="sm:max-w-2xl max-h-[95vh] overflow-y-auto bg-card border-border/50">
           <DialogHeader>
             <DialogTitle className="w-full max-w-[calc(100vw-4rem)] sm:max-w-none text-lg sm:text-xl font-orbitron break-words pr-8">
-              Nouvel Enregistrement avec Durée
+              {t('modals.startRecording.title')}
             </DialogTitle>
             <DialogDescription className="text-sm break-words">
-              Configurez votre enregistrement de match avec une durée personnalisée
+              {t('modals.startRecording.description')}
             </DialogDescription>
           </DialogHeader>
 
@@ -332,10 +448,10 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted }: 
 
             {/* Title */}
             <div className="space-y-2">
-              <Label htmlFor="title">Titre du match</Label>
+              <Label htmlFor="title">{t('modals.startRecording.matchTitle')}</Label>
               <Input
                 id="title"
-                placeholder="Ex: Match contre équipe X"
+                placeholder={t('modals.startRecording.matchTitlePlaceholder')}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 className="bg-background/50 border-border/50"
@@ -344,10 +460,10 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted }: 
 
             {/* Description */}
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">{t('modals.startRecording.descriptionLabel')}</Label>
               <Textarea
                 id="description"
-                placeholder="Notes sur le match..."
+                placeholder={t('modals.startRecording.descriptionPlaceholder')}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 className="bg-background/50 border-border/50 resize-none"
@@ -359,7 +475,7 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted }: 
             <div className="space-y-3">
               <Label className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-primary" />
-                Durée d'enregistrement
+                {t('modals.startRecording.durationLabel')}
               </Label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                 {durations.map((duration) => (
@@ -399,7 +515,7 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted }: 
 
             {/* Club Selection */}
             <div className="space-y-2">
-              <Label>Club *</Label>
+              <Label>{t('modals.startRecording.clubLabel')} *</Label>
               {loadingClubs ? (
                 <div className="flex items-center justify-center py-4">
                   <Loader2 className="h-5 w-5 animate-spin text-primary" />
@@ -407,7 +523,7 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted }: 
               ) : (
                 <Select value={selectedClub} onValueChange={setSelectedClub}>
                   <SelectTrigger className="bg-background/50 border-border/50">
-                    <SelectValue placeholder="Sélectionner un club" />
+                    <SelectValue placeholder={t('modals.startRecording.selectClub')} />
                   </SelectTrigger>
                   <SelectContent>
                     {clubs.map((club) => (
@@ -424,10 +540,10 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted }: 
             <div className="space-y-3">
               <Label className="flex items-center gap-2">
                 <MapPin className="h-4 w-4" />
-                Terrain disponible *
+                {t('modals.startRecording.courtLabel')} *
               </Label>
               {!selectedClub ? (
-                <p className="text-sm text-muted-foreground">Sélectionnez d'abord un club</p>
+                <p className="text-sm text-muted-foreground">{t('modals.startRecording.selectCourt')}</p>
               ) : loadingCourts ? (
                 <div className="flex items-center justify-center py-4">
                   <Loader2 className="h-5 w-5 animate-spin text-primary" />
@@ -440,7 +556,7 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted }: 
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground text-center py-4">
-                  Aucun terrain disponible
+                  {t('modals.startRecording.noCourts')}
                 </p>
               )}
             </div>
@@ -448,12 +564,12 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted }: 
             {/* QR Code */}
             <div className="space-y-2">
               <Label htmlFor="qrCode" className="flex items-center gap-2">
-                QR Code du terrain *
+                {t('modals.startRecording.qrLabel')} *
               </Label>
               <div className="flex gap-2">
                 <Input
                   id="qrCode"
-                  placeholder="Code du terrain"
+                  placeholder={t('modals.startRecording.qrPlaceholder')}
                   value={qrCode}
                   onChange={(e) => setQrCode(e.target.value)}
                   onBlur={(e) => {
@@ -468,7 +584,7 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted }: 
                   type="button"
                   variant="outline"
                   size="icon"
-                  onClick={() => setIsQRScannerOpen(true)}
+                  onClick={() => setIsScannerOpen(true)}
                   title="Scanner avec la caméra"
                 >
                   <QrCode className="h-4 w-4" />
@@ -484,7 +600,7 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted }: 
               onClick={() => onOpenChange(false)}
               className="flex-1 w-full"
             >
-              Annuler
+              {t('modals.common.cancel')}
             </Button>
             <Button
               variant="neon"
@@ -501,14 +617,14 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted }: 
               {starting ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  <span className="hidden sm:inline">Démarrage...</span>
-                  <span className="sm:hidden">Démarrage...</span>
+                  <span className="hidden sm:inline">{t('modals.startRecording.starting')}</span>
+                  <span className="sm:hidden">{t('modals.startRecording.starting')}</span>
                 </>
               ) : (
                 <>
                   <Play className="h-4 w-4" />
-                  <span className="hidden sm:inline">Démarrer l'enregistrement</span>
-                  <span className="sm:hidden">Démarrer</span>
+                  <span className="hidden sm:inline">{t('modals.startRecording.start')}</span>
+                  <span className="sm:hidden">{t('modals.startRecording.start')}</span>
                 </>
               )}
             </Button>
@@ -518,8 +634,8 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted }: 
 
       {/* QR Scanner Modal */}
       <QRScannerModal
-        isOpen={isQRScannerOpen}
-        onClose={() => setIsQRScannerOpen(false)}
+        isOpen={isScannerOpen}
+        onClose={() => setIsScannerOpen(false)}
         onCodeScanned={handleQRCodeScanned}
       />
     </>

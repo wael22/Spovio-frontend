@@ -1,33 +1,36 @@
 ﻿import { UserPlus, MapPin, Play, Video } from "lucide-react";
-
-const steps = [
-  {
-    number: "01",
-    icon: UserPlus,
-    title: "Créez Votre Compte",
-    description: "Inscrivez-vous en quelques secondes avec votre email. Recevez 1 crédit de bienvenue offert.",
-  },
-  {
-    number: "02",
-    icon: MapPin,
-    title: "Trouvez Votre Terrain",
-    description: "Parcourez notre réseau de clubs partenaires et sélectionnez le terrain où vous allez jouer.",
-  },
-  {
-    number: "03",
-    icon: Play,
-    title: "Scannez et Enregistrez",
-    description: "Scannez le QR code du terrain et appuyez sur Enregistrer. Notre système s'occupe du reste.",
-  },
-  {
-    number: "04",
-    icon: Video,
-    title: "Visionnez et Progressez",
-    description: "Accédez à vos vidéos instantanément. Analysez votre jeu et suivez votre progression.",
-  },
-];
+import { useTranslation } from "react-i18next";
 
 export function HowItWorksSection() {
+  const { t } = useTranslation();
+
+  const steps = [
+    {
+      number: "01",
+      icon: UserPlus,
+      title: t("landing.howItWorks.steps.step1.title"),
+      description: t("landing.howItWorks.steps.step1.desc"),
+    },
+    {
+      number: "02",
+      icon: MapPin,
+      title: t("landing.howItWorks.steps.step2.title"),
+      description: t("landing.howItWorks.steps.step2.desc"),
+    },
+    {
+      number: "03",
+      icon: Play,
+      title: t("landing.howItWorks.steps.step3.title"),
+      description: t("landing.howItWorks.steps.step3.desc"),
+    },
+    {
+      number: "04",
+      icon: Video,
+      title: t("landing.howItWorks.steps.step4.title"),
+      description: t("landing.howItWorks.steps.step4.desc"),
+    },
+  ];
+
   return (
     <section id="how-it-works" className="py-24 bg-secondary/30 relative overflow-hidden">
       {/* Background Elements */}
@@ -38,14 +41,12 @@ export function HowItWorksSection() {
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="font-display text-3xl md:text-5xl font-bold mb-6">
-            Commencez en
+            {t("landing.howItWorks.title")}
             <br />
-            <span className="gradient-text-accent">4 Étapes Simples</span>
+            <span className="gradient-text-accent">{t("landing.howItWorks.titleHighlight")}</span>
           </h2>
           <p className="text-lg text-muted-foreground">
-            De l'inscription à votre premier match enregistré,
-            cela ne prend que quelques minutes.
-            Voici comment fonctionne MySmash.
+            {t("landing.howItWorks.subtitle")}
           </p>
         </div>
 

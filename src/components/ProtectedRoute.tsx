@@ -5,7 +5,7 @@ import { useAuth } from '../hooks/useAuth';
 
 interface ProtectedRouteProps {
     children: React.ReactNode;
-    requiredRole?: 'player' | 'club' | 'super_admin';
+    requiredRole?: 'player' | 'club' | 'super_admin' | ('player' | 'club' | 'super_admin')[];
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole }) => {
@@ -27,18 +27,22 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole 
         return <Navigate to="/auth" replace />;
     }
 
-    if (requiredRole && user.role !== requiredRole) {
-        console.log(`🔒 ProtectedRoute: Access denied - Role mismatch. User: ${user.role}, Required: ${requiredRole}`);
-        // Redirect based on user role
-        switch (user.role) {
-            case 'player':
-                return <Navigate to="/dashboard" replace />;
-            case 'club':
-                return <Navigate to="/club" replace />;
-            case 'super_admin':
-                return <Navigate to="/admin" replace />;
-            default:
-                return <Navigate to="/auth" replace />;
+    if (requiredRole) {
+        const roles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if (!roles.includes(user.role as any)) {
+            console.log(`🔒 ProtectedRoute: Access denied - Role mismatch. User: ${user.role}, Required: ${requiredRole}`);
+            // Redirect based on user role
+            switch (user.role) {
+                case 'player':
+                    return <Navigate to="/dashboard" replace />;
+                case 'club':
+                    return <Navigate to="/club" replace />;
+                case 'super_admin':
+                    return <Navigate to="/admin" replace />;
+                default:
+                    return <Navigate to="/auth" replace />;
+            }
         }
     }
 

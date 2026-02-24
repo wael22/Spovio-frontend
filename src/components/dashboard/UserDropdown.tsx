@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { getAssetUrl } from "@/lib/api";
 
 interface UserDropdownProps {
@@ -26,6 +27,8 @@ interface UserDropdownProps {
   };
 }
 
+import { useTranslation } from "react-i18next";
+
 export function UserDropdown({
   user = {
     name: "Thomas Martin",
@@ -34,6 +37,7 @@ export function UserDropdown({
 }: UserDropdownProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const initials = user.name
     .split(" ")
@@ -41,12 +45,16 @@ export function UserDropdown({
     .join("")
     .toUpperCase();
 
-  const handleLogout = () => {
+  const { logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
     toast({
       title: "Déconnexion",
       description: "Vous avez été déconnecté avec succès.",
     });
-    navigate("/auth");
+    // Use replace/href to force full reload and clear any state
+    window.location.href = "/auth";
   };
 
   return (
@@ -81,20 +89,20 @@ export function UserDropdown({
           <DropdownMenuItem asChild>
             <Link to="/profile" className="flex items-center cursor-pointer">
               <User className="h-4 w-4 mr-3 text-muted-foreground" />
-              Mon Profil
+              {t('nav.profile')}
             </Link>
           </DropdownMenuItem>
 
           <DropdownMenuItem asChild>
             <Link to="/credits" className="flex items-center cursor-pointer">
               <CreditCard className="h-4 w-4 mr-3 text-accent" />
-              Acheter des crédits
+              {t('dashboard.buyCredits')}
             </Link>
           </DropdownMenuItem>
           {/* <DropdownMenuItem asChild>
             <Link to="/settings" className="flex items-center cursor-pointer">
               <Settings className="h-4 w-4 mr-3 text-muted-foreground" />
-              Paramètres
+              {t('nav.settings')}
             </Link>
           </DropdownMenuItem> */}
         </div>
@@ -106,7 +114,7 @@ export function UserDropdown({
           onClick={handleLogout}
         >
           <LogOut className="h-4 w-4 mr-3" />
-          Déconnexion
+          {t('nav.logout')}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

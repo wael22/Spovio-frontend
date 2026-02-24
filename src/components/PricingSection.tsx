@@ -1,7 +1,10 @@
 ﻿import { Check, Building } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 
 export function PricingSection() {
+  const { t } = useTranslation();
+
   return (
     <section id="pricing" className="py-24 relative overflow-hidden">
       {/* Background */}
@@ -11,14 +14,12 @@ export function PricingSection() {
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="font-display text-3xl md:text-5xl font-bold mb-6">
-            Tarification Simple et
+            {t("landing.pricing.title")}
             <br />
-            <span className="gradient-text">Transparente</span>
+            <span className="gradient-text">{t("landing.pricing.titleHighlight")}</span>
           </h2>
           <p className="text-lg text-muted-foreground">
-            Achetez des crédits selon vos besoins.
-            1 crédit = 1 vidéo déverrouillée.
-            Plus vous achetez, plus vous économisez.
+            {t("landing.pricing.subtitle")}
           </p>
         </div>
 
@@ -34,44 +35,30 @@ export function PricingSection() {
                 <div className="w-12 h-12 rounded-xl bg-primary text-primary-foreground flex items-center justify-center">
                   <Building className="w-6 h-6" />
                 </div>
-                <h3 className="font-display text-2xl font-bold">Vous êtes un Club ?</h3>
+                <h3 className="font-display text-2xl font-bold">{t("landing.pricing.club.title")}</h3>
               </div>
 
               <p className="text-lg text-muted-foreground mb-6">
-                Offrez à vos membres une expérience premium avec notre solution
-                clé en main. Installation, formation et support inclus.
+                {t("landing.pricing.club.subtitle")}
               </p>
 
               <div className="grid md:grid-cols-2 gap-4 mb-6">
-                <div className="flex items-start gap-2">
-                  <Check className="w-5 h-5 text-accent mt-0.5" />
-                  <span className="text-sm">Installation caméras incluse</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <Check className="w-5 h-5 text-accent mt-0.5" />
-                  <span className="text-sm">Dashboard de gestion dédié</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <Check className="w-5 h-5 text-accent mt-0.5" />
-                  <span className="text-sm">Commission sur les ventes de crédits</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <Check className="w-5 h-5 text-accent mt-0.5" />
-                  <span className="text-sm">Support technique prioritaire</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <Check className="w-5 h-5 text-accent mt-0.5" />
-                  <span className="text-sm">Formation équipe incluse</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <Check className="w-5 h-5 text-accent mt-0.5" />
-                  <span className="text-sm">Personnalisat ion aux couleurs du club</span>
-                </div>
+                {(t("landing.pricing.club.features", { returnObjects: true }) as string[]).map((feature, index) => (
+                  <div key={index} className="flex items-start gap-2">
+                    <Check className="w-5 h-5 text-accent mt-0.5" />
+                    <span className="text-sm">{feature}</span>
+                  </div>
+                ))}
               </div>
 
               <div className="flex flex-col sm:flex-row items-center gap-4">
-                <Button variant="hero" size="lg" className="w-full sm:w-auto">
-                  Contacter l'Équipe Commerciale
+                <Button
+                  variant="hero"
+                  size="lg"
+                  className="w-full sm:w-auto"
+                  onClick={() => window.location.href = '/contact?type=club'}
+                >
+                  {t("landing.pricing.club.cta")}
                 </Button>
               </div>
             </div>

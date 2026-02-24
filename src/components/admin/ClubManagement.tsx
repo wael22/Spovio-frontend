@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { adminService } from '@/lib/api';
+import React, { useState, useEffect, useRef } from 'react';
+import { adminService, getAssetUrl } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import { Plus, Building, MapPin, Phone, Mail, Loader2, Edit, Trash2, MoreVertical, Coins, Video, Eye, Settings, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Plus, Building, MapPin, Phone, Mail, Loader2, Edit, Trash2, MoreVertical, Coins, Video, Eye, Settings, ArrowUpDown, ArrowUp, ArrowDown, Image, Upload, X } from 'lucide-react';
 import ClubOverlayManager from './ClubOverlayManager';
 import CourtControlPanel from './CourtControlPanel';
 
@@ -18,6 +18,7 @@ interface Club {
     address?: string;
     phone_number?: string;
     email?: string;
+    logo?: string;
     credits_balance: number;
     video_count?: number;
     created_at: string;
@@ -51,6 +52,11 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
         name: '', camera_url: '', qr_code: ''
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [showLogoModal, setShowLogoModal] = useState(false);
+    const [logoFile, setLogoFile] = useState<File | null>(null);
+    const [logoPreview, setLogoPreview] = useState<string | null>(null);
+    const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+    const logoInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         loadClubs();
@@ -145,6 +151,50 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
     const resetForm = () => {
         setClubFormData({ name: '', address: '', phone_number: '', email: '', password: '', credits_balance: 0 });
         setSelectedClub(null);
+    };
+
+    const openLogoModal = (club: Club) => {
+        setSelectedClub(club);
+        setLogoFile(null);
+        setLogoPreview(club.logo ? getAssetUrl(club.logo) : null);
+        setShowLogoModal(true);
+    };
+
+    const handleLogoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setLogoFile(file);
+            const reader = new FileReader();
+            reader.onloadend = () => setLogoPreview(reader.result as string);
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleUploadLogo = async () => {
+        if (!selectedClub || !logoFile) return;
+        setIsUploadingLogo(true);
+        try {
+            const formData = new FormData();
+            formData.append('logo', logoFile);
+            await adminService.uploadClubLogo(selectedClub.id, formData);
+            setShowLogoModal(false);
+            loadClubs();
+        } catch (error) {
+            setError('Erreur lors de l\'upload du logo');
+        } finally {
+            setIsUploadingLogo(false);
+        }
+    };
+
+    const handleDeleteLogo = async () => {
+        if (!selectedClub || !confirm(`Supprimer le logo de ${selectedClub.name} ?`)) return;
+        try {
+            await adminService.deleteClubLogo(selectedClub.id);
+            setShowLogoModal(false);
+            loadClubs();
+        } catch (error) {
+            setError('Erreur lors de la suppression du logo');
+        }
     };
 
     const openEditModal = (club: Club) => {
@@ -288,8 +338,19 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                                 {sortedClubs.map((club) => (
                                     <TableRow key={club.id}>
                                         <TableCell className="font-medium">
-                                            <div className="flex items-center space-x-2">
-                                                <Building className="h-4 w-4 text-blue-500" />
+                                            <div className="flex items-center space-x-3">
+                                                {club.logo ? (
+                                                    <img
+                                                        src={getAssetUrl(club.logo)}
+                                                        alt={club.name}
+                                                        className="h-8 w-8 rounded-full object-cover border border-gray-200"
+                                                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                                    />
+                                                ) : (
+                                                    <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                                        <Building className="h-4 w-4 text-blue-500" />
+                                                    </div>
+                                                )}
                                                 <span>{club.name}</span>
                                             </div>
                                         </TableCell>
@@ -337,6 +398,9 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                                                     <Button variant="ghost" size="sm"><MoreVertical className="h-4 w-4" /></Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem onClick={() => openLogoModal(club)}>
+                                                        <Image className="mr-2 h-4 w-4" />Changer Logo
+                                                    </DropdownMenuItem>
                                                     <DropdownMenuItem onClick={() => openEditModal(club)}>
                                                         <Edit className="mr-2 h-4 w-4" />Modifier
                                                     </DropdownMenuItem>
@@ -369,6 +433,58 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                     )}
                 </CardContent>
             </Card>
+
+            {/* Logo Upload Modal */}
+            <Dialog open={showLogoModal} onOpenChange={setShowLogoModal}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Logo du Club — {selectedClub?.name}</DialogTitle>
+                        <DialogDescription>Uploadez ou remplacez le logo de ce club.</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                        {logoPreview && (
+                            <div className="flex justify-center">
+                                <img src={logoPreview} alt="Logo actuel" className="h-24 w-24 rounded-full object-cover border-2 border-blue-200" />
+                            </div>
+                        )}
+                        {!logoPreview && (
+                            <div className="flex justify-center">
+                                <div className="h-24 w-24 rounded-full bg-gray-100 flex items-center justify-center">
+                                    <Building className="h-10 w-10 text-gray-400" />
+                                </div>
+                            </div>
+                        )}
+                        <div className="space-y-2">
+                            <Label>Nouveau logo</Label>
+                            <input
+                                ref={logoInputRef}
+                                type="file"
+                                accept="image/*"
+                                onChange={handleLogoFileChange}
+                                className="hidden"
+                            />
+                            <Button variant="outline" className="w-full" onClick={() => logoInputRef.current?.click()}>
+                                <Upload className="h-4 w-4 mr-2" />Choisir une image
+                            </Button>
+                            {logoFile && <p className="text-sm text-green-600">✓ {logoFile.name} sélectionné</p>}
+                        </div>
+                        <div className="flex justify-between">
+                            {selectedClub?.logo && (
+                                <Button variant="destructive" size="sm" onClick={handleDeleteLogo}>
+                                    <X className="h-4 w-4 mr-1" />Supprimer logo
+                                </Button>
+                            )}
+                            <div className="flex gap-2 ml-auto">
+                                <Button variant="outline" onClick={() => setShowLogoModal(false)}>Annuler</Button>
+                                <Button onClick={handleUploadLogo} disabled={!logoFile || isUploadingLogo}>
+                                    {isUploadingLogo && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                                    Uploader
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
 
             {/* Edit Modal */}
             <Dialog open={showEditModal} onOpenChange={setShowEditModal}>

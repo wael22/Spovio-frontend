@@ -1,5 +1,6 @@
 ﻿import { useState, useEffect } from 'react';
 import { videoService } from '@/lib/api';
+import { useTranslation } from 'react-i18next';
 import {
     Dialog,
     DialogContent,
@@ -32,6 +33,7 @@ export function EditVideoTitleModal({
     video,
     onSuccess
 }: EditVideoTitleModalProps) {
+    const { t } = useTranslation();
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -49,7 +51,7 @@ export function EditVideoTitleModal({
         e.preventDefault();
 
         if (!title.trim()) {
-            setError('Le titre est requis');
+            setError(t('modals.editVideo.titleRequired'));
             return;
         }
 
@@ -64,7 +66,7 @@ export function EditVideoTitleModal({
                 description: description.trim()
             });
 
-            toast.success('Vidéo mise à jour avec succès');
+            toast.success(t('modals.editVideo.success'));
 
             if (onSuccess) {
                 onSuccess();
@@ -73,7 +75,7 @@ export function EditVideoTitleModal({
             handleClose();
         } catch (err: any) {
             console.error('Erreur mise à jour vidéo:', err);
-            const errorMsg = err.response?.data?.error || 'Erreur lors de la mise à jour';
+            const errorMsg = err.response?.data?.error || t('modals.editVideo.error');
             setError(errorMsg);
             toast.error(errorMsg);
         } finally {
@@ -98,10 +100,10 @@ export function EditVideoTitleModal({
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <Edit2 className="h-5 w-5 text-primary" />
-                        Modifier la vidéo
+                        {t('modals.editVideo.title')}
                     </DialogTitle>
                     <DialogDescription>
-                        Modifiez le titre et la description de votre vidéo
+                        {t('modals.editVideo.description')}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -116,13 +118,13 @@ export function EditVideoTitleModal({
                     {/* Titre */}
                     <div className="space-y-2">
                         <Label htmlFor="title">
-                            Titre <span className="text-red-500">*</span>
+                            {t('modals.editVideo.titleLabel')} <span className="text-red-500">*</span>
                         </Label>
                         <Input
                             id="title"
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
-                            placeholder="Titre de la vidéo"
+                            placeholder={t('modals.editVideo.titlePlaceholder')}
                             maxLength={200}
                             required
                             disabled={isLoading}
@@ -135,12 +137,12 @@ export function EditVideoTitleModal({
 
                     {/* Description */}
                     <div className="space-y-2">
-                        <Label htmlFor="description">Description</Label>
+                        <Label htmlFor="description">{t('modals.editVideo.descriptionLabel')}</Label>
                         <Textarea
                             id="description"
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
-                            placeholder="Description optionnelle de la vidéo..."
+                            placeholder={t('modals.editVideo.descriptionPlaceholder')}
                             rows={3}
                             maxLength={500}
                             disabled={isLoading}
@@ -159,7 +161,7 @@ export function EditVideoTitleModal({
                             onClick={handleClose}
                             disabled={isLoading}
                         >
-                            Annuler
+                            {t('modals.common.cancel')}
                         </Button>
                         <Button
                             type="submit"
@@ -170,12 +172,12 @@ export function EditVideoTitleModal({
                             {isLoading ? (
                                 <>
                                     <Loader2 className="h-4 w-4 animate-spin" />
-                                    <span>Enregistrement...</span>
+                                    <span>{t('modals.editVideo.saving')}</span>
                                 </>
                             ) : (
                                 <>
                                     <Edit2 className="h-4 w-4" />
-                                    <span>Enregistrer</span>
+                                    <span>{t('modals.editVideo.save')}</span>
                                 </>
                             )}
                         </Button>

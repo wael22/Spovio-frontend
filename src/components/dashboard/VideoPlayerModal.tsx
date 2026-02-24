@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import Hls from "hls.js";
 import { Button } from "@/components/ui/button";
 import { Scissors, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { VideoClipEditor } from "./VideoClipEditor";
 
 interface VideoPlayerModalProps {
@@ -17,6 +18,7 @@ interface VideoPlayerModalProps {
 }
 
 export function VideoPlayerModal({ isOpen, onClose, video }: VideoPlayerModalProps) {
+    const { t } = useTranslation();
     const videoRef = useRef<HTMLVideoElement>(null);
     const hlsRef = useRef<Hls | null>(null);
     const [videoElement, setVideoElement] = useState<HTMLVideoElement | null>(null);
@@ -130,7 +132,7 @@ export function VideoPlayerModal({ isOpen, onClose, video }: VideoPlayerModalPro
             <Dialog open={isOpen} onOpenChange={onClose}>
                 <DialogContent className="sm:max-w-4xl md:max-w-5xl p-0">
                     <div className="flex items-center justify-between p-4 border-b">
-                        <h3 className="font-semibold text-lg">{video.title || 'Lecteur vidéo'}</h3>
+                        <h3 className="font-semibold text-lg">{video.title || t('modals.videoPlayer.title')}</h3>
                         <Button
                             variant="outline"
                             size="sm"
@@ -138,7 +140,7 @@ export function VideoPlayerModal({ isOpen, onClose, video }: VideoPlayerModalPro
                             className="gap-2"
                         >
                             <Scissors className="h-4 w-4" />
-                            Créer un Clip
+                            {t('modals.videoPlayer.createClip')}
                         </Button>
                     </div>
 
@@ -149,7 +151,7 @@ export function VideoPlayerModal({ isOpen, onClose, video }: VideoPlayerModalPro
                             controls
                             playsInline
                         >
-                            Votre navigateur ne supporte pas la lecture vidéo.
+                            {t('modals.videoPlayer.unsupported')}
                         </video>
                     </div>
                 </DialogContent>

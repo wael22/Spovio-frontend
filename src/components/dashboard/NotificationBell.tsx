@@ -11,6 +11,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { notificationService } from "@/lib/api";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 interface Notification {
   id: number;
@@ -55,9 +56,19 @@ const formatTime = (timestamp: string) => {
   return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
 };
 
-export function NotificationBell() {
+export const NotificationBell = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState<Notification[]>([]);
+
+  const translateTitle = (title: string, type: string) => {
+    if (!title) return title;
+    if (title.includes('clip est pr')) return t('notifications.clipReady', '🎬 Your clip is ready!');
+    if (title.includes('vidéo est pr')) return t('notifications.videoReady', '🎬 Your video is ready!');
+    if (title.includes('vidéo partagée')) return t('notifications.types.VIDEO_SHARED.title', 'New video shared');
+    if (title.includes('Bienvenue')) return t('notifications.types.SYSTEM.title', 'Welcome to Spovio ! 🎾');
+    return title;
+  };
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -117,7 +128,7 @@ export function NotificationBell() {
     // Navigate if link is provided (like PadelVar)
     if (notification.link) {
       try {
-        const validPaths = ['/dashboard', '/my-clips', '/profile', '/credits'];
+        const validPaths = ['/dashboard', '/my-clips', '/profile', '/credits', '/support', '/videos'];
         if (validPaths.some(path => notification.link?.startsWith(path))) {
           navigate(notification.link);
           setIsOpen(false); // Close popover
@@ -170,7 +181,7 @@ export function NotificationBell() {
         {/* Header (like PadelVar) */}
         <div className="flex items-center justify-between p-4 border-b border-border/50">
           <h3 className="font-semibold">
-            Notifications {unreadCount > 0 && `(${unreadCount})`}
+            {t('nav.notifications') || 'Notifications'} {unreadCount > 0 && `(${unreadCount})`}
           </h3>
           {unreadCount > 0 && (
             <Button
@@ -180,7 +191,7 @@ export function NotificationBell() {
               className="text-xs text-primary hover:text-primary"
             >
               <Check className="h-3 w-3 mr-1" />
-              Tout marquer lu
+              {t('notifications.markAllAsRead') || 'Tout marquer lu'}
             </Button>
           )}
         </div>
@@ -194,7 +205,7 @@ export function NotificationBell() {
           ) : notifications.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground">
               <Bell className="h-10 w-10 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">Aucune notification</p>
+              <p className="text-sm">{t('notifications.empty') || 'Aucune notification'}</p>
             </div>
           ) : (
             <div className="divide-y divide-border/50">
@@ -219,7 +230,7 @@ export function NotificationBell() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
                           <p className="font-medium text-sm">
-                            {notification.title}
+                            {translateTitle(notification.title, notifType)}
                           </p>
                           <div className="flex items-center gap-2 flex-shrink-0">
                             {!notification.is_read && (

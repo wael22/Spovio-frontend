@@ -19,7 +19,8 @@ import {
     Sun,
     User,
     LogOut,
-    Shield
+    Shield,
+    Database
 } from 'lucide-react';
 import UserManagement from './UserManagement';
 import ClubManagement from './ClubManagement';
@@ -28,6 +29,7 @@ import ClubHistoryAdmin from './ClubHistoryAdmin';
 import SystemConfiguration from './SystemConfiguration';
 import SystemLogs from './SystemLogs';
 import SupportManagement from './SupportManagement';
+import RecoveryManagement from './RecoveryManagement';
 import OverviewTab from './OverviewTab';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -262,6 +264,11 @@ const AdminDashboard: React.FC = () => {
                                 <MessageSquare className="h-4 w-4" />Support
                             </span>
                         </TabsTrigger>
+                        <TabsTrigger value="recovery">
+                            <span className="inline-flex items-center gap-1">
+                                <Database className="h-4 w-4" />Récupération
+                            </span>
+                        </TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="overview" className="mt-6">
@@ -294,6 +301,10 @@ const AdminDashboard: React.FC = () => {
 
                     <TabsContent value="support" className="mt-6">
                         <SupportManagement />
+                    </TabsContent>
+
+                    <TabsContent value="recovery" className="mt-6">
+                        <RecoveryManagement />
                     </TabsContent>
                 </Tabs>
             </div>

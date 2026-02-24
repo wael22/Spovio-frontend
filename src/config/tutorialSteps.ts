@@ -14,8 +14,8 @@ export const tutorialSteps: TutorialStep[] = [
     // Écran de bienvenue - Onglet "Mes Vidéos"
     {
         id: 0,
-        title: 'Bienvenue sur MySmash 👋',
-        message: 'Voici votre tableau de bord. Consultez vos statistiques et toutes vos vidéos enregistrées.',
+        title: 'tutorial.steps.step0.title',
+        message: 'tutorial.steps.step0.message',
         targetTab: 'videos',
         position: 'center',
     },
@@ -23,7 +23,7 @@ export const tutorialSteps: TutorialStep[] = [
     // Étape 1 - Onglet "Clubs"
     {
         id: 1,
-        message: 'Suivez un club partenaire pour pouvoir lancer vos enregistrements. Retrouvez ici tous les clubs disponibles sur MySmash.',
+        message: 'tutorial.steps.step1.message',
         targetTab: 'clubs',
         position: 'top',
     },
@@ -31,8 +31,8 @@ export const tutorialSteps: TutorialStep[] = [
     // Étape 2 - Onglet "Mes Clips"
     {
         id: 2,
-        message: 'Tous vos meilleurs moments sont regroupés ici. Créez un clip en sélectionnant Début et Fin, prévisualisez, nommez-le puis appuyez sur Créer le clip.',
-        secondaryMessage: 'Votre clip est prêt en quelques secondes ! Partagez-le sur TikTok, Instagram, Facebook ou téléchargez-le en MP4.',
+        message: 'tutorial.steps.step2.message',
+        secondaryMessage: 'tutorial.steps.step2.secondaryMessage',
         targetTab: 'clips',
         position: 'top',
     },
@@ -40,7 +40,7 @@ export const tutorialSteps: TutorialStep[] = [
     // Étape 3 - Onglet "Support"
     {
         id: 3,
-        message: 'Une question ou un problème ? Contactez-nous ou proposez vos idées pour améliorer MySmash.',
+        message: 'tutorial.steps.step3.message',
         targetTab: 'support',
         position: 'top',
     },
@@ -48,7 +48,7 @@ export const tutorialSteps: TutorialStep[] = [
     // Étape 4 - Onglet "Crédits"
     {
         id: 4,
-        message: 'Découvrez nos packs de crédits et choisissez le mode de paiement qui vous convient.',
+        message: 'tutorial.steps.step4.message',
         targetTab: 'credits',
         position: 'top',
     },
@@ -56,8 +56,8 @@ export const tutorialSteps: TutorialStep[] = [
     // Étape 5 - Retour à "Mes Vidéos" → Créer votre première vidéo
     {
         id: 5,
-        message: 'Créez votre première vidéo en quelques secondes.',
-        secondaryMessage: 'Sélectionnez votre club → choisissez votre terrain → scannez le QR code → appuyez sur Démarrer l\'enregistrement.',
+        message: 'tutorial.steps.step5.message',
+        secondaryMessage: 'tutorial.steps.step5.secondaryMessage',
         targetTab: 'videos',
         targetElement: '#create-video-button',
         position: 'bottom',
@@ -66,7 +66,7 @@ export const tutorialSteps: TutorialStep[] = [
     // Étape 6 - Onglet "Mon Profil"
     {
         id: 6,
-        message: 'Modifiez vos informations personnelles et changez votre mot de passe à tout moment.',
+        message: 'tutorial.steps.step6.message',
         targetTab: 'profile',
         position: 'top',
     },
@@ -74,8 +74,8 @@ export const tutorialSteps: TutorialStep[] = [
     // Écran final
     {
         id: 7,
-        title: '🎉 Vous êtes prêt à jouer !',
-        message: 'Lancez votre premier enregistrement et analysez vos performances avec MySmash.',
+        title: 'tutorial.steps.step7.title',
+        message: 'tutorial.steps.step7.message',
         targetTab: 'videos',
         position: 'center',
         isFinal: true,

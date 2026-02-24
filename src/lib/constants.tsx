@@ -14,30 +14,36 @@ import {
     Video,
     Cloud,
     Film,
-    Share2
+    Share2,
+    Lightbulb,
+    Heart
 } from "lucide-react";
 
 export const ABOUT_VALUES = [
     {
-        icon: Target,
-        title: "Notre Mission",
-        description: "Démocratiser l'analyse vidéo sportive pour tous les joueurs, du amateur au professionnel."
-    },
-    {
-        icon: Zap,
+        key: "innovation",
+        icon: Lightbulb,
         title: "Innovation",
-        description: "Utiliser la technologie IA pour transformer l'expérience sportive et aider les athlètes à progresser."
+        description: "Nous repoussons constamment les limites de la technologie pour améliorer l'expérience sportive.",
     },
     {
+        key: "accessibility",
         icon: Users,
-        title: "Communauté",
-        description: "Créer une plateforme où les sportifs peuvent partager, apprendre et s'améliorer ensemble."
+        title: "Accessibilité",
+        description: "Nous rendons les outils professionnels accessibles à tous les niveaux de joueurs.",
     },
     {
-        icon: Globe,
-        title: "Expansion",
-        description: "Du padel au tennis, et bientôt tous les sports. Notre vision est globale."
-    }
+        key: "performance",
+        icon: Target,
+        title: "Performance",
+        description: "Nous nous engageons à fournir des données précises et exploitables pour votre progression.",
+    },
+    {
+        key: "passion",
+        icon: Heart,
+        title: "Passion",
+        description: "Nous sommes passionnés par le sport et cette passion guide tout ce que nous faisons.",
+    },
 ];
 
 export const MILESTONES = [
@@ -136,36 +142,42 @@ export const MILESTONES = [
 
 export const AI_FEATURES = [
     {
+        key: "matchStats",
         icon: BarChart3,
         title: "Statistiques de Match par IA",
         description: "Analyses complètes pour chaque point, jeu et set. Comprenez vos taux de réussite, vos fautes et votre sélection de coups.",
         status: "coming",
     },
     {
+        key: "positionTracking",
         icon: MapPin,
         title: "Suivi de Position",
         description: "Suivi en temps réel des positions sur le terrain. Analysez la couverture du terrain et les stratégies de placement.",
         status: "coming",
     },
     {
+        key: "speedHeatmaps",
         icon: Activity,
         title: "Heatmaps de Vitesse",
         description: "Visualisez les modèles de déplacement, les zones de vitesse et la couverture du terrain avec des cartes thermiques détaillées.",
         status: "coming",
     },
     {
+        key: "autoHighlights",
         icon: Sparkles,
         title: "Moments Forts Auto",
         description: "L'IA identifie et découpe les meilleurs moments de vos matchs. Partagez vos highlights instantanément.",
         status: "coming",
     },
     {
+        key: "smartSummary",
         icon: Clock,
         title: "Résumé Intelligent",
         description: "Obtenez un résumé complet avec les statistiques clés, les tournants du match et des insights de performance.",
         status: "coming",
     },
     {
+        key: "performanceEvolution",
         icon: TrendingUp,
         title: "Évolution Performance",
         description: "Suivez votre progression au fil du temps avec des analyses de tendances et des jalons atteints.",
@@ -175,6 +187,7 @@ export const AI_FEATURES = [
 
 export const HOW_IT_WORKS_STEPS = [
     {
+        key: "scanQr",
         number: "01",
         icon: QrCode,
         title: "Scanner le QR Code",
@@ -182,6 +195,7 @@ export const HOW_IT_WORKS_STEPS = [
         color: "primary",
     },
     {
+        key: "startRecording",
         number: "02",
         icon: Video,
         title: "Lancer l'Enregistrement",
@@ -189,6 +203,7 @@ export const HOW_IT_WORKS_STEPS = [
         color: "primary",
     },
     {
+        key: "autoUpload",
         number: "03",
         icon: Cloud,
         title: "Sauvegarde Cloud Auto",
@@ -196,6 +211,7 @@ export const HOW_IT_WORKS_STEPS = [
         color: "primary",
     },
     {
+        key: "watchClip",
         number: "04",
         icon: Film,
         title: "Regarder & Clipper",
@@ -203,6 +219,7 @@ export const HOW_IT_WORKS_STEPS = [
         color: "primary",
     },
     {
+        key: "share",
         number: "05",
         icon: Share2,
         title: "Partager Facilement",
@@ -210,6 +227,7 @@ export const HOW_IT_WORKS_STEPS = [
         color: "primary",
     },
     {
+        key: "aiAnalysis",
         number: "06",
         icon: Brain,
         title: "Analyse IA",

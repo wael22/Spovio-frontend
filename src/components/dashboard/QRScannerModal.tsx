@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Camera, AlertCircle, CheckCircle, Keyboard } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import QRScanner from './QRScanner';
 
 interface QRScannerModalProps {
@@ -24,6 +25,7 @@ interface QRScannerModalProps {
  * User-friendly modal wrapper for QR code scanning
  */
 const QRScannerModal = ({ isOpen, onClose, onCodeScanned }: QRScannerModalProps) => {
+  const { t } = useTranslation();
   const [scannedCode, setScannedCode] = useState('');
   const [error, setError] = useState('');
   const [showManualInput, setShowManualInput] = useState(false);
@@ -44,9 +46,7 @@ const QRScannerModal = ({ isOpen, onClose, onCodeScanned }: QRScannerModalProps)
 
   const handleScanError = (err: any) => {
     console.error('Scanner error:', err);
-    setError(
-      'Impossible d\'accéder à la caméra. Veuillez vérifier les permissions ou utiliser la saisie manuelle.'
-    );
+    setError(t('modals.qrScanner.cameraError'));
     setShowManualInput(true);
   };
 
@@ -75,10 +75,10 @@ const QRScannerModal = ({ isOpen, onClose, onCodeScanned }: QRScannerModalProps)
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Camera className="h-5 w-5 text-blue-600" />
-            Scanner le QR Code du terrain
+            {t('modals.qrScanner.title')}
           </DialogTitle>
           <DialogDescription>
-            Pointez votre caméra vers le QR code affiché sur le terrain
+            {t('modals.qrScanner.description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -96,7 +96,7 @@ const QRScannerModal = ({ isOpen, onClose, onCodeScanned }: QRScannerModalProps)
             <Alert className="border-green-500 bg-green-50">
               <CheckCircle className="h-4 w-4 text-green-600" />
               <AlertDescription className="text-green-800">
-                <strong>Code scanné :</strong> {scannedCode}
+                <strong>{t('modals.qrScanner.scannedCode')}</strong> {scannedCode}
               </AlertDescription>
             </Alert>
           )}
@@ -107,7 +107,7 @@ const QRScannerModal = ({ isOpen, onClose, onCodeScanned }: QRScannerModalProps)
               {/* Scanner Instructions */}
               <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm">
                 <p className="text-blue-900">
-                  📱 Positionnez le QR code dans le cadre ci-dessous
+                  📱 {t('modals.qrScanner.instruction')}
                 </p>
               </div>
 
@@ -129,7 +129,7 @@ const QRScannerModal = ({ isOpen, onClose, onCodeScanned }: QRScannerModalProps)
                   className="text-xs"
                 >
                   <Keyboard className="h-3 w-3 mr-1" />
-                  Saisir manuellement
+                  {t('modals.qrScanner.manualInput')}
                 </Button>
               </div>
             </div>
@@ -137,10 +137,10 @@ const QRScannerModal = ({ isOpen, onClose, onCodeScanned }: QRScannerModalProps)
             <div className="space-y-4">
               {/* Manual Input */}
               <div className="space-y-2">
-                <Label htmlFor="manual-code">Code du terrain</Label>
+                <Label htmlFor="manual-code">{t('modals.qrScanner.codeLabel')}</Label>
                 <Input
                   id="manual-code"
-                  placeholder="Entrez le code manuellement"
+                  placeholder={t('modals.qrScanner.manualPlaceholder')}
                   value={manualCode}
                   onChange={(e) => setManualCode(e.target.value)}
                   onKeyDown={(e) => {
@@ -161,7 +161,7 @@ const QRScannerModal = ({ isOpen, onClose, onCodeScanned }: QRScannerModalProps)
                   className="flex-1"
                 >
                   <Camera className="h-4 w-4 mr-1" />
-                  Utiliser caméra
+                  {t('modals.qrScanner.useCamera')}
                 </Button>
                 <Button
                   type="button"
@@ -169,7 +169,7 @@ const QRScannerModal = ({ isOpen, onClose, onCodeScanned }: QRScannerModalProps)
                   disabled={!manualCode.trim()}
                   className="flex-1"
                 >
-                  Valider
+                  {t('modals.qrScanner.validate')}
                 </Button>
               </div>
             </div>
@@ -184,7 +184,7 @@ const QRScannerModal = ({ isOpen, onClose, onCodeScanned }: QRScannerModalProps)
                 onClick={handleClose}
                 className="w-full"
               >
-                Annuler
+                {t('modals.common.cancel')}
               </Button>
             </div>
           )}

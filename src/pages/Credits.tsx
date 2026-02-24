@@ -16,6 +16,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 interface CreditPackage {
   id: string;
@@ -40,6 +41,8 @@ interface PaymentMethod {
   icon: React.ElementType;
   available: boolean;
   delay?: string;
+  enabled?: boolean;
+  processing_time?: string;
 }
 
 // Helper function to get icon for payment method
@@ -77,11 +80,12 @@ const itemVariants = {
 };
 
 const Credits = () => {
-  const { user, refreshUser } = useAuth();
+  const { t } = useTranslation();
+  const { user, fetchUser } = useAuth();
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
   const [selectedPayment, setSelectedPayment] = useState<string | null>(null);
   const [packages, setPackages] = useState<CreditPackage[]>([]);
-  const [paymentMethods, setPaymentMethods] = useState<any[]>([]);
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState(false);
 
@@ -98,8 +102,8 @@ const Credits = () => {
 
         // Filter out simulation payment method and disable others
         const filteredMethods = (paymentRes.data.payment_methods || [])
-          .filter((method: any) => method.id !== 'simulation')
-          .map((method: any) => ({ ...method, enabled: false })); // Disable all for now
+          .filter((method: PaymentMethod) => method.id !== 'simulation')
+          .map((method: PaymentMethod) => ({ ...method, enabled: false })); // Disable all for now
         setPaymentMethods(filteredMethods);
 
         // Set default payment method
@@ -107,10 +111,11 @@ const Credits = () => {
           ? 'konnect'
           : paymentRes.data.default_method || 'konnect';
         setSelectedPayment(defaultMethod);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         console.error('Failed to load data:', error);
         if (error.response?.status !== 401) {
-          toast.error('Impossible de charger les données');
+          toast.error(t('pages.credits.loadError'));
         }
       } finally {
         setLoading(false);
@@ -118,15 +123,15 @@ const Credits = () => {
     };
 
     loadPackagesAndPaymentMethods();
-  }, []);
+  }, [t]);
 
   const handlePurchase = async () => {
     if (!selectedPackage) {
-      toast.error("Veuillez sélectionner un pack de crédits");
+      toast.error(t('pages.credits.selectPackage'));
       return;
     }
     if (!selectedPayment) {
-      toast.error("Veuillez sélectionner une méthode de paiement");
+      toast.error(t('pages.credits.selectPayment'));
       return;
     }
 
@@ -143,17 +148,18 @@ const Credits = () => {
         package_type: selectedPackage.startsWith('pack_') ? 'pack' : 'individual'
       });
 
-      toast.success(`Achat de ${pkg?.credits} crédits réussi !`);
+      toast.success(t('pages.credits.success', { amount: pkg?.credits }));
 
       // Refresh user data to update credits balance
-      await refreshUser();
+      await fetchUser();
 
       // Reset selections
       setSelectedPackage(null);
       setSelectedPayment(null);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('Purchase failed:', error);
-      toast.error(error.response?.data?.error || 'Erreur lors de l\'achat');
+      toast.error(error.response?.data?.error || t('pages.credits.error'));
     } finally {
       setPurchasing(false);
     }
@@ -164,7 +170,7 @@ const Credits = () => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary mb-4" />
-          <p className="text-muted-foreground">Chargement des packages...</p>
+          <p className="text-muted-foreground">{t('pages.credits.loading')}</p>
         </div>
       </div>
     );
@@ -183,10 +189,10 @@ const Credits = () => {
             className="mb-8"
           >
             <h1 className="text-3xl lg:text-4xl font-bold font-orbitron mb-2">
-              <span className="gradient-text">Crédits</span>
+              <span className="gradient-text">{t('pages.credits.title')}</span>
             </h1>
             <p className="text-muted-foreground text-lg">
-              Achetez des crédits pour débloquer vos vidéos
+              {t('pages.credits.subtitle')}
             </p>
           </motion.div>
 
@@ -201,21 +207,21 @@ const Credits = () => {
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                 <Coins className="h-5 w-5 text-primary" />
               </div>
-              <h2 className="text-lg font-semibold">Système de Crédits MySmash</h2>
+              <h2 className="text-lg font-semibold">{t('pages.credits.systemTitle')}</h2>
             </div>
 
             <div className="grid grid-cols-3 gap-6 mb-6">
               <div className="text-center">
                 <p className="text-3xl font-bold text-primary">{user?.credits_balance || user?.credits || 0}</p>
-                <p className="text-sm text-muted-foreground">Crédits disponibles</p>
+                <p className="text-sm text-muted-foreground">{t('pages.credits.available')}</p>
               </div>
               <div className="text-center">
                 <p className="text-3xl font-bold text-neon-green">20 DT</p>
-                <p className="text-sm text-muted-foreground">Prix par crédit</p>
+                <p className="text-sm text-muted-foreground">{t('pages.credits.pricePerCredit')}</p>
               </div>
               <div className="text-center">
                 <p className="text-3xl font-bold text-accent">{packages.length}</p>
-                <p className="text-sm text-muted-foreground">Packs disponibles</p>
+                <p className="text-sm text-muted-foreground">{t('pages.credits.packsAvailable')}</p>
               </div>
             </div>
 
@@ -224,7 +230,7 @@ const Credits = () => {
               element?.scrollIntoView({ behavior: 'smooth' });
             }}>
               <Coins className="h-4 w-4" />
-              Recharger mes crédits
+              {t('pages.credits.reload')}
             </Button>
           </motion.div>
 
@@ -238,7 +244,7 @@ const Credits = () => {
           >
             <div className="flex items-center gap-3 mb-6">
               <Coins className="h-5 w-5 text-primary" />
-              <h2 className="text-xl font-semibold">Packages Disponibles</h2>
+              <h2 className="text-xl font-semibold">{t('pages.credits.packagesTitle')}</h2>
             </div>
 
             {packages.length > 0 ? (
@@ -262,12 +268,12 @@ const Credits = () => {
                   >
                     {pkg.popular && (
                       <span className="absolute -top-3 right-4 px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-medium">
-                        Populaire
+                        {t('pages.credits.popular')}
                       </span>
                     )}
 
                     <div className="flex items-start justify-between gap-2 mb-2">
-                      <h3 className="text-2xl font-bold">{pkg.credits} crédits</h3>
+                      <h3 className="text-2xl font-bold">{pkg.credits} {t('dashboard.stats.credits')}</h3>
                       {pkg.badge && (
                         <span className="px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium">
                           {pkg.badge}
@@ -286,7 +292,7 @@ const Credits = () => {
                       )}
                       {(pkg.savings_dt || pkg.savings) && (pkg.savings_dt || pkg.savings) > 0 && (
                         <p className="text-xs text-green-600 font-medium mt-1">
-                          Économie: {pkg.savings_dt || pkg.savings} {pkg.currency || 'DT'}
+                          {t('pages.credits.economy')}: {pkg.savings_dt || pkg.savings} {pkg.currency || 'DT'}
                         </p>
                       )}
                     </div>
@@ -303,7 +309,7 @@ const Credits = () => {
               </motion.div>
             ) : (
               <p className="text-center text-muted-foreground py-8">
-                Aucun package disponible pour le moment
+                {t('pages.credits.noPackages')}
               </p>
             )}
           </motion.div>
@@ -317,7 +323,7 @@ const Credits = () => {
           >
             <div className="flex items-center gap-3 mb-6">
               <Shield className="h-5 w-5 text-accent" />
-              <h2 className="text-xl font-semibold">Méthodes de Paiement Sécurisées</h2>
+              <h2 className="text-xl font-semibold">{t('pages.credits.paymentMethodsTitle')}</h2>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -351,7 +357,7 @@ const Credits = () => {
                         ? "bg-neon-green/10 text-neon-green"
                         : "bg-muted text-muted-foreground"
                         }`}>
-                        {isAvailable ? "Disponible" : "Bientôt"}
+                        {isAvailable ? t('pages.credits.methodAvailable') : t('pages.credits.methodComingSoon')}
                       </span>
                       {method.processing_time && (
                         <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1 justify-end">
@@ -374,12 +380,12 @@ const Credits = () => {
               {purchasing ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Traitement en cours...
+                  {t('pages.credits.processing')}
                 </>
               ) : (
                 <>
                   <CreditCard className="h-4 w-4" />
-                  Procéder au paiement
+                  {t('pages.credits.proceedPayment')}
                 </>
               )}
             </Button>

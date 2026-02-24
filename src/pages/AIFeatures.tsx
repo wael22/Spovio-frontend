@@ -9,8 +9,11 @@ import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import aiNetworkImage from "@/assets/ai-network.jpg";
 import { AI_FEATURES } from "@/lib/constants";
+import { useTranslation } from "react-i18next";
 
 const AIFeaturesPage = () => {
+  const { t } = useTranslation();
+
   return (
     <Layout>
       {/* Hero Section */}
@@ -59,23 +62,23 @@ const AIFeaturesPage = () => {
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-accent/30 bg-accent/10 mb-6">
               <Brain className="w-4 h-4 text-accent" />
               <span className="text-sm font-medium text-accent">
-                Bientôt Disponible
+                {t('pages.aiFeatures.hero.badge')}
               </span>
             </div>
 
             <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-              Analyse de Performance
+              {t('pages.aiFeatures.hero.title')}
               <br />
-              <span className="text-gradient">Propulsée par l'IA</span>
+              <span className="text-gradient">{t('pages.aiFeatures.hero.titleHighlight')}</span>
             </h1>
 
             <p className="text-xl text-muted-foreground mb-8">
-              L'intelligence artificielle de nouvelle génération transformera votre façon de comprendre, d'analyser et d'améliorer votre jeu.
+              {t('pages.aiFeatures.hero.description')}
             </p>
 
             <Link to="/auth?mode=signup">
               <Button variant="neon" size="xl" className="group">
-                Obtenir un Accès Anticipé
+                {t('pages.aiFeatures.hero.cta')}
                 <Zap className="w-5 h-5" />
               </Button>
             </Link>
@@ -93,10 +96,10 @@ const AIFeaturesPage = () => {
             className="text-center max-w-3xl mx-auto mb-16"
           >
             <h2 className="font-display text-3xl md:text-4xl font-bold mb-6">
-              Fonctionnalités IA <span className="text-gradient">à Venir</span>
+              {t('pages.aiFeatures.title')} <span className="text-gradient"></span>
             </h2>
             <p className="text-lg text-muted-foreground">
-              Nous construisons la plateforme d'analyse sportive la plus avancée
+              {t('pages.aiFeatures.subtitle')}
             </p>
           </motion.div>
 
@@ -112,7 +115,7 @@ const AIFeaturesPage = () => {
               >
                 <div className="p-6 rounded-2xl bg-card border border-border h-full backdrop-blur-sm hover:border-accent/30 transition-all">
                   <div className="absolute -top-2 -right-2 px-2 py-0.5 rounded-full bg-accent/20 border border-accent/30 text-[10px] font-medium text-accent">
-                    Bientôt
+                    {t('pages.aiFeatures.comingSoonBadge')}
                   </div>
 
                   <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center mb-4 group-hover:bg-accent/20 transition-colors">
@@ -120,9 +123,11 @@ const AIFeaturesPage = () => {
                   </div>
 
                   <h3 className="font-display text-xl font-semibold mb-3">
-                    {feature.title}
+                    {t(`pages.aiFeatures.features.${feature.key}.title`)}
                   </h3>
-                  <p className="text-muted-foreground">{feature.description}</p>
+                  <p className="text-muted-foreground">
+                    {t(`pages.aiFeatures.features.${feature.key}.description`)}
+                  </p>
                 </div>
               </motion.div>
             ))}
@@ -140,15 +145,15 @@ const AIFeaturesPage = () => {
             className="max-w-3xl mx-auto text-center"
           >
             <h2 className="font-display text-3xl md:text-4xl font-bold mb-6">
-              Soyez le Premier à Expérimenter{" "}
-              <span className="text-gradient">l'Analyse IA</span>
+              {t('pages.aiFeatures.cta.title')}{" "}
+              <span className="text-gradient">{t('pages.aiFeatures.cta.titleHighlight')}</span>
             </h2>
             <p className="text-lg text-muted-foreground mb-8">
-              Créez votre compte maintenant pour obtenir un accès anticipé au lancement des fonctionnalités IA
+              {t('pages.aiFeatures.cta.description')}
             </p>
             <Link to="/auth?mode=signup">
               <Button variant="hero" size="xl" className="group">
-                Obtenir un Accès Anticipé
+                {t('pages.aiFeatures.cta.button')}
                 <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
               </Button>
             </Link>

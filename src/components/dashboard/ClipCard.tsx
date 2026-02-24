@@ -21,6 +21,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useTranslation } from "react-i18next";
 
 interface ClipCardProps {
   id: string;
@@ -49,11 +50,12 @@ export function ClipCard({
   onDownload,
   onDelete,
 }: ClipCardProps) {
+  const { t, i18n } = useTranslation();
   const [isHovered, setIsHovered] = useState(false);
 
   const formatDate = (dateString: string) => {
     const dateStr = dateString.endsWith('Z') ? dateString : dateString + 'Z';
-    return new Date(dateString).toLocaleDateString("fr-FR", {
+    return new Date(dateStr).toLocaleDateString(i18n.language, {
       day: "numeric",
       month: "short",
     });
@@ -111,25 +113,25 @@ export function ClipCard({
           {status === 'completed' && (
             <Badge variant="default" className="bg-green-500/90 hover:bg-green-500">
               <CheckCircle2 className="h-3 w-3 mr-1" />
-              Prêt
+              {t('components.clipCard.badges.ready')}
             </Badge>
           )}
           {status === 'processing' && (
             <Badge variant="secondary" className="bg-blue-500/90 hover:bg-blue-500">
               <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-              Traitement...
+              {t('components.clipCard.badges.processing')}
             </Badge>
           )}
           {status === 'pending' && (
             <Badge variant="secondary" className="bg-yellow-500/90 hover:bg-yellow-500">
               <Clock className="h-3 w-3 mr-1" />
-              En attente
+              {t('components.clipCard.badges.pending')}
             </Badge>
           )}
           {status === 'failed' && (
             <Badge variant="destructive">
               <XCircle className="h-3 w-3 mr-1" />
-              Échec
+              {t('components.clipCard.badges.failed')}
             </Badge>
           )}
         </div>
@@ -148,15 +150,15 @@ export function ClipCard({
           <DropdownMenuContent align="end" className="w-48">
             <DropdownMenuItem onClick={onPlay}>
               <Play className="h-4 w-4 mr-2" />
-              Lire
+              {t('components.clipCard.menu.play')}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onShare}>
               <Share2 className="h-4 w-4 mr-2" />
-              Partager
+              {t('components.clipCard.menu.share')}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onDownload}>
               <Download className="h-4 w-4 mr-2" />
-              Télécharger
+              {t('components.clipCard.menu.download')}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -164,7 +166,7 @@ export function ClipCard({
               className="text-destructive focus:text-destructive"
             >
               <Trash2 className="h-4 w-4 mr-2" />
-              Supprimer
+              {t('components.clipCard.menu.delete')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

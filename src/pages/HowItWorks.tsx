@@ -4,8 +4,11 @@ import { ArrowRight } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { HOW_IT_WORKS_STEPS } from "@/lib/constants";
+import { useTranslation } from "react-i18next";
 
 const HowItWorksPage = () => {
+  const { t } = useTranslation();
+
   return (
     <Layout>
       {/* Hero Section */}
@@ -28,10 +31,10 @@ const HowItWorksPage = () => {
             className="max-w-3xl mx-auto text-center"
           >
             <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-              Comment <span className="text-gradient">Spovio</span> Marche
+              {t('pages.howItWorks.title')} <span className="text-gradient">Spovio</span>
             </h1>
             <p className="text-xl text-muted-foreground">
-              Du scan au partage en quelques minutes. Découvrez la façon la plus simple d'enregistrer et analyser vos matchs.
+              {t('pages.howItWorks.subtitle')}
             </p>
           </motion.div>
         </div>
@@ -85,16 +88,16 @@ const HowItWorksPage = () => {
                   <div className="flex-1 pt-2">
                     <div className="flex items-center gap-3 mb-2">
                       <h3 className="font-display text-2xl font-bold">
-                        {step.title}
+                        {t(`pages.howItWorks.steps.${step.key}.title`)}
                       </h3>
                       {step.badge && (
                         <span className="px-2 py-0.5 rounded-full bg-accent/20 border border-accent/30 text-xs font-medium text-accent">
-                          {step.badge}
+                          {t(`pages.howItWorks.steps.${step.key}.badge`)}
                         </span>
                       )}
                     </div>
                     <p className="text-muted-foreground text-lg">
-                      {step.description}
+                      {t(`pages.howItWorks.steps.${step.key}.description`)}
                     </p>
                   </div>
                 </div>
@@ -109,10 +112,10 @@ const HowItWorksPage = () => {
         <div className="container mx-auto px-4 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {[
-              { value: "<10s", label: "Temps d'Install." },
-              { value: "1080p", label: "Qualité Vidéo" },
-              { value: "∞", label: "Stockage Cloud" },
-              { value: "1-Clic", label: "Partage" },
+              { value: "<10s", label: t('landing.howItWorks.stats.custom1') },
+              { value: "1080p", label: t('landing.howItWorks.stats.custom2') },
+              { value: "∞", label: t('landing.howItWorks.stats.custom3') },
+              { value: "1-Clic", label: t('landing.howItWorks.stats.custom4') },
             ].map((stat, index) => (
               <motion.div
                 key={index}
@@ -142,21 +145,21 @@ const HowItWorksPage = () => {
             className="max-w-3xl mx-auto text-center"
           >
             <h2 className="font-display text-3xl md:text-4xl font-bold mb-6">
-              Prêt à <span className="text-gradient">Commencer</span> ?
+              {t('pages.howItWorks.hero.titleHighlight')} <span className="text-gradient"></span>
             </h2>
             <p className="text-lg text-muted-foreground mb-8">
-              Créez votre compte et commencez à enregistrer vos matchs dès aujourd'hui
+              {t('pages.howItWorks.hero.description')}
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Link to="/auth?mode=signup">
                 <Button variant="hero" size="xl" className="group">
-                  Créer un Compte
+                  {t('pages.howItWorks.hero.cta')}
                   <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
                 </Button>
               </Link>
               <Link to="/contact">
                 <Button variant="neonOutline" size="xl">
-                  Contacter les Ventes
+                  {t('nav.contact')}
                 </Button>
               </Link>
             </div>

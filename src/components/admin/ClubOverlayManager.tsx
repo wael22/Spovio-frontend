@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Loader2, VideoIcon, Edit, Trash2, Plus, X, Image as ImageIcon } from 'lucide-react';
-import { adminService } from '@/lib/api';
+import { adminService, getAssetUrl } from '@/lib/api';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
@@ -199,7 +199,7 @@ const ClubOverlayManager: React.FC<ClubOverlayManagerProps> = ({ club, isOpen, o
                                         <div className="flex gap-4 items-start p-4 bg-white border rounded-lg">
                                             <div className="border rounded bg-gray-50 w-20 h-20 flex items-center justify-center">
                                                 {formData.image_url ? (
-                                                    <img src={formData.image_url} alt="Preview" className="w-full h-full object-contain" />
+                                                    <img src={getAssetUrl(formData.image_url)} alt="Preview" className="w-full h-full object-contain" />
                                                 ) : (
                                                     <ImageIcon className="text-gray-300 h-6 w-6" />
                                                 )}
@@ -365,7 +365,7 @@ const ClubOverlayManager: React.FC<ClubOverlayManagerProps> = ({ club, isOpen, o
                             {/* Overlay en cours d'édition */}
                             {editingOverlay && formData.image_url && (
                                 <img
-                                    src={formData.image_url}
+                                    src={getAssetUrl(formData.image_url)}
                                     alt="Preview"
                                     style={{
                                         position: 'absolute',
@@ -384,7 +384,7 @@ const ClubOverlayManager: React.FC<ClubOverlayManagerProps> = ({ club, isOpen, o
                             {!editingOverlay && overlays.map(ov => ov.is_active && (
                                 <img
                                     key={ov.id}
-                                    src={ov.image_url}
+                                    src={getAssetUrl(ov.image_url)}
                                     alt={ov.name}
                                     style={{
                                         position: 'absolute',

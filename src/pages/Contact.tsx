@@ -15,29 +15,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import api from "@/lib/api";
-
-const contactInfo = [
-  {
-    icon: Mail,
-    label: "Email",
-    value: "contact@spovio.net",
-    href: "mailto:contact@spovio.net",
-  },
-  {
-    icon: Phone,
-    label: "Téléphone",
-    value: "+216 50 988 787",
-    href: "tel:+21650988787",
-  },
-  {
-    icon: MapPin,
-    label: "Adresse",
-    value: "Sousse, Tunisie",
-    href: "#",
-  },
-];
+import { useTranslation } from "react-i18next";
 
 const ContactPage = () => {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: "",
@@ -48,6 +29,27 @@ const ContactPage = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const contactInfo = [
+    {
+      icon: Mail,
+      label: t('pages.contact.info.email'),
+      value: "contact@spovio.net",
+      href: "mailto:contact@spovio.net",
+    },
+    {
+      icon: Phone,
+      label: t('pages.contact.info.phone'),
+      value: "+216 50 988 787",
+      href: "tel:+21650988787",
+    },
+    {
+      icon: MapPin,
+      label: t('pages.contact.info.address'),
+      value: "Sousse, Tunisie",
+      href: "#",
+    },
+  ];
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -56,8 +58,8 @@ const ContactPage = () => {
       await api.post('/support/contact', formData);
 
       toast({
-        title: "Message envoyé !",
-        description: "Nous vous répondrons dans les plus brefs délais. Un email de confirmation vous a été envoyé.",
+        title: t('pages.contact.form.success'),
+        description: t('pages.contact.form.messageSentDesc'),
       });
 
       setFormData({
@@ -69,8 +71,8 @@ const ContactPage = () => {
       });
     } catch (error: any) {
       toast({
-        title: "Erreur",
-        description: error.message || "Une erreur est survenue",
+        title: t('modals.common.error'),
+        description: error.message || t('pages.contact.form.error'),
         variant: "destructive",
       });
     } finally {
@@ -98,10 +100,10 @@ const ContactPage = () => {
             className="max-w-3xl mx-auto text-center"
           >
             <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-              Nous <span className="text-gradient">Contacter</span>
+              {t('pages.contact.title')} <span className="text-gradient"></span>
             </h1>
             <p className="text-xl text-muted-foreground">
-              Vous avez des questions ? Vous souhaitez une démo pour votre club ? Nous serions ravis de vous entendre.
+              {t('pages.contact.subtitle')}
             </p>
           </motion.div>
         </div>
@@ -120,7 +122,7 @@ const ContactPage = () => {
             >
               <div className="p-8 rounded-2xl bg-card border border-border">
                 <h2 className="font-display text-2xl font-bold mb-6">
-                  Envoyez-nous un message
+                  {t('pages.contact.form.title')}
                 </h2>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
@@ -149,7 +151,7 @@ const ContactPage = () => {
                             : "text-muted-foreground"
                         }
                       >
-                        Joueur
+                        {t('pages.contact.form.type.player')}
                       </span>
                     </button>
                     <button
@@ -173,7 +175,7 @@ const ContactPage = () => {
                             : "text-muted-foreground"
                         }
                       >
-                        Club
+                        {t('pages.contact.form.type.club')}
                       </span>
                     </button>
                   </div>
@@ -181,10 +183,10 @@ const ContactPage = () => {
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium mb-2">
-                        Nom
+                        {t('pages.contact.form.name')}
                       </label>
                       <Input
-                        placeholder="Votre nom"
+                        placeholder={t('pages.contact.form.namePlaceholder')}
                         value={formData.name}
                         onChange={(e) =>
                           setFormData({ ...formData, name: e.target.value })
@@ -194,11 +196,11 @@ const ContactPage = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-2">
-                        Email
+                        {t('pages.contact.form.email')}
                       </label>
                       <Input
                         type="email"
-                        placeholder="vous@exemple.com"
+                        placeholder={t('pages.contact.form.emailPlaceholder')}
                         value={formData.email}
                         onChange={(e) =>
                           setFormData({ ...formData, email: e.target.value })
@@ -211,10 +213,10 @@ const ContactPage = () => {
                   {formData.type === "club" && (
                     <div>
                       <label className="block text-sm font-medium mb-2">
-                        Club / Organisation
+                        {t('pages.contact.form.company')}
                       </label>
                       <Input
-                        placeholder="Nom de votre club"
+                        placeholder={t('pages.contact.form.companyPlaceholder')}
                         value={formData.company}
                         onChange={(e) =>
                           setFormData({ ...formData, company: e.target.value })
@@ -225,10 +227,10 @@ const ContactPage = () => {
 
                   <div>
                     <label className="block text-sm font-medium mb-2">
-                      Message
+                      {t('pages.contact.form.message')}
                     </label>
                     <Textarea
-                      placeholder="Dites-nous comment nous pouvons vous aider..."
+                      placeholder={t('pages.contact.form.messagePlaceholder')}
                       rows={5}
                       value={formData.message}
                       onChange={(e) =>
@@ -246,10 +248,10 @@ const ContactPage = () => {
                     disabled={isSubmitting}
                   >
                     {isSubmitting ? (
-                      "Envoi en cours..."
+                      t('pages.contact.form.sending')
                     ) : (
                       <>
-                        Envoyer le message
+                        {t('pages.contact.form.submit')}
                         <Send className="w-4 h-4" />
                       </>
                     )}
@@ -268,7 +270,7 @@ const ContactPage = () => {
             >
               <div>
                 <h2 className="font-display text-2xl font-bold mb-6">
-                  Informations de contact
+                  {t('pages.contact.info.title')}
                 </h2>
                 <div className="space-y-4">
                   {contactInfo.map((info, index) => (
@@ -295,13 +297,13 @@ const ContactPage = () => {
               <div className="p-6 rounded-2xl bg-gradient-to-br from-primary/10 to-accent/10 border border-primary/20">
                 <MessageSquare className="w-10 h-10 text-primary mb-4" />
                 <h3 className="font-display text-xl font-bold mb-2">
-                  Demander une démo
+                  {t('pages.contact.info.demo.title')}
                 </h3>
                 <p className="text-muted-foreground mb-4">
-                  Intéressé par Spovio pour votre club ? Laissez-nous vous montrer comment notre plateforme peut transformer votre expérience sportive.
+                  {t('pages.contact.info.demo.description')}
                 </p>
                 <Button variant="hero">
-                  Planifier une démo
+                  {t('pages.contact.info.demo.cta')}
                   <Send className="w-4 h-4" />
                 </Button>
               </div>
@@ -309,10 +311,10 @@ const ContactPage = () => {
               {/* FAQ Link */}
               <div className="p-6 rounded-2xl bg-card border border-border">
                 <h3 className="font-display text-lg font-bold mb-2">
-                  Vous cherchez des réponses ?
+                  {t('pages.contact.info.faq.title')}
                 </h3>
                 <p className="text-muted-foreground text-sm">
-                  Consultez notre section FAQ pour des réponses rapides aux questions fréquentes sur Spovio.
+                  {t('pages.contact.info.faq.description')}
                 </p>
               </div>
             </motion.div>

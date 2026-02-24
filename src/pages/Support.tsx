@@ -25,6 +25,7 @@ import {
 import { toast } from "sonner";
 import { supportService } from "@/lib/api";
 import { ImageUpload } from "@/components/support/ImageUpload";
+import { useTranslation } from "react-i18next";
 
 interface SupportMessage {
   id: number;
@@ -37,13 +38,8 @@ interface SupportMessage {
   admin_name?: string;
 }
 
-const priorities = [
-  { value: "low", label: "Basse" },
-  { value: "medium", label: "Moyenne" },
-  { value: "high", label: "Haute" },
-];
-
 const Support = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [subject, setSubject] = useState("");
   const [priority, setPriority] = useState("medium");
@@ -52,6 +48,12 @@ const Support = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [messages, setMessages] = useState<SupportMessage[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const priorities = [
+    { value: "low", label: t('pages.support.priorities.low') },
+    { value: "medium", label: t('pages.support.priorities.medium') },
+    { value: "high", label: t('pages.support.priorities.high') },
+  ];
 
   useEffect(() => {
     loadMessages();
@@ -65,7 +67,7 @@ const Support = () => {
     } catch (error: any) {
       console.error('Failed to load messages:', error);
       if (error.response?.status !== 401) {
-        toast.error('Impossible de charger les messages');
+        toast.error(t('pages.support.loadError'));
       }
     } finally {
       setLoading(false);
@@ -76,7 +78,7 @@ const Support = () => {
     e.preventDefault();
 
     if (!subject || !message) {
-      toast.error("Veuillez remplir tous les champs requis");
+      toast.error(t('pages.support.fillRequired'));
       return;
     }
 
@@ -95,7 +97,7 @@ const Support = () => {
 
       await supportService.createMessage(formData);
 
-      toast.success("Message envoyé avec succès !");
+      toast.success(t('pages.support.success'));
 
       // Reset form
       setSubject("");
@@ -110,7 +112,7 @@ const Support = () => {
 
     } catch (error: any) {
       console.error('Failed to send message:', error);
-      toast.error(error.response?.data?.error || "Erreur lors de l'envoi du message");
+      toast.error(error.response?.data?.error || t('pages.support.error'));
     } finally {
       setIsSubmitting(false);
     }
@@ -122,14 +124,14 @@ const Support = () => {
         return (
           <span className="flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-yellow-500/10 text-yellow-500">
             <Clock className="h-3 w-3" />
-            En attente
+            {t('pages.support.status.pending')}
           </span>
         );
       case "in_progress":
         return (
           <span className="flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">
             <AlertCircle className="h-3 w-3" />
-            En cours
+            {t('pages.support.status.in_progress')}
           </span>
         );
       case "resolved":
@@ -137,7 +139,7 @@ const Support = () => {
         return (
           <span className="flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-neon-green/10 text-neon-green">
             <CheckCircle className="h-3 w-3" />
-            Résolu
+            {t('pages.support.status.resolved')}
           </span>
         );
     }
@@ -156,10 +158,10 @@ const Support = () => {
             className="mb-8"
           >
             <h1 className="text-3xl lg:text-4xl font-bold font-orbitron mb-2">
-              <span className="gradient-text">Support</span>
+              <span className="gradient-text">{t('pages.support.title')}</span>
             </h1>
             <p className="text-muted-foreground text-lg">
-              Besoin d'aide ? Contactez notre équipe
+              {t('pages.support.subtitle')}
             </p>
           </motion.div>
 
@@ -175,15 +177,15 @@ const Support = () => {
                 <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                   <MessageSquare className="h-5 w-5 text-primary" />
                 </div>
-                <h2 className="text-xl font-semibold">Nouveau message</h2>
+                <h2 className="text-xl font-semibold">{t('pages.support.newRequest')}</h2>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="subject">Sujet *</Label>
+                  <Label htmlFor="subject">{t('pages.support.subjectLabel')}</Label>
                   <Input
                     id="subject"
-                    placeholder="Résumez votre demande"
+                    placeholder={t('pages.support.subjectPlaceholder')}
                     value={subject}
                     onChange={(e) => setSubject(e.target.value)}
                     className="bg-background/50 border-border/50"
@@ -192,7 +194,7 @@ const Support = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="priority">Priorité</Label>
+                  <Label htmlFor="priority">{t('pages.support.priorityLabel')}</Label>
                   <Select value={priority} onValueChange={setPriority}>
                     <SelectTrigger className="bg-background/50 border-border/50">
                       <SelectValue />
@@ -208,10 +210,10 @@ const Support = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="message">Message *</Label>
+                  <Label htmlFor="message">{t('pages.support.messageLabel')}</Label>
                   <Textarea
                     id="message"
-                    placeholder="Décrivez votre problème ou question en détail..."
+                    placeholder={t('pages.support.messagePlaceholder')}
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     className="bg-background/50 border-border/50 min-h-[150px] resize-none"
@@ -220,7 +222,7 @@ const Support = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Images (optionnel)</Label>
+                  <Label>{t('pages.support.imagesLabel')}</Label>
                   <ImageUpload
                     onImagesChange={setImages}
                     maxFiles={3}
@@ -237,12 +239,12 @@ const Support = () => {
                   {isSubmitting ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      Envoi en cours...
+                      {t('pages.support.sending')}
                     </>
                   ) : (
                     <>
                       <Send className="h-4 w-4" />
-                      Envoyer le message
+                      {t('pages.support.submit')}
                     </>
                   )}
                 </Button>
@@ -260,7 +262,7 @@ const Support = () => {
                 <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
                   <HelpCircle className="h-5 w-5 text-accent" />
                 </div>
-                <h2 className="text-xl font-semibold">Mes demandes</h2>
+                <h2 className="text-xl font-semibold">{t('pages.support.myRequests')}</h2>
               </div>
 
               {loading ? (
@@ -288,7 +290,7 @@ const Support = () => {
                       {msg.admin_response && (
                         <div className="mt-3 p-3 rounded-lg bg-primary/5 border-l-4 border-primary">
                           <p className="text-sm font-medium text-primary mb-1">
-                            Réponse du support :
+                            {t('pages.support.response')}
                           </p>
                           <p className="text-sm whitespace-pre-wrap">
                             {msg.admin_response}
@@ -302,7 +304,9 @@ const Support = () => {
                       )}
 
                       <div className="flex items-center gap-2 mt-3 text-xs text-muted-foreground">
-                        <span className="capitalize">{priority}</span>
+                        <span className="capitalize">
+                          {priorities.find(p => p.value === msg.priority)?.label || msg.priority}
+                        </span>
                         <span>•</span>
                         <span>
                           {new Date(msg.created_at).toLocaleDateString('fr-FR', {
@@ -318,7 +322,7 @@ const Support = () => {
               ) : (
                 <div className="text-center py-8">
                   <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
-                  <p className="text-muted-foreground">Aucune demande précédente</p>
+                  <p className="text-muted-foreground">{t('pages.support.noRequests')}</p>
                 </div>
               )}
             </motion.div>

@@ -17,22 +17,25 @@ import {
 } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useTranslation } from "react-i18next";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 interface DashboardNavbarProps {
   credits: number;
 }
 
 export function DashboardNavbar({ credits }: DashboardNavbarProps) {
+  const { t } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
   const { user } = useAuth();
 
   const navLinks = [
-    { href: "/dashboard", label: "Mes Vidéos", icon: Video },
-    { href: "/my-clips", label: "Mes Clips", icon: Scissors },
-    { href: "/clubs", label: "Clubs", icon: Building2 },
-    { href: "/support", label: "Support", icon: MessageSquare },
-    { href: "/credits", label: "Crédits", icon: Coins },
+    { href: "/dashboard", label: t('nav.myVideos'), icon: Video },
+    { href: "/my-clips", label: t('nav.myClips'), icon: Scissors },
+    { href: "/clubs", label: t('nav.clubs'), icon: Building2 },
+    { href: "/support", label: t('nav.support'), icon: MessageSquare },
+    { href: "/credits", label: t('nav.credits'), icon: Coins },
   ];
 
   return (
@@ -87,6 +90,9 @@ export function DashboardNavbar({ credits }: DashboardNavbarProps) {
 
             {/* Notifications */}
             <NotificationBell />
+
+            {/* Language Switcher */}
+            <LanguageSwitcher />
 
             {/* Theme Toggle */}
             <ThemeToggle />

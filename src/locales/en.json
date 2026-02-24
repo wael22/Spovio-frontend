@@ -1,0 +1,873 @@
+{
+    "nav": {
+        "features": "AI Features",
+        "howItWorks": "How it Works",
+        "about": "About",
+        "contact": "Contact",
+        "login": "Login",
+        "signup": "Sign Up",
+        "dashboard": "Dashboard",
+        "myVideos": "My Videos",
+        "myClips": "My Clips",
+        "clubs": "Clubs",
+        "credits": "Credits",
+        "profile": "Profile",
+        "support": "Support",
+        "settings": "Settings",
+        "logout": "Logout"
+    },
+    "dashboard": {
+        "welcome": "Hello, {{name}} 👋",
+        "readyToAnalyze": "Ready to analyze your performance?",
+        "startRecording": "Start Recording",
+        "scanQr": "Scan QR",
+        "buyCredits": "Buy Credits",
+        "restartTutorial": "Restart Tutorial",
+        "reportIssue": "Report an Issue",
+        "myVideos": "My Videos",
+        "searchPlaceholder": "Search...",
+        "noVideos": "No videos recorded",
+        "noVideosFound": "No videos found",
+        "createFirstVideo": "Create your first video",
+        "stats": {
+            "videos": "Videos",
+            "clips": "Clips",
+            "credits": "Credits",
+            "shared": "Shared"
+        }
+    },
+    "myClips": {
+        "title": "My Clips",
+        "subtitle": "Your best moments in one click",
+        "searchPlaceholder": "Search for a clip...",
+        "createClip": "Create a Clip",
+        "noClips": "No clips found",
+        "noClipsMatch": "No clips match your search",
+        "createFirstClip": "Create your first clip from a Video",
+        "viewVideos": "View my Videos"
+    },
+    "common": {
+        "loading": "Loading...",
+        "error": "An error occurred",
+        "success": "Success",
+        "cancel": "Cancel",
+        "save": "Save",
+        "delete": "Delete",
+        "edit": "Edit",
+        "back": "Back"
+    },
+    "modals": {
+        "common": {
+            "cancel": "Cancel",
+            "confirm": "Confirm",
+            "loading": "Loading...",
+            "error": "Error",
+            "success": "Success"
+        },
+        "startRecording": {
+            "title": "New Duration Recording",
+            "description": "Configure your match recording with a custom duration",
+            "matchTitle": "Match Title",
+            "matchTitlePlaceholder": "Ex: Match vs Team X",
+            "descriptionLabel": "Description",
+            "descriptionPlaceholder": "Match notes...",
+            "durationLabel": "Recording Duration",
+            "clubLabel": "Club",
+            "selectClub": "Select a club",
+            "courtLabel": "Available Court",
+            "selectCourt": "Select a club first",
+            "noCourts": "No courts available",
+            "qrLabel": "Court QR Code",
+            "qrPlaceholder": "Court code",
+            "start": "Start Recording",
+            "starting": "Starting...",
+            "scanQr": "Scan QR",
+            "durations": {
+                "short": "Short match",
+                "standard": "Standard duration",
+                "long": "Long match",
+                "max": "Max duration"
+            },
+            "courtStatus": {
+                "available": "Available",
+                "occupied": "Occupied",
+                "unavailable": "Court temporarily unavailable",
+                "remaining": "Left: {{min}} min",
+                "inProgress": "In progress"
+            },
+            "errors": {
+                "noClubFollowed": "You are not following any club. Go to \"Clubs\" tab.",
+                "selectClubCourt": "Please select a club and a court",
+                "qrRequired": "Court QR code is required",
+                "qrMismatch": "QR code does not match selected court",
+                "credits": "Insufficient credits"
+            }
+        },
+        "directRecording": {
+            "titleScan": "Quick Start via QR",
+            "titleConfig": "Match Configuration",
+            "scanInstruction": "Scan court code to start",
+            "configInstruction": "Customize your recording before starting",
+            "scanGuide": "Point your camera at the QR code on the court post",
+            "validating": "Validating code...",
+            "connected": "Connected",
+            "retry": "Try Again",
+            "start": "Start"
+        },
+        "reportIssue": {
+            "title": "Report Video Issue",
+            "description": "Can't find your match? Report it to start a recovery.",
+            "courtLabel": "Court",
+            "selectClub": "Select club",
+            "selectCourt": "Select court",
+            "date": "Date",
+            "startTime": "Start Time",
+            "endTime": "End Time",
+            "descriptionLabel": "Description (optional)",
+            "descriptionPlaceholder": "Additional details...",
+            "submit": "Submit Request",
+            "success": "Your report has been sent."
+        },
+        "shareVideo": {
+            "title": "Share Video",
+            "description": "Share \"{{title}}\" with another MySmash player.",
+            "emailLabel": "Recipient Email",
+            "emailPlaceholder": "example@email.com",
+            "messageLabel": "Message (optional)",
+            "messagePlaceholder": "Add a personal message...",
+            "helperText": "The recipient must have a MySmash account.",
+            "send": "Share",
+            "success": "Video shared with {{email}}",
+            "errors": {
+                "emailRequired": "Please enter an email.",
+                "invalidVideoId": "Invalid video ID.",
+                "invalidEmail": "Invalid email format."
+            }
+        },
+        "editVideo": {
+            "title": "Edit Video",
+            "description": "Edit the title and description of your video",
+            "titleLabel": "Title",
+            "descriptionLabel": "Description",
+            "titlePlaceholder": "Video title",
+            "descriptionPlaceholder": "Optional video description...",
+            "save": "Save",
+            "saving": "Saving...",
+            "success": "Video updated successfully",
+            "error": "Error updating video",
+            "titleRequired": "Title is required"
+        },
+        "qrScanner": {
+            "title": "Scan Court QR Code",
+            "description": "Point your camera at the QR code displayed on the court",
+            "cameraError": "Unable to access camera. Please check permissions or use manual entry.",
+            "scannedCode": "Scanned code:",
+            "instruction": "Position the QR code in the frame below",
+            "manualInput": "Manual Entry",
+            "useCamera": "Use Camera",
+            "validate": "Validate",
+            "manualPlaceholder": "Enter code manually",
+            "codeLabel": "Court Code"
+        },
+        "shareClip": {
+            "title": "Share Clip",
+            "description": "Share \"{{title}}\" on your social networks or copy the link.",
+            "socialLabel": "Share on social networks",
+            "qualityLabel": "Video Quality",
+            "copyLabel": "Or copy link",
+            "noResolution": "No MP4 resolution detected (using default)",
+            "linkCopied": "Link copied",
+            "linkCopiedDesc": "Direct MP4 link copied.",
+            "copyError": "Failed to copy link.",
+            "tiktokShare": "TikTok Share",
+            "tiktokShareDesc": "Copy the MP4 link to post on TikTok.",
+            "instagramShare": "Instagram Share",
+            "instagramShareDesc": "Copy the MP4 link to post on Instagram.",
+            "close": "Close"
+        },
+        "videoPlayer": {
+            "title": "Video Player",
+            "createClip": "Create Clip",
+            "unsupported": "Your browser does not support video playback."
+        }
+    },
+    "pages": {
+        "credits": {
+            "title": "Credits",
+            "subtitle": "Buy credits to unlock your videos",
+            "systemTitle": "MySmash Credits System",
+            "available": "Available Credits",
+            "pricePerCredit": "Price per credit",
+            "packsAvailable": "Available Packs",
+            "reload": "Reload my credits",
+            "packagesTitle": "Available Packages",
+            "popular": "Popular",
+            "economy": "Savings",
+            "noPackages": "No packages available at the moment",
+            "paymentMethodsTitle": "Secure Payment Methods",
+            "methodAvailable": "Available",
+            "methodComingSoon": "Coming Soon",
+            "processing": "Processing...",
+            "proceedPayment": "Proceed to Payment",
+            "selectPackage": "Please select a credit pack",
+            "selectPayment": "Please select a payment method",
+            "success": "Purchase of {{amount}} credits successful!",
+            "error": "Purchase error",
+            "loadError": "Unable to load data",
+            "loading": "Loading packages..."
+        },
+        "support": {
+            "title": "Support",
+            "subtitle": "Need help? Contact our team",
+            "newRequest": "New Request",
+            "subjectLabel": "Subject *",
+            "subjectPlaceholder": "Summarize your request",
+            "priorityLabel": "Priority",
+            "priorities": {
+                "low": "Low",
+                "medium": "Medium",
+                "high": "High"
+            },
+            "messageLabel": "Message *",
+            "messagePlaceholder": "Describe your issue or question in detail...",
+            "imagesLabel": "Images (optional)",
+            "submit": "Send Message",
+            "sending": "Sending...",
+            "myRequests": "My Requests",
+            "status": {
+                "pending": "Pending",
+                "in_progress": "In Progress",
+                "resolved": "Resolved",
+                "closed": "Closed"
+            },
+            "response": "Support Response:",
+            "noRequests": "No previous requests",
+            "success": "Message sent successfully!",
+            "error": "Error sending message",
+            "loadError": "Unable to load messages",
+            "fillRequired": "Please fill in all required fields"
+        },
+        "clubs": {
+            "title": "Clubs",
+            "subtitle": "Follow your favorite clubs",
+            "searchPlaceholder": "Search for a club...",
+            "allClubs": "All Clubs",
+            "followed": "Following",
+            "notFollowed": "Not Following",
+            "follow": "Follow",
+            "unfollow": "Unfollow",
+            "createdOn": "Created on",
+            "followersCount": "followers",
+            "noClubsFound": "No clubs found",
+            "noClubsAvailable": "No clubs available",
+            "followSuccess": "Club added to favorites",
+            "unfollowSuccess": "Club removed from favorites",
+            "error": "An error occurred",
+            "loadError": "Unable to load clubs"
+        },
+        "profile": {
+            "title": "My Profile",
+            "subtitle": "Manage your personal information",
+            "verifiedPlayer": "Verified Player",
+            "firstName": "First Name",
+            "lastName": "Last Name",
+            "email": "Email",
+            "phone": "Phone",
+            "edit": "Edit Profile",
+            "save": "Save",
+            "saving": "Saving...",
+            "cancel": "Cancel",
+            "changePassword": "Change Password",
+            "currentPassword": "Current Password",
+            "newPassword": "New Password",
+            "confirmPassword": "Confirm Password",
+            "updatePassword": "Update Password",
+            "passwordMismatch": "Passwords do not match.",
+            "passwordSuccess": "Your password has been changed successfully.",
+            "profileSuccess": "Your information has been saved successfully.",
+            "avatarSuccess": "Your profile photo has been updated successfully.",
+            "fileTooBig": "File too large",
+            "fileTooBigDesc": "Image must not exceed 5MB.",
+            "error": "Error",
+            "profileUpdateError": "Unable to update profile",
+            "passwordUpdateError": "Unable to change password",
+            "avatarUpdateError": "Unable to update photo"
+        },
+        "directRecording": {
+            "titleScan": "Scan QR Code",
+            "titleConfig": "Configure Recording",
+            "scanInstruction": "Scan the QR code on the court to start",
+            "configInstruction": "Configure your recording options",
+            "scanGuide": "Place the QR Code in the frame",
+            "validating": "Validating...",
+            "connected": "Connected",
+            "retry": "Retry",
+            "start": "Start",
+            "qrError": "Invalid QR Code"
+        },
+        "startRecording": {
+            "title": "Start a recording",
+            "durations": {
+                "short": "Short match",
+                "standard": "Standard match",
+                "long": "Long match",
+                "max": "Tournament"
+            },
+            "matchTitle": "Match Title",
+            "matchTitlePlaceholder": "Ex: Summer Tournament Final",
+            "durationLabel": "Recording Duration",
+            "errors": {
+                "credits": "Insufficient credits"
+            }
+        },
+        "aiFeatures": {
+            "title": "AI Features",
+            "subtitle": "Discover how our AI revolutionizes your game",
+            "hero": {
+                "badge": "CUTTING EDGE TECHNOLOGY",
+                "title": "AI at the service of",
+                "titleHighlight": "your performance",
+                "description": "Analyze your game, detect your strengths and improve your technique thanks to our advanced artificial intelligence.",
+                "cta": "Try now"
+            },
+            "features": {
+                "matchStats": {
+                    "title": "AI Match Statistics",
+                    "description": "Comprehensive analysis for every point, game, and set."
+                },
+                "positionTracking": {
+                    "title": "Position Tracking",
+                    "description": "Real-time tracking of positions on the court."
+                },
+                "speedHeatmaps": {
+                    "title": "Speed Heatmaps",
+                    "description": "Visualize movement patterns and court coverage."
+                },
+                "autoHighlights": {
+                    "title": "Auto Highlights",
+                    "description": "AI identifies and cuts the best moments of your matches."
+                },
+                "smartSummary": {
+                    "title": "Smart Summary",
+                    "description": "Get a complete summary with key statistics."
+                },
+                "performanceEvolution": {
+                    "title": "Performance Evolution",
+                    "description": "Track your progress over time."
+                }
+            },
+            "cta": {
+                "title": "Be the First to Experience",
+                "titleHighlight": "AI Analysis",
+                "description": "Create your account now to get early access to the AI features launch",
+                "button": "Get Early Access"
+            },
+            "comingSoonBadge": "Coming Soon"
+        },
+        "howItWorks": {
+            "title": "How it works",
+            "subtitle": "Simple, fast and effective",
+            "hero": {
+                "badge": "SIMPLE & FAST",
+                "titleHighlight": "In 3 simple steps",
+                "description": "Discover how to use Spovio to record and analyze your padel matches.",
+                "cta": "Start"
+            },
+            "steps": {
+                "scanQr": {
+                    "title": "Scan QR Code",
+                    "description": "Simply scan the QR code at the entrance of the Spovio equipped court."
+                },
+                "startRecording": {
+                    "title": "Start Recording",
+                    "description": "The camera starts recording automatically after confirmation."
+                },
+                "autoUpload": {
+                    "title": "Auto Cloud Backup",
+                    "description": "Your match is saved automatically. No manual upload needed."
+                },
+                "watchClip": {
+                    "title": "Watch & Clip",
+                    "description": "Rewatch your match, create clips of your best actions."
+                },
+                "share": {
+                    "title": "Share Easily",
+                    "description": "Share your matches and highlights with teammates."
+                },
+                "aiAnalysis": {
+                    "title": "AI Analysis",
+                    "description": "Coming soon: Get insights and statistics.",
+                    "badge": "Coming Soon"
+                }
+            }
+        },
+        "about": {
+            "title": "About Spovio",
+            "subtitle": "The future of connected Padel",
+            "hero": {
+                "badge": "OUR STORY",
+                "title": "Reinventing the experience",
+                "titleHighlight": "Padel",
+                "description": "Spovio was born from the passion for padel and the desire to make technology accessible to all players."
+            },
+            "mission": {
+                "title": "Our Mission",
+                "description": "Democratize access to video and statistical analysis for all padel players, from beginner to pro."
+            },
+            "timeline": {
+                "title": "Our Journey",
+                "2025": {
+                    "title": "Foundation",
+                    "items": [
+                        "✅ Achieved",
+                        "💡 Spovio platform design",
+                        "🔬 Patent filing (smart trigger technology)",
+                        "🛠️ MySmash development",
+                        "🎯 Concept validation with partner clubs"
+                    ]
+                },
+                "2026": {
+                    "title": "MySmash Launch",
+                    "items": [
+                        "🎾 Q1-Q2: Tunisia Launch",
+                        "Deployment in pilot clubs (Padel & Tennis)",
+                        "Credits system and player packs",
+                        "📱 Q3-Q4: Enrichment",
+                        "iOS & Android mobile app",
+                        "Expansion of partner club network"
+                    ]
+                },
+                "2027": {
+                    "title": "Expansion & Intelligence",
+                    "items": [
+                        "🌍 Regional Expansion (International)",
+                        "🤖 AI Features (Detection, Stats)",
+                        "📊 Enriched Experience (Progression, Rankings)"
+                    ]
+                },
+                "2028": {
+                    "title": "New Horizons",
+                    "items": [
+                        "⚽ New Sports",
+                        "🚀 Continuous Innovation"
+                    ]
+                }
+            },
+            "cta": {
+                "title": "Join the Revolution",
+                "description": "Be part of the future of connected sports."
+            },
+            "values": {
+                "title": "Our Values",
+                "subtitle": "The principles that guide everything we do",
+                "items": {
+                    "innovation": {
+                        "title": "Innovation",
+                        "description": "We constantly push the boundaries of technology to improve the sports experience."
+                    },
+                    "accessibility": {
+                        "title": "Accessibility",
+                        "description": "We make professional tools accessible to players of all levels."
+                    },
+                    "performance": {
+                        "title": "Performance",
+                        "description": "We are committed to providing precise and actionable data for your progress."
+                    },
+                    "passion": {
+                        "title": "Passion",
+                        "description": "We are passionate about sports and this passion guides everything we do."
+                    }
+                }
+            },
+            "team": {
+                "title": "The Team",
+                "subtitle": "Enthusiasts at your service"
+            }
+        },
+        "contact": {
+            "title": "Contact Us",
+            "subtitle": "Have questions? Want a demo for your club? We'd love to hear from you.",
+            "hero": {
+                "badge": "CONTACT",
+                "title": "Let's talk about your",
+                "titleHighlight": "Project",
+                "description": "Our team is here to answer all your questions."
+            },
+            "form": {
+                "title": "Send us a message",
+                "type": {
+                    "player": "Player",
+                    "club": "Club"
+                },
+                "name": "Name",
+                "namePlaceholder": "Your name",
+                "email": "Email",
+                "emailPlaceholder": "you@example.com",
+                "company": "Club / Organization",
+                "companyPlaceholder": "Name of your club",
+                "message": "Message",
+                "messagePlaceholder": "Tell us how we can help you...",
+                "submit": "Send Message",
+                "sending": "Sending...",
+                "success": "Message sent successfully!",
+                "error": "Error sending message",
+                "messageSentDesc": "We will get back to you as soon as possible. A confirmation email has been sent to you."
+            },
+            "info": {
+                "title": "Contact Information",
+                "address": "Address",
+                "email": "Email",
+                "phone": "Phone",
+                "demo": {
+                    "title": "Request a Demo",
+                    "description": "Interested in Spovio for your club? Let us show you how our platform can transform your sports experience.",
+                    "cta": "Schedule a Demo"
+                },
+                "faq": {
+                    "title": "Looking for answers?",
+                    "description": "Check out our FAQ section for quick answers to common questions about Spovio."
+                }
+            }
+        }
+    },
+    "components": {
+        "videoCard": {
+            "badges": {
+                "shared": "Shared",
+                "expired": "🔒 Expired",
+                "failed": "⚠️ Failed",
+                "processing": "⚙️ Processing...",
+                "pending": "⏳ Pending..."
+            },
+            "menu": {
+                "play": "Play",
+                "playExpired": "Video expired",
+                "createClip": "Create a clip",
+                "createClipUnavailable": "Clip unavailable",
+                "editTitle": "Edit title",
+                "share": "Share",
+                "download": "Download MP4",
+                "downloadUnavailable": "Download unavailable",
+                "delete": "Delete"
+            }
+        },
+        "clipCard": {
+            "badges": {
+                "ready": "Ready",
+                "processing": "Processing...",
+                "pending": "Pending",
+                "failed": "Failed"
+            },
+            "menu": {
+                "play": "Play",
+                "share": "Share",
+                "download": "Download",
+                "delete": "Delete"
+            }
+        },
+        "clipEditor": {
+            "title": "Create a Clip",
+            "subtitle": "Select a segment and create your best moment",
+            "videoLabel": "Video",
+            "unsupported": "Your browser does not support video playback.",
+            "selection": "Selection",
+            "preview": "Preview",
+            "goToStart": "Go to start",
+            "goToEnd": "Go to end",
+            "titleLabel": "Title",
+            "titlePlaceholder": "My best shot",
+            "descriptionLabel": "Description",
+            "descriptionPlaceholder": "Optional description...",
+            "cancel": "Cancel",
+            "create": "Create Clip",
+            "processing": "Processing...",
+            "uploading": "Creating clip...",
+            "success": "Clip created successfully!",
+            "error": "Error creating clip",
+            "errors": {
+                "titleRequired": "Please enter a title",
+                "minDuration": "Clip must be at least 1 second",
+                "maxDuration": "Clip cannot exceed 60 seconds",
+                "noVideo": "No video selected"
+            }
+        }
+    },
+    "notifications": {
+        "empty": "No notifications",
+        "markAllAsRead": "Mark all as read",
+        "videoReady": "🎬 Your video is ready!",
+        "videoReadyMsg": "The video '{{title}}' has been successfully processed.",
+        "clipReady": "🎬 Your clip is ready!",
+        "clipReadyMsg": "The clip '{{title}}' is ready.",
+        "types": {
+            "SYSTEM": {
+                "title": "Welcome to Spovio ! 🎾",
+                "message": "Hello {{name}}, welcome to Spovio ! Your account was created successfully via {{method}}."
+            },
+            "VIDEO_SHARED": {
+                "title": "New video shared",
+                "message": "{{sender}} shared a video with you: \"{{title}}\""
+            }
+        }
+    },
+    "landing": {
+        "hero": {
+            "badge": "AI-Powered Sports Analysis Platform",
+            "title": "Revolutionize Your Sport with",
+            "subtitle": "The complete AI-powered platform to record, analyze, and improve your game. From padel to football, we cover all your sports.",
+            "products": {
+                "mysmash": {
+                    "title": "MySmash",
+                    "desc": "Padel & Tennis"
+                },
+                "mygoal": {
+                    "title": "MyGoal",
+                    "desc": "Football"
+                },
+                "mydunk": {
+                    "title": "MyDunk",
+                    "desc": "Basketball"
+                },
+                "myshot": {
+                    "title": "MyShot",
+                    "desc": "Handball"
+                },
+                "more": {
+                    "title": "More",
+                    "desc": "Coming Soon"
+                }
+            }
+        },
+        "features": {
+            "title": "Everything You Need to",
+            "titleHighlight": "Elevate Your Game",
+            "subtitle": "Professional video recording and analysis tools, designed specifically for athletes of all levels.",
+            "items": {
+                "autoRecording": {
+                    "title": "Automatic Recording",
+                    "desc": "Court cameras automatically start recording as soon as your match begins. No manual setup required."
+                },
+                "aiAnalysis": {
+                    "title": "AI Analysis",
+                    "desc": "Get instant insights into your game with our advanced AI that analyzes your shots, movements, and strategies."
+                },
+                "easySharing": {
+                    "title": "Easy Sharing",
+                    "desc": "Share your best moments with teammates, coaches, or on social media in a single click."
+                },
+                "progressTracking": {
+                    "title": "Progress Tracking",
+                    "desc": "Track your improvement over time with detailed stats and performance trends."
+                },
+                "secureStorage": {
+                    "title": "Secure Storage",
+                    "desc": "Your videos are encrypted and securely stored in the cloud. Access them anytime, anywhere."
+                },
+                "flexibleCredits": {
+                    "title": "Flexible Credit System",
+                    "desc": "Pay only for what you use with our credit system. Perfect for casual and competitive players."
+                }
+            }
+        },
+        "aiFeaturesPreview": {
+            "badge": "Coming Soon",
+            "title": "Analysis",
+            "titleHighlight": "Powered by AI",
+            "subtitle": "Next-generation artificial intelligence will transform your understanding and improvement of the game.",
+            "items": {
+                "matchStats": {
+                    "title": "Match Statistics",
+                    "desc": "Detailed analysis for every point"
+                },
+                "positionTracking": {
+                    "title": "Position Tracking",
+                    "desc": "Player movement analysis"
+                },
+                "heatmaps": {
+                    "title": "Heatmaps",
+                    "desc": "Visualize your court coverage"
+                },
+                "autoHighlights": {
+                    "title": "Auto Highlights",
+                    "desc": "Best moments generated by AI"
+                }
+            },
+            "comingSoonBadge": "Soon"
+        },
+        "howItWorks": {
+            "title": "Start in",
+            "titleHighlight": "4 Simple Steps",
+            "subtitle": "From signup to your first recorded match, it takes only a few minutes. Here is how MySmash works.",
+            "steps": {
+                "step1": {
+                    "title": "Create Your Account",
+                    "desc": "Sign up in seconds with your email. Receive 1 free welcome credit."
+                },
+                "step2": {
+                    "title": "Find Your Court",
+                    "desc": "Browse our network of partner clubs and select the court where you will play."
+                },
+                "step3": {
+                    "title": "Scan and Record",
+                    "desc": "Scan the court's QR code and tap Record. Our system handles the rest."
+                },
+                "step4": {
+                    "title": "Watch and Improve",
+                    "desc": "Access your videos instantly. Analyze your game and track your progress."
+                }
+            }
+        },
+        "pricing": {
+            "title": "Simple and",
+            "titleHighlight": "Transparent Pricing",
+            "subtitle": "Buy credits as needed. 1 credit = 1 unlocked video. The more you buy, the more you save.",
+            "club": {
+                "title": "Are you a Club?",
+                "subtitle": "Offer your members a premium experience with our turnkey solution. Installation, training, and support included.",
+                "features": [
+                    "Camera installation included",
+                    "Dedicated management dashboard",
+                    "Commission on credit sales",
+                    "Priority technical support",
+                    "Team training included",
+                    "Customization to club colors"
+                ],
+                "cta": "Contact Sales Team"
+            }
+        },
+        "about": {
+            "title": "About",
+            "description": "Spovio was born from the frustration of being unable to rewatch and analyze one's own sports performances...",
+            "storyTitle": "Our Story",
+            "story": [
+                "It all started on a padel court in Tunisia...",
+                "That's when the idea of Spovio was born...",
+                "Today, {spovio} covers padel and tennis...",
+                "Join us in this sports adventure! 🎾⚽🏀"
+            ],
+            "cta": "Learn more about Spovio"
+        },
+        "cta": {
+            "title": "Ready to Transform",
+            "titleHighlight": "Your Padel Game?",
+            "subtitle": "Join players who already use MySmash to record, analyze, and improve their performance on the court.",
+            "buttons": {
+                "signup": "Sign Up Free",
+                "expert": "Talk to an Expert"
+            },
+            "trust": "✓ No credit card required   ✓ 1 free credit on signup   ✓ Cancel anytime"
+        }
+    },
+    "auth": {
+        "loginSuccess": "Login Successful",
+        "welcomeUser": "Welcome {{name}}!",
+        "loginError": "Login Error",
+        "loginErrorDesc": "Incorrect email or password",
+        "passwordMismatch": "Passwords do not match.",
+        "termsRequired": "Please accept the Terms of Service and Privacy Policy.",
+        "emailSent": "Email Sent",
+        "verificationSent": "A verification code has been sent to your email.",
+        "registrationSuccess": "Registration Successful",
+        "registrationSuccessDesc": "Your account has been created. You can now login.",
+        "registrationError": "Registration Error",
+        "registrationErrorDesc": "An error occurred during registration",
+        "googleError": "Google Login Error",
+        "googleInitError": "Unable to initialize Google login",
+        "modeLogin": "Login",
+        "modeRegister": "Sign Up",
+        "firstName": "First Name",
+        "lastName": "Last Name",
+        "email": "Email",
+        "password": "Password",
+        "confirmPassword": "Confirm Password",
+        "forgotPassword": "Forgot password?",
+        "loginButton": "Login",
+        "registerButton": "Create account",
+        "or": "OR",
+        "continueWithGoogle": "Continue with Google",
+        "termsAgreement": "I accept the <terms>Terms of Service</terms> and the <privacy>Privacy Policy</privacy> of SPOVIO / MySmash.",
+        "placeholderEmail": "you@example.com",
+        "placeholderPassword": "••••••••",
+        "placeholderFirstName": "Thomas",
+        "placeholderLastName": "Martin"
+    },
+    "toasts": {
+        "tutorialStarted": "Tutorial started!",
+        "videosLoadError": "Unable to load videos",
+        "recordingStopped": "Recording stopped successfully",
+        "recordingStopError": "Error stopping recording",
+        "videoReady": "Your video \"{{title}}\" is ready! 🎥",
+        "confirmStop": "Are you sure you want to stop this recording?",
+        "confirmDelete": "Are you sure you want to delete this video?",
+        "videoDeleted": "Video deleted successfully",
+        "deleteError": "Error deleting video",
+        "downloadUnavailable": "This video is not available for download",
+        "bunnyMissing": "This video was not uploaded to Bunny Stream",
+        "findingQuality": "Finding best quality...",
+        "downloading": "Downloading...",
+        "downloadComplete": "Download complete!",
+        "downloadFailed": "Direct download failed, opening link...",
+        "clipCreated": "Clip created successfully!"
+    },
+    "footer": {
+        "description": "The ultimate sports video recording and performance analysis platform powered by AI.",
+        "madeWith": "Made with 💙 for athletes worldwide",
+        "copyright": "© {{year}} Spovio. All rights reserved.",
+        "links": {
+            "product": "Product",
+            "company": "Company",
+            "support": "Support",
+            "legal": "Legal",
+            "features": "Features",
+            "pricing": "Pricing",
+            "forClubs": "For Clubs",
+            "api": "API",
+            "blog": "Blog",
+            "careers": "Careers",
+            "press": "Press",
+            "help": "Help Center",
+            "status": "Status",
+            "community": "Community",
+            "privacy": "Privacy",
+            "terms": "Terms",
+            "cookies": "Cookies"
+        }
+    },
+    "tutorial": {
+        "buttons": {
+            "skip": "Skip",
+            "next": "Next",
+            "start": "Start"
+        },
+        "steps": {
+            "step0": {
+                "title": "Welcome to MySmash 👋",
+                "message": "Here is your dashboard. Check your statistics and all your recorded videos."
+            },
+            "step1": {
+                "message": "Follow a partner club to start recording. Find all available clubs on MySmash here."
+            },
+            "step2": {
+                "message": "All your best moments are gathered here. Create a clip by selecting Start and End, preview, name it, and tap Create Clip.",
+                "secondaryMessage": "Your clip is ready in seconds! Share it on TikTok, Instagram, Facebook, or download it as MP4."
+            },
+            "step3": {
+                "message": "Have a question or problem? Contact us or suggest ideas to improve MySmash."
+            },
+            "step4": {
+                "message": "Discover our credit packs and choose the payment method that suits you."
+            },
+            "step5": {
+                "message": "Create your first video in seconds.",
+                "secondaryMessage": "Select your club → choose your court → scan the QR code → tap Start Recording."
+            },
+            "step6": {
+                "message": "Edit your personal information and change your password at any time."
+            },
+            "step7": {
+                "title": "🎉 You are ready to play!",
+                "message": "Start your first recording and analyze your performance with MySmash."
+            }
+        }
+    }
+}

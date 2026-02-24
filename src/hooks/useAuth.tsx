@@ -76,6 +76,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
                 if (error.response?.status === 401) {
                     setUser(null);
                     localStorage.removeItem('user');
+                    localStorage.removeItem('token'); // 🔥 CRITICAL: Clear JWT token on expiration
                 } else {
                     console.error("Error checking authentication status:", error);
                     // Don't clear user here if it's a network error, keep offline state if possible
@@ -101,7 +102,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
             // 🔥 CRITICAL: Store token FIRST before setting user
             if (token) {
-                // Session authentication - no token storage needed
+                localStorage.setItem('token', token);
                 console.log('[useAuth] JWT token stored explicitly');
             } else {
                 console.warn('[useAuth] No token in login response!');
@@ -151,6 +152,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         } finally {
             setUser(null);
             localStorage.removeItem('user');
+            localStorage.removeItem('token'); // 🔥 CRITICAL: Clear JWT token on logout
             // Session cleared by backend - no manual token clearing needed
             return { success: true };
         }
@@ -201,7 +203,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
             // 🔥 CRITICAL: Store token FIRST before setting user
             if (token) {
-                // Session authentication - no token storage needed
+                localStorage.setItem('token', token);
                 console.log('[useAuth] JWT token stored from email verification');
             }
 

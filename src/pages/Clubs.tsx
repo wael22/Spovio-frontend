@@ -1,29 +1,25 @@
 ﻿import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { useAuth } from "@/hooks/useAuth";
 import { DashboardNavbar } from "@/components/dashboard/DashboardNavbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  Building2,
-  Phone,
-  Mail,
-  Calendar,
-  MapPin,
-  Heart,
-  Search,
-  Loader2,
-} from "lucide-react";
-import { playerService } from "@/lib/api";
-import { useAuth } from "@/hooks/useAuth";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Search, MapPin, Users, Heart, Loader2, Phone } from "lucide-react";
 import { toast } from "sonner";
+import { playerService, getAssetUrl } from "@/lib/api";
+import { useTranslation } from "react-i18next";
 
 interface Club {
   id: number;
   name: string;
+  logo?: string;
   address?: string;
   phone_number?: string;
-  email: string;
+  location?: string;
+  member_count?: number;
+  followers_count?: number; // Backend returns this
+  is_followed: boolean;
   created_at: string;
 }
 
@@ -45,78 +41,73 @@ const itemVariants = {
 };
 
 const Clubs = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
-  const [allClubs, setAllClubs] = useState<Club[]>([]);
-  const [followedIds, setFollowedIds] = useState<Set<number>>(new Set());
-  const [searchQuery, setSearchQuery] = useState("");
+  const [clubs, setClubs] = useState<Club[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [followingId, setFollowingId] = useState<number | null>(null);
 
   useEffect(() => {
+    const loadClubs = async () => {
+      try {
+        setLoading(true);
+        // Load both lists in parallel
+        const [availableRes, followedRes] = await Promise.all([
+          playerService.getAvailableClubs(),
+          playerService.getFollowedClubs(),
+        ]);
+
+        const followed = followedRes.data.clubs || [];
+        const available = availableRes.data.clubs || [];
+
+        const newFollowedIds = new Set<number>(followed.map((c: Club) => c.id));
+
+        const mergedClubs = [
+          ...followed.map((c: Club) => ({ ...c, is_followed: true })),
+          ...available.filter((c: Club) => !newFollowedIds.has(c.id)).map((c: Club) => ({ ...c, is_followed: false }))
+        ];
+        setClubs(mergedClubs);
+      } catch (error: any) {
+        console.error('Failed to load clubs:', error);
+        if (error.response?.status !== 401) {
+          toast.error(t('pages.clubs.loadError'));
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
     loadClubs();
-  }, []);
+  }, [t]);
 
-  const loadClubs = async () => {
+  const handleFollow = async (clubId: number, currentStatus: boolean) => {
+    setFollowingId(clubId);
     try {
-      setLoading(true);
-      setError("");
-
-      // Load both lists in parallel
-      const [availableRes, followedRes] = await Promise.all([
-        playerService.getAvailableClubs(),
-        playerService.getFollowedClubs(),
-      ]);
-
-      const followed = followedRes.data.clubs || [];
-      const available = availableRes.data.clubs || [];
-
-      //  Create Set of followed club IDs for quick lookup
-      const newFollowedIds = new Set<number>(followed.map((c: Club) => c.id));
-      setFollowedIds(newFollowedIds);
-
-      // Combine both lists without duplicates
-      const combinedClubs = [...followed, ...available.filter((c: Club) => !newFollowedIds.has(c.id))];
-      setAllClubs(combinedClubs);
-    } catch (err: any) {
-      console.error('Error loading clubs:', err);
-      setError('Erreur lors du chargement des clubs');
-      toast.error('Impossible de charger les clubs');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleFollowToggle = async (clubId: number, isCurrentlyFollowing: boolean) => {
-    try {
-      if (isCurrentlyFollowing) {
+      if (currentStatus) {
         await playerService.unfollowClub(clubId.toString());
-        toast.success("Club retiré de vos favoris");
+        toast.success(t('pages.clubs.unfollowSuccess'));
       } else {
         await playerService.followClub(clubId.toString());
-        toast.success("Club ajouté à vos favoris");
+        toast.success(t('pages.clubs.followSuccess'));
       }
 
-      // Reload data to update UI
-      await loadClubs();
-    } catch (err: any) {
-      console.error('Error toggling follow:', err);
-      toast.error('Une erreur est survenue');
-      // Reload even on error to resync UI
-      await loadClubs();
+      // Update local state
+      setClubs(clubs.map(club =>
+        club.id === clubId ? { ...club, is_followed: !currentStatus } : club
+      ));
+    } catch (error) {
+      console.error('Failed to update follow status:', error);
+      toast.error(t('pages.clubs.error'));
+    } finally {
+      setFollowingId(null);
     }
   };
 
-  const filteredClubs = allClubs.filter((club) =>
-    club.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredClubs = clubs.filter(club =>
+    club.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (club.address || club.location)?.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('fr-FR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    });
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -131,138 +122,122 @@ const Clubs = () => {
             className="mb-8"
           >
             <h1 className="text-3xl lg:text-4xl font-bold font-orbitron mb-2">
-              <span className="gradient-text">Clubs</span>
+              <span className="gradient-text">{t('pages.clubs.title')}</span>
             </h1>
             <p className="text-muted-foreground text-lg">
-              Suivez vos clubs préférés
+              {t('pages.clubs.subtitle')}
             </p>
           </motion.div>
 
           {/* Search */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="mb-8"
-          >
-            <div className="relative max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Rechercher un club..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-card/50 border-border/50"
-              />
-            </div>
-          </motion.div>
+          <div className="relative mb-8 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder={t('pages.clubs.searchPlaceholder')}
+              className="pl-10 bg-card border-border/50"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
 
-          {/* Error Alert */}
-          {error && (
-            <Alert variant="destructive" className="mb-6">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-
-          {/* Loading State */}
+          {/* Clubs Grid */}
           {loading ? (
-            <div className="flex justify-center py-16">
+            <div className="flex items-center justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
-          ) : (
-            <>
-              {/* Section Title */}
-              <motion.h2
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.2 }}
-                className="text-xl font-semibold mb-6"
+          ) : filteredClubs.length > 0 ? (
+            <div className="space-y-6">
+              <div className="flex items-center gap-2 text-xl font-semibold">
+                <Users className="h-5 w-5 text-primary" />
+                <h2>{t('pages.clubs.allClubs')}</h2>
+              </div>
+
+              <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
               >
-                Tous les Clubs ({filteredClubs.length})
-              </motion.h2>
-
-              {/* Clubs Grid */}
-              {filteredClubs.length > 0 ? (
-                <motion.div
-                  variants={containerVariants}
-                  initial="hidden"
-                  animate="visible"
-                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-                >
-                  {filteredClubs.map((club) => {
-                    const isFollowing = followedIds.has(club.id);
-
-                    return (
-                      <motion.div
-                        key={club.id}
-                        variants={itemVariants}
-                        className="p-6 rounded-2xl bg-card border border-border/50 hover:border-primary/30 transition-all"
-                      >
-                        {/* Header */}
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                              <Building2 className="h-5 w-5 text-primary" />
-                            </div>
-                            <h3 className="font-semibold text-lg">{club.name}</h3>
+                {filteredClubs.map((club) => (
+                  <motion.div
+                    key={club.id}
+                    variants={itemVariants}
+                    className="group relative overflow-hidden rounded-2xl bg-card border border-border/50 hover:border-primary/50 transition-all duration-300"
+                  >
+                    <div className="p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-center gap-4">
+                          <Avatar className="h-16 w-16 border-2 border-primary/20 bg-background">
+                            <AvatarImage
+                              src={club.logo ? getAssetUrl(club.logo) : undefined}
+                              alt={club.name}
+                              className="object-cover"
+                            />
+                            <AvatarFallback className="bg-primary/10 text-primary text-xl font-bold">
+                              {club.name?.substring(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <h3 className="font-bold text-lg group-hover:text-primary transition-colors">
+                              {club.name}
+                            </h3>
+                            {(club.address || club.location) && (
+                              <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
+                                <MapPin className="h-3 w-3" />
+                                <span className="line-clamp-1">{club.address || club.location}</span>
+                              </div>
+                            )}
+                            {club.phone_number && (
+                              <div className="flex items-center gap-1 text-sm text-muted-foreground mt-0.5">
+                                <Phone className="h-3 w-3" />
+                                <span className="text-xs">{club.phone_number}</span>
+                              </div>
+                            )}
                           </div>
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${isFollowing
-                            ? "bg-primary/10 text-primary"
-                            : "bg-muted text-muted-foreground"
-                            }`}>
-                            {isFollowing ? "Suivi" : "Non suivi"}
-                          </span>
                         </div>
+                      </div>
 
-                        {/* Info */}
-                        <div className="space-y-2 mb-4">
-                          {club.address && (
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <MapPin className="h-4 w-4" />
-                              <span>{club.address}</span>
-                            </div>
-                          )}
-                          {club.phone_number && (
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <Phone className="h-4 w-4" />
-                              <span>{club.phone_number}</span>
-                            </div>
-                          )}
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Mail className="h-4 w-4" />
-                            <span>{club.email}</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Calendar className="h-4 w-4" />
-                            <span>Créé le {formatDate(club.created_at)}</span>
+                      <div className="flex items-center justify-between mt-6">
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <div className="text-xs opacity-70">
+                            {t('pages.clubs.createdOn')} {new Date(club.created_at).toLocaleDateString()}
                           </div>
                         </div>
 
-                        {/* Action */}
                         <Button
-                          variant={isFollowing ? "ghost" : "neon"}
-                          className="w-full gap-2"
-                          onClick={() => handleFollowToggle(club.id, isFollowing)}
+                          variant={club.is_followed ? "outline" : "neon"}
+                          size="sm"
+                          className={club.is_followed ? "border-primary text-primary hover:bg-primary/10" : ""}
+                          onClick={() => handleFollow(club.id, club.is_followed)}
+                          disabled={followingId === club.id}
                         >
-                          <Heart className={`h-4 w-4 ${isFollowing ? "" : "fill-current"}`} />
-                          {isFollowing ? "Ne plus suivre" : "Suivre"}
+                          {followingId === club.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : club.is_followed ? (
+                            <>
+                              <Heart className="h-4 w-4 mr-2 fill-current" />
+                              {t('pages.clubs.followed')}
+                            </>
+                          ) : (
+                            <>
+                              <Heart className="h-4 w-4 mr-2" />
+                              {t('pages.clubs.follow')}
+                            </>
+                          )}
                         </Button>
-                      </motion.div>
-                    );
-                  })}
-                </motion.div>
-              ) : (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-center py-16"
-                >
-                  <Building2 className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
-                  <p className="text-muted-foreground text-lg">
-                    {searchQuery ? "Aucun club trouvé" : "Aucun club disponible"}
-                  </p>
-                </motion.div>
-              )}
-            </>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </motion.div>
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <Users className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
+              <p className="text-muted-foreground">
+                {searchQuery ? t('pages.clubs.noClubsFound') : t('pages.clubs.noClubsAvailable')}
+              </p>
+            </div>
           )}
         </div>
       </main>

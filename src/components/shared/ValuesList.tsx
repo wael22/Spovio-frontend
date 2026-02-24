@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { ABOUT_VALUES } from "@/lib/constants";
+import { useTranslation } from "react-i18next";
 
 interface ValuesListProps {
     limit?: number;
@@ -7,6 +8,7 @@ interface ValuesListProps {
 }
 
 export const ValuesList = ({ limit, className = "" }: ValuesListProps) => {
+    const { t } = useTranslation();
     const displayValues = limit ? ABOUT_VALUES.slice(0, limit) : ABOUT_VALUES;
 
     return (
@@ -24,10 +26,10 @@ export const ValuesList = ({ limit, className = "" }: ValuesListProps) => {
                         <value.icon className="w-8 h-8 text-white" />
                     </div>
                     <h3 className="font-display text-xl font-semibold mb-3">
-                        {value.title}
+                        {t(`pages.about.values.items.${value.key}.title`)}
                     </h3>
                     <p className="text-muted-foreground">
-                        {value.description}
+                        {t(`pages.about.values.items.${value.key}.description`)}
                     </p>
                 </motion.div>
             ))}

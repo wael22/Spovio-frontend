@@ -16,12 +16,14 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { authService } from "@/lib/api";
 import { Navbar } from "@/components/Navbar";
+import { useTranslation, Trans } from "react-i18next";
 
 import { useAuth } from "@/hooks/useAuth";
 
 type AuthMode = "login" | "register";
 
 const Auth = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [mode, setMode] = useState<AuthMode>("login");
@@ -69,8 +71,8 @@ const Auth = () => {
 
       if (result.success && result.user) {
         toast({
-          title: "Connexion réussie",
-          description: `Bienvenue ${result.user.name || ''} !`,
+          title: t("auth.loginSuccess"),
+          description: t("auth.welcomeUser", { name: result.user.name || '' }),
         });
 
         // Redirect based on role
@@ -88,8 +90,8 @@ const Auth = () => {
     } catch (error: any) {
       console.error('Login error:', error);
       toast({
-        title: "Erreur de connexion",
-        description: error.message || "Email ou mot de passe incorrect",
+        title: t("auth.loginError"),
+        description: error.message || t("auth.loginErrorDesc"),
         variant: "destructive",
       });
     } finally {
@@ -102,8 +104,8 @@ const Auth = () => {
 
     if (registerForm.password !== registerForm.confirmPassword) {
       toast({
-        title: "Erreur",
-        description: "Les mots de passe ne correspondent pas.",
+        title: t("auth.registrationError"),
+        description: t("auth.passwordMismatch"),
         variant: "destructive",
       });
       return;
@@ -111,8 +113,8 @@ const Auth = () => {
 
     if (!registerForm.termsAccepted) {
       toast({
-        title: "Erreur",
-        description: "Veuillez accepter les conditions générales et la politique de confidentialité.",
+        title: t("auth.registrationError"),
+        description: t("auth.termsRequired"),
         variant: "destructive",
       });
       return;
@@ -139,16 +141,16 @@ const Auth = () => {
       // Check if verification is required
       if (response.data?.requires_verification) {
         toast({
-          title: "Email envoyé",
-          description: "Un code de vérification a été envoyé à votre email.",
+          title: t("auth.emailSent"),
+          description: t("auth.verificationSent"),
         });
         // Redirect to email verification page
         navigate('/verify-email', { state: { email: userData.email } });
       } else {
         // Old flow - direct success (shouldn't happen normally)
         toast({
-          title: "Inscription réussie",
-          description: "Votre compte a été créé. Vous pouvez maintenant vous connecter.",
+          title: t("auth.registrationSuccess"),
+          description: t("auth.registrationSuccessDesc"),
         });
 
         setRegisterForm({
@@ -157,6 +159,7 @@ const Auth = () => {
           email: "",
           password: "",
           confirmPassword: "",
+          termsAccepted: false,
         });
         setMode("login");
         setLoginForm({ ...loginForm, email: userData.email });
@@ -165,8 +168,8 @@ const Auth = () => {
     } catch (error: any) {
       console.error('Registration error:', error);
       toast({
-        title: "Erreur d'inscription",
-        description: error.response?.data?.message || "Une erreur est survenue lors de l'inscription",
+        title: t("auth.registrationError"),
+        description: error.response?.data?.message || t("auth.registrationErrorDesc"),
         variant: "destructive",
       });
     } finally {
@@ -181,8 +184,8 @@ const Auth = () => {
 
     if (!termsAccepted) {
       toast({
-        title: "Erreur",
-        description: "Veuillez accepter les conditions générales et la politique de confidentialité.",
+        title: t("auth.registrationError"),
+        description: t("auth.termsRequired"),
         variant: "destructive",
       });
       return;
@@ -195,8 +198,8 @@ const Auth = () => {
         window.location.href = response.data.auth_url;
       } else {
         toast({
-          title: "Erreur",
-          description: "Impossible d'initialiser la connexion Google",
+          title: t("auth.registrationError"),
+          description: t("auth.googleInitError"),
           variant: "destructive",
         });
         setIsLoading(false);
@@ -204,8 +207,8 @@ const Auth = () => {
     } catch (error) {
       console.error("Google auth error:", error);
       toast({
-        title: "Erreur",
-        description: "Erreur de connexion avec Google",
+        title: t("auth.registrationError"),
+        description: t("auth.googleError"),
         variant: "destructive",
       });
       setIsLoading(false);
@@ -258,7 +261,7 @@ const Auth = () => {
                   : "text-muted-foreground hover:text-foreground"
                   }`}
               >
-                Connexion
+                {t("auth.modeLogin")}
               </button>
               <button
                 onClick={() => setMode("register")}
@@ -267,7 +270,7 @@ const Auth = () => {
                   : "text-muted-foreground hover:text-foreground"
                   }`}
               >
-                Inscription
+                {t("auth.modeRegister")}
               </button>
             </div>
 
@@ -285,12 +288,12 @@ const Auth = () => {
                   <div className="space-y-2">
                     <Label htmlFor="login-email" className="flex items-center gap-2">
                       <Mail className="h-4 w-4 text-muted-foreground" />
-                      Email
+                      {t("auth.email")}
                     </Label>
                     <Input
                       id="login-email"
                       type="email"
-                      placeholder="votre@email.com"
+                      placeholder={t("auth.placeholderEmail")}
                       value={loginForm.email}
                       onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
                       className="bg-card/50"
@@ -301,13 +304,13 @@ const Auth = () => {
                   <div className="space-y-2">
                     <Label htmlFor="login-password" className="flex items-center gap-2">
                       <Lock className="h-4 w-4 text-muted-foreground" />
-                      Mot de passe
+                      {t("auth.password")}
                     </Label>
                     <div className="relative">
                       <Input
                         id="login-password"
                         type={showPassword ? "text" : "password"}
-                        placeholder="••••••••"
+                        placeholder={t("auth.placeholderPassword")}
                         value={loginForm.password}
                         onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
                         className="bg-card/50 pr-10"
@@ -328,7 +331,7 @@ const Auth = () => {
                       to="/forgot-password"
                       className="text-sm text-primary hover:underline"
                     >
-                      Mot de passe oublié ?
+                      {t("auth.forgotPassword")}
                     </Link>
                   </div>
 
@@ -342,7 +345,7 @@ const Auth = () => {
                       <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     ) : (
                       <>
-                        Se connecter
+                        {t("auth.loginButton")}
                         <ArrowRight className="h-4 w-4" />
                       </>
                     )}
@@ -367,15 +370,13 @@ const Auth = () => {
                       className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                     />
                     <Label htmlFor="google-terms-login" className="text-xs text-muted-foreground leading-tight cursor-pointer">
-                      J'accepte les{" "}
-                      <Link to="/terms" className="text-primary hover:underline">
-                        Conditions Générales d'Utilisation
-                      </Link>{" "}
-                      et la{" "}
-                      <Link to="/privacy" className="text-primary hover:underline">
-                        Politique de Confidentialité
-                      </Link>{" "}
-                      de SPOVIO / MySmash.
+                      <Trans
+                        i18nKey="auth.termsAgreement"
+                        components={{
+                          terms: <Link to="/terms" className="text-primary hover:underline" />,
+                          privacy: <Link to="/privacy" className="text-primary hover:underline" />
+                        }}
+                      />
                     </Label>
                   </div>
 
@@ -409,11 +410,11 @@ const Auth = () => {
                     <div className="space-y-2">
                       <Label htmlFor="firstName" className="flex items-center gap-2">
                         <User className="h-4 w-4 text-muted-foreground" />
-                        Prénom
+                        {t("auth.firstName")}
                       </Label>
                       <Input
                         id="firstName"
-                        placeholder="Thomas"
+                        placeholder={t("auth.placeholderFirstName")}
                         value={registerForm.firstName}
                         onChange={(e) => setRegisterForm({ ...registerForm, firstName: e.target.value })}
                         className="bg-card/50"
@@ -421,10 +422,10 @@ const Auth = () => {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="lastName">Nom</Label>
+                      <Label htmlFor="lastName">{t("auth.lastName")}</Label>
                       <Input
                         id="lastName"
-                        placeholder="Martin"
+                        placeholder={t("auth.placeholderLastName")}
                         value={registerForm.lastName}
                         onChange={(e) => setRegisterForm({ ...registerForm, lastName: e.target.value })}
                         className="bg-card/50"
@@ -436,12 +437,12 @@ const Auth = () => {
                   <div className="space-y-2">
                     <Label htmlFor="register-email" className="flex items-center gap-2">
                       <Mail className="h-4 w-4 text-muted-foreground" />
-                      Email
+                      {t("auth.email")}
                     </Label>
                     <Input
                       id="register-email"
                       type="email"
-                      placeholder="votre@email.com"
+                      placeholder={t("auth.placeholderEmail")}
                       value={registerForm.email}
                       onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
                       className="bg-card/50"
@@ -452,13 +453,13 @@ const Auth = () => {
                   <div className="space-y-2">
                     <Label htmlFor="register-password" className="flex items-center gap-2">
                       <Lock className="h-4 w-4 text-muted-foreground" />
-                      Mot de passe
+                      {t("auth.password")}
                     </Label>
                     <div className="relative">
                       <Input
                         id="register-password"
                         type={showPassword ? "text" : "password"}
-                        placeholder="••••••••"
+                        placeholder={t("auth.placeholderPassword")}
                         value={registerForm.password}
                         onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
                         className="bg-card/50 pr-10"
@@ -475,11 +476,11 @@ const Auth = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="confirm-password">Confirmer le mot de passe</Label>
+                    <Label htmlFor="confirm-password">{t("auth.confirmPassword")}</Label>
                     <Input
                       id="confirm-password"
                       type="password"
-                      placeholder="••••••••"
+                      placeholder={t("auth.placeholderPassword")}
                       value={registerForm.confirmPassword}
                       onChange={(e) => setRegisterForm({ ...registerForm, confirmPassword: e.target.value })}
                       className="bg-card/50"
@@ -498,15 +499,13 @@ const Auth = () => {
                       required
                     />
                     <Label htmlFor="terms" className="text-xs text-muted-foreground leading-tight cursor-pointer">
-                      J'accepte les{" "}
-                      <Link to="/terms" className="text-primary hover:underline">
-                        Conditions Générales d'Utilisation
-                      </Link>{" "}
-                      et la{" "}
-                      <Link to="/privacy" className="text-primary hover:underline">
-                        Politique de Confidentialité
-                      </Link>{" "}
-                      de SPOVIO / MySmash.
+                      <Trans
+                        i18nKey="auth.termsAgreement"
+                        components={{
+                          terms: <Link to="/terms" className="text-primary hover:underline" />,
+                          privacy: <Link to="/privacy" className="text-primary hover:underline" />
+                        }}
+                      />
                     </Label>
                   </div>
 
@@ -520,7 +519,7 @@ const Auth = () => {
                       <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     ) : (
                       <>
-                        Créer mon compte
+                        {t("auth.registerButton")}
                         <ArrowRight className="h-4 w-4" />
                       </>
                     )}
@@ -558,7 +557,7 @@ const Auth = () => {
 
           {/* Footer */}
           <p className="text-center text-sm text-muted-foreground mt-6">
-            © 2026 Spovio. Tous droits réservés.
+            {t("footer.copyright", { year: new Date().getFullYear() })}
           </p>
         </motion.div>
       </div>

@@ -10,40 +10,49 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import aiNetworkImage from "@/assets/ai-network.jpg";
-
-const aiFeatures = [
-  {
-    icon: BarChart3,
-    title: "Statistiques de Match",
-    description: "Analyses détaillées pour chaque point",
-  },
-  {
-    icon: MapPin,
-    title: "Suivi de Position",
-    description: "Analyse des déplacements des joueurs",
-  },
-  {
-    icon: Activity,
-    title: "Cartes de Chaleur",
-    description: "Visualisez votre couverture du terrain",
-  },
-  {
-    icon: Sparkles,
-    title: "Highlights Auto",
-    description: "Meilleurs moments générés par IA",
-  },
-];
+import aiNetworkImageWebp from "@/assets/ai-network.webp";
+import { useTranslation } from "react-i18next";
 
 export const AIFeaturesPreview = () => {
+  const { t } = useTranslation();
+
+  const aiFeatures = [
+    {
+      icon: BarChart3,
+      title: t("landing.aiFeaturesPreview.items.matchStats.title"),
+      description: t("landing.aiFeaturesPreview.items.matchStats.desc"),
+    },
+    {
+      icon: MapPin,
+      title: t("landing.aiFeaturesPreview.items.positionTracking.title"),
+      description: t("landing.aiFeaturesPreview.items.positionTracking.desc"),
+    },
+    {
+      icon: Activity,
+      title: t("landing.aiFeaturesPreview.items.heatmaps.title"),
+      description: t("landing.aiFeaturesPreview.items.heatmaps.desc"),
+    },
+    {
+      icon: Sparkles,
+      title: t("landing.aiFeaturesPreview.items.autoHighlights.title"),
+      description: t("landing.aiFeaturesPreview.items.autoHighlights.desc"),
+    },
+  ];
+
   return (
     <section id="ai-features" className="py-24 relative bg-card/30 overflow-hidden">
       {/* Background Image */}
       <div className="absolute inset-0 opacity-10">
-        <img
-          src={aiNetworkImage}
-          alt=""
-          className="w-full h-full object-cover"
-        />
+        <picture>
+          <source srcSet={aiNetworkImageWebp} type="image/webp" />
+          <img
+            src={aiNetworkImage}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            className="w-full h-full object-cover"
+          />
+        </picture>
       </div>
 
       <div className="container mx-auto px-4 lg:px-8 relative">
@@ -58,17 +67,16 @@ export const AIFeaturesPreview = () => {
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-accent/30 bg-accent/10 mb-6">
             <Brain className="w-4 h-4 text-accent" />
             <span className="text-xs font-medium text-accent uppercase tracking-wider">
-              Bientôt Disponible
+              {t("landing.aiFeaturesPreview.badge")}
             </span>
           </div>
 
           <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
-            Analyse <span className="text-gradient">Propulsée par IA</span>
+            {t("landing.aiFeaturesPreview.title")} <span className="text-gradient">{t("landing.aiFeaturesPreview.titleHighlight")}</span>
           </h2>
 
           <p className="text-lg text-muted-foreground">
-            L'intelligence artificielle de nouvelle génération transformera votre
-            compréhension et amélioration du jeu.
+            {t("landing.aiFeaturesPreview.subtitle")}
           </p>
         </motion.div>
 
@@ -86,7 +94,7 @@ export const AIFeaturesPreview = () => {
               <div className="p-6 rounded-2xl bg-card/80 border border-border backdrop-blur-sm h-full">
                 {/* Coming Soon Badge */}
                 <div className="absolute -top-2 -right-2 px-2 py-0.5 rounded-full bg-accent/20 border border-accent/30 text-[10px] font-medium text-accent">
-                  Soon
+                  {t("landing.aiFeaturesPreview.comingSoonBadge")}
                 </div>
 
                 <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center mb-4 group-hover:bg-accent/20 transition-colors">
@@ -102,8 +110,6 @@ export const AIFeaturesPreview = () => {
             </motion.div>
           ))}
         </div>
-
-
       </div>
     </section>
   );

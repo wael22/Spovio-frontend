@@ -1,27 +1,27 @@
-﻿import { useState } from "react";
-import { motion } from "framer-motion";
+﻿import { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { DashboardNavbar } from "@/components/dashboard/DashboardNavbar";
+import Navbar from "@/components/common/Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
 import {
-  User,
-  Mail,
-  Phone,
-  Lock,
-  Camera,
-  Save,
-  Shield
+  Loader2, User, Key, Camera, Mail, Phone, Save, X, Shield, Lock
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { authService, getAssetUrl } from "@/lib/api";
-import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 
 const Profile = () => {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const { user, fetchUser } = useAuth();
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [profile, setProfile] = useState({
@@ -72,6 +72,7 @@ const Profile = () => {
         description: "Vos informations ont été enregistrées avec succès.",
       });
       setIsEditing(false);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast({
         title: "Erreur",
@@ -82,307 +83,673 @@ const Profile = () => {
       setIsSaving(false);
     }
   };
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    first_name: user?.first_name || "",
+    last_name: user?.last_name || "",
+    phone: user?.phone || "",
+    email: user?.email || "",
+  });
 
-  const handleChangePassword = async () => {
-    if (passwords.new !== passwords.confirm) {
-      toast({
-        title: "Erreur",
-        description: "Les mots de passe ne correspondent pas.",
-        variant: "destructive",
-      });
-      return;
-    }
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
 
-    try {
-      await authService.changePassword({
-        current_password: passwords.current,
-        new_password: passwords.new,
-      });
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
-      toast({
-        title: "Mot de passe modifié",
-        description: "Votre mot de passe a été changé avec succès.",
-      });
-      setPasswords({ current: "", new: "", confirm: "" });
-    } catch (error: any) {
-      toast({
-        title: "Erreur",
-        description: error.response?.data?.error || "Impossible de changer le mot de passe",
-        variant: "destructive",
-      });
-    }
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
   };
 
-  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
-
-  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       toast({
-        title: "Fichier trop volumineux",
-        description: "L'image ne doit pas dépasser 5 Mo.",
+        title: t('pages.profile.fileTooBig'),
+        description: t('pages.profile.fileTooBigDesc'),
         variant: "destructive",
       });
       return;
     }
 
     try {
-      setIsUploadingAvatar(true);
       const formData = new FormData();
-      formData.append('avatar', file);
-
-      await authService.uploadAvatar(formData);
-
-      // Refresh user data to get new avatar URL
+      formData.append("avatar", file);
+      await authService.updateAvatar(formData);
       await fetchUser();
-
       toast({
-        title: "Photo mise à jour",
-        description: "Votre photo de profil a été modifiée avec succès.",
+        title: t('pages.profile.avatarSuccess'),
       });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast({
-        title: "Erreur",
-        description: error.response?.data?.error || "Impossible de mettre à jour la photo",
+        title: t('pages.profile.error'),
+        description: error.response?.data?.message || t('pages.profile.avatarUpdateError'),
         variant: "destructive",
       });
-    } finally {
-      setIsUploadingAvatar(false);
-      // Reset input
-      if (event.target) {
-        event.target.value = '';
-      }
     }
   };
 
-  const initials = profile.firstName && profile.lastName
-    ? `${profile.firstName[0]}${profile.lastName[0]}`.toUpperCase()
-    : user?.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-      : 'U';
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await authService.updateProfile({
+        name: `${formData.first_name} ${formData.last_name}`,
+        phone_number: formData.phone,
+        email: formData.email
+      });
+      await fetchUser();
+      toast({
+        title: t('pages.profile.profileSuccess'),
+      });
+      setIsEditing(false);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      toast({
+        title: t('pages.profile.error'),
+        description: error.response?.data?.message || t('pages.profile.profileUpdateError'),
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // Get credits from user
-  const credits = user?.credits_balance || user?.credits || 0;
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast({
+        title: t('pages.profile.passwordMismatch'),
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await authService.updatePassword({
+        current_password: passwordData.currentPassword,
+        new_password: passwordData.newPassword,
+      });
+      toast({
+        title: t('pages.profile.passwordSuccess'),
+      });
+      setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+      setIsChangingPassword(false);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      toast({
+        title: t('pages.profile.error'),
+        description: error.response?.data?.message || t('pages.profile.passwordUpdateError'),
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdateClubInfo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const formDataToSend = new FormData();
+      formDataToSend.append('name', formData.first_name); // Using first_name as club name
+      formDataToSend.append('phone', formData.phone);
+      formDataToSend.append('email', formData.email);
+      // Club specific fields
+      if (user?.role === 'club') {
+        // Add address if available in state, currently mapped to standard profile fields
+        // We might need to add address to initial state if it's missing
+      }
+
+      await authService.updateClubInfo(formDataToSend);
+      await fetchUser();
+      toast({
+        title: "Informations du club mises à jour",
+      });
+      setIsEditing(false);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.response?.data?.error || "Impossible de mettre à jour les informations",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const [clubData, setClubData] = useState({
+    name: "",
+    address: "",
+    phone: "",
+    email: ""
+  });
+
+  useEffect(() => {
+    if (user?.role === 'club' && user.club) {
+      setClubData({
+        name: user.club.name || "",
+        address: user.club.address || "",
+        phone: user.club.phone_number || "",
+        email: user.club.email || ""
+      });
+    }
+  }, [user]);
+
+  const handleClubLogoChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: t('pages.profile.fileTooBig'),
+        description: t('pages.profile.fileTooBigDesc'),
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append("logo", file);
+      // We use the same update endpoint but just for logo
+      await authService.updateClubInfo(formData);
+      await fetchUser();
+      toast({
+        title: "Logo mis à jour",
+      });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.response?.data?.error || "Impossible de mettre à jour le logo",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSaveClubInfo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('name', clubData.name);
+      formData.append('address', clubData.address);
+      formData.append('phone', clubData.phone);
+      formData.append('email', clubData.email);
+
+      await authService.updateClubInfo(formData);
+      await fetchUser();
+      toast({
+        title: "Informations du club enregistrées",
+      });
+      setIsEditing(false);
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.response?.data?.error || "Erreur lors de la mise à jour",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (user?.role === 'club') {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar title="Profil Club" />
+
+        <main className="pt-20 pb-12">
+          <div className="container mx-auto px-4 lg:px-8 max-w-4xl">
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-8"
+            >
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4 group"
+              >
+                <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                Retour au tableau de bord
+              </button>
+              <h1 className="text-3xl font-bold font-orbitron mb-2">
+                <span className="gradient-text">Profil Club</span>
+              </h1>
+              <p className="text-muted-foreground">
+                Gérez les informations de votre club
+              </p>
+            </motion.div>
+
+            <div className="grid gap-8">
+              {/* Club Info Card */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="bg-card border border-border/50 rounded-2xl p-6"
+              >
+                <div className="flex flex-col md:flex-row gap-8 items-start">
+                  <div className="relative group mx-auto md:mx-0">
+                    <Avatar className="w-32 h-32 border-4 border-background shadow-xl">
+                      <AvatarImage src={getAssetUrl(user.club?.logo || user.club?.overlays?.[0]?.image_url || '')} className="object-cover" />
+                      <AvatarFallback className="text-4xl bg-primary/10 text-primary">
+                        {user.club?.name?.[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                    <button
+                      onClick={handleAvatarClick}
+                      className="absolute bottom-0 right-0 p-2 bg-primary text-primary-foreground rounded-full shadow-lg hover:bg-primary/90 transition-colors"
+                    >
+                      <Camera className="w-5 h-5" />
+                    </button>
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleClubLogoChange}
+                      accept="image/*"
+                      className="hidden"
+                    />
+                  </div>
+
+                  <div className="flex-1 w-full space-y-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h2 className="text-2xl font-bold">
+                          {user.club?.name}
+                        </h2>
+                        <div className="flex items-center gap-2 text-muted-foreground mt-1">
+                          <Shield className="w-4 h-4 text-neon-green" />
+                          <span className="text-sm">Club Vérifié</span>
+                        </div>
+                      </div>
+                      <Button
+                        variant={isEditing ? "ghost" : "outline"}
+                        onClick={() => setIsEditing(!isEditing)}
+                      >
+                        {isEditing ? t('pages.profile.cancel') : t('pages.profile.edit')}
+                      </Button>
+                    </div>
+
+                    <form onSubmit={handleSaveClubInfo} className="grid gap-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium flex items-center gap-2">
+                          <User className="w-4 h-4 text-primary" />
+                          Nom du Club
+                        </label>
+                        <Input
+                          value={clubData.name}
+                          onChange={(e) => setClubData({ ...clubData, name: e.target.value })}
+                          disabled={!isEditing}
+                          className="bg-background/50"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium flex items-center gap-2">
+                          <User className="w-4 h-4 text-primary" />
+                          Adresse
+                        </label>
+                        <Input
+                          value={clubData.address}
+                          onChange={(e) => setClubData({ ...clubData, address: e.target.value })}
+                          disabled={!isEditing}
+                          className="bg-background/50"
+                          placeholder="Adresse complète"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium flex items-center gap-2">
+                          <Mail className="w-4 h-4 text-primary" />
+                          Email de contact
+                        </label>
+                        <Input
+                          value={clubData.email}
+                          onChange={(e) => setClubData({ ...clubData, email: e.target.value })}
+                          disabled={!isEditing}
+                          className="bg-background/50"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium flex items-center gap-2">
+                          <Phone className="w-4 h-4 text-primary" />
+                          Téléphone
+                        </label>
+                        <Input
+                          value={clubData.phone}
+                          onChange={(e) => setClubData({ ...clubData, phone: e.target.value })}
+                          disabled={!isEditing}
+                          className="bg-background/50"
+                        />
+                      </div>
+
+                      {isEditing && (
+                        <div className="flex justify-end mt-4">
+                          <Button type="submit" variant="neon" disabled={loading}>
+                            {loading ? (
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            ) : (
+                              <Save className="w-4 h-4 mr-2" />
+                            )}
+                            {loading ? t('pages.profile.saving') : t('pages.profile.save')}
+                          </Button>
+                        </div>
+                      )}
+                    </form>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Security Card */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="bg-card border border-border/50 rounded-2xl p-6"
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
+                      <Lock className="w-5 h-5 text-accent" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-semibold">{t('pages.profile.changePassword')}</h2>
+                    </div>
+                  </div>
+                  <Button
+                    variant={isChangingPassword ? "ghost" : "outline"}
+                    onClick={() => setIsChangingPassword(!isChangingPassword)}
+                  >
+                    {isChangingPassword ? t('pages.profile.cancel') : t('pages.profile.changePassword')}
+                  </Button>
+                </div>
+
+                {isChangingPassword && (
+                  <motion.form
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    onSubmit={handleUpdatePassword}
+                    className="space-y-4 max-w-md"
+                  >
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">{t('pages.profile.currentPassword')}</label>
+                      <Input
+                        type="password"
+                        value={passwordData.currentPassword}
+                        onChange={(e) =>
+                          setPasswordData({ ...passwordData, currentPassword: e.target.value })
+                        }
+                        className="bg-background/50"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">{t('pages.profile.newPassword')}</label>
+                      <Input
+                        type="password"
+                        value={passwordData.newPassword}
+                        onChange={(e) =>
+                          setPasswordData({ ...passwordData, newPassword: e.target.value })
+                        }
+                        className="bg-background/50"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">{t('pages.profile.confirmPassword')}</label>
+                      <Input
+                        type="password"
+                        value={passwordData.confirmPassword}
+                        onChange={(e) =>
+                          setPasswordData({ ...passwordData, confirmPassword: e.target.value })
+                        }
+                        className="bg-background/50"
+                      />
+                    </div>
+                    <div className="flex justify-end pt-4">
+                      <Button type="submit" variant="neon" disabled={loading}>
+                        {loading ? (
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        ) : (
+                          <Save className="w-4 h-4 mr-2" />
+                        )}
+                        {t('pages.profile.updatePassword')}
+                      </Button>
+                    </div>
+                  </motion.form>
+                )}
+              </motion.div>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
-      <DashboardNavbar credits={credits} />
+      <DashboardNavbar credits={user?.credits_balance || user?.credits || 0} />
 
       <main className="pt-20 pb-12">
         <div className="container mx-auto px-4 lg:px-8 max-w-4xl">
-          {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
             className="mb-8"
           >
-            <h1 className="text-3xl lg:text-4xl font-bold font-orbitron mb-2">
-              Mon <span className="gradient-text">Profil</span>
+            <h1 className="text-3xl font-bold font-orbitron mb-2">
+              <span className="gradient-text">{t('pages.profile.title')}</span>
             </h1>
-            <p className="text-muted-foreground text-lg">
-              Gérez vos informations personnelles
+            <p className="text-muted-foreground">
+              {t('pages.profile.subtitle')}
             </p>
           </motion.div>
 
-          {/* Profile Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-            className="glass rounded-2xl p-6 lg:p-8 mb-8"
-          >
-            {/* Avatar Section */}
-            <div className="flex flex-col sm:flex-row items-center gap-6 mb-8 pb-8 border-b border-border/50">
-              <div className="relative">
-                <Avatar className="h-24 w-24 border-4 border-primary/30">
-                  <AvatarImage src={getAssetUrl(profile.avatar)} alt={`${profile.firstName} ${profile.lastName}`} />
-                  <AvatarFallback className="bg-primary/10 text-primary font-bold text-2xl">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="absolute -bottom-2 -right-2">
+          <div className="grid gap-8">
+            {/* Profile Info Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="bg-card border border-border/50 rounded-2xl p-6"
+            >
+              <div className="flex flex-col md:flex-row gap-8 items-start">
+                <div className="relative group mx-auto md:mx-0">
+                  <Avatar className="w-32 h-32 border-4 border-background shadow-xl">
+                    <AvatarImage src={getAssetUrl(user?.avatar || '')} className="object-cover" />
+                    <AvatarFallback className="text-4xl bg-primary/10 text-primary">
+                      {user?.first_name?.[0]}
+                      {user?.last_name?.[0]}
+                    </AvatarFallback>
+                  </Avatar>
+                  <button
+                    onClick={handleAvatarClick}
+                    className="absolute bottom-0 right-0 p-2 bg-primary text-primary-foreground rounded-full shadow-lg hover:bg-primary/90 transition-colors"
+                  >
+                    <Camera className="w-5 h-5" />
+                  </button>
                   <input
                     type="file"
-                    id="avatar-upload"
-                    className="hidden"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
                     accept="image/*"
-                    onChange={handleAvatarUpload}
+                    className="hidden"
                   />
-                  <Button
-                    variant="neon"
-                    size="icon"
-                    className="h-10 w-10 rounded-full"
-                    onClick={() => document.getElementById('avatar-upload')?.click()}
-                    disabled={isUploadingAvatar}
-                  >
-                    {isUploadingAvatar ? (
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-                    ) : (
-                      <Camera className="h-4 w-4" />
+                </div>
+
+                <div className="flex-1 w-full space-y-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-2xl font-bold">
+                        {user?.first_name} {user?.last_name}
+                      </h2>
+                      <div className="flex items-center gap-2 text-muted-foreground mt-1">
+                        <Shield className="w-4 h-4 text-neon-green" />
+                        <span className="text-sm">{t('pages.profile.verifiedPlayer')}</span>
+                      </div>
+                    </div>
+                    <Button
+                      variant={isEditing ? "ghost" : "outline"}
+                      onClick={() => setIsEditing(!isEditing)}
+                    >
+                      {isEditing ? t('pages.profile.cancel') : t('pages.profile.edit')}
+                    </Button>
+                  </div>
+
+                  <form onSubmit={handleUpdateProfile} className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium flex items-center gap-2">
+                        <User className="w-4 h-4 text-primary" />
+                        {t('pages.profile.firstName')}
+                      </label>
+                      <Input
+                        value={formData.first_name}
+                        onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+                        disabled={!isEditing}
+                        className="bg-background/50"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium flex items-center gap-2">
+                        <User className="w-4 h-4 text-primary" />
+                        {t('pages.profile.lastName')}
+                      </label>
+                      <Input
+                        value={formData.last_name}
+                        onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+                        disabled={!isEditing}
+                        className="bg-background/50"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium flex items-center gap-2">
+                        <Mail className="w-4 h-4 text-primary" />
+                        {t('pages.profile.email')}
+                      </label>
+                      <Input
+                        value={formData.email}
+                        disabled={true}
+                        className="bg-background/50 opacity-70"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium flex items-center gap-2">
+                        <Phone className="w-4 h-4 text-primary" />
+                        {t('pages.profile.phone')}
+                      </label>
+                      <Input
+                        value={formData.phone}
+                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        disabled={!isEditing}
+                        className="bg-background/50"
+                      />
+                    </div>
+
+                    {isEditing && (
+                      <div className="md:col-span-2 flex justify-end mt-4">
+                        <Button type="submit" variant="neon" disabled={loading}>
+                          {loading ? (
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          ) : (
+                            <Save className="w-4 h-4 mr-2" />
+                          )}
+                          {loading ? t('pages.profile.saving') : t('pages.profile.save')}
+                        </Button>
+                      </div>
                     )}
-                  </Button>
+                  </form>
                 </div>
               </div>
-              <div className="text-center sm:text-left">
-                <h2 className="text-2xl font-bold">{profile.firstName} {profile.lastName}</h2>
-                <p className="text-muted-foreground">{profile.email}</p>
-                <div className="flex items-center gap-2 mt-2 justify-center sm:justify-start">
-                  <Shield className="h-4 w-4 text-accent" />
-                  <span className="text-sm text-accent font-medium">Joueur vérifié</span>
+            </motion.div>
+
+            {/* Security Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="bg-card border border-border/50 rounded-2xl p-6"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
+                    <Lock className="w-5 h-5 text-accent" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-semibold">{t('pages.profile.changePassword')}</h2>
+                  </div>
                 </div>
-              </div>
-            </div>
-
-            {/* Profile Form */}
-            <div className="grid gap-6">
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName" className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-muted-foreground" />
-                    Prénom
-                  </Label>
-                  <Input
-                    id="firstName"
-                    value={profile.firstName}
-                    onChange={(e) => setProfile({ ...profile, firstName: e.target.value })}
-                    disabled={!isEditing}
-                    className="bg-card/50"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName" className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-muted-foreground" />
-                    Nom
-                  </Label>
-                  <Input
-                    id="lastName"
-                    value={profile.lastName}
-                    onChange={(e) => setProfile({ ...profile, lastName: e.target.value })}
-                    disabled={!isEditing}
-                    className="bg-card/50"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="email" className="flex items-center gap-2">
-                  <Mail className="h-4 w-4 text-muted-foreground" />
-                  Email
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={profile.email}
-                  onChange={(e) => setProfile({ ...profile, email: e.target.value })}
-                  disabled={!isEditing}
-                  className="bg-card/50"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="phone" className="flex items-center gap-2">
-                  <Phone className="h-4 w-4 text-muted-foreground" />
-                  Téléphone
-                </Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  value={profile.phone}
-                  onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
-                  disabled={!isEditing}
-                  className="bg-card/50"
-                />
-              </div>
-
-              <div className="flex gap-3 pt-4">
-                {isEditing ? (
-                  <>
-                    <Button variant="neon" className="gap-2" onClick={handleSaveProfile} disabled={isSaving}>
-                      <Save className="h-4 w-4" />
-                      {isSaving ? 'Enregistrement...' : 'Enregistrer'}
-                    </Button>
-                    <Button variant="ghost" onClick={() => setIsEditing(false)}>
-                      Annuler
-                    </Button>
-                  </>
-                ) : (
-                  <Button variant="neonOutline" onClick={() => setIsEditing(true)}>
-                    Modifier le profil
-                  </Button>
-                )}
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Password Change Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.5 }}
-            className="glass rounded-2xl p-6 lg:p-8"
-          >
-            <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-              <Lock className="h-5 w-5 text-primary" />
-              Changer le mot de passe
-            </h3>
-
-            <div className="grid gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="currentPassword">Mot de passe actuel</Label>
-                <Input
-                  id="currentPassword"
-                  type="password"
-                  value={passwords.current}
-                  onChange={(e) => setPasswords({ ...passwords, current: e.target.value })}
-                  className="bg-card/50"
-                  placeholder="••••••••"
-                />
-              </div>
-
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="newPassword">Nouveau mot de passe</Label>
-                  <Input
-                    id="newPassword"
-                    type="password"
-                    value={passwords.new}
-                    onChange={(e) => setPasswords({ ...passwords, new: e.target.value })}
-                    className="bg-card/50"
-                    placeholder="••••••••"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
-                  <Input
-                    id="confirmPassword"
-                    type="password"
-                    value={passwords.confirm}
-                    onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })}
-                    className="bg-card/50"
-                    placeholder="••••••••"
-                  />
-                </div>
-              </div>
-
-              <div className="pt-4">
                 <Button
-                  variant="neon"
-                  className="gap-2"
-                  onClick={handleChangePassword}
-                  disabled={!passwords.current || !passwords.new || !passwords.confirm}
+                  variant={isChangingPassword ? "ghost" : "outline"}
+                  onClick={() => setIsChangingPassword(!isChangingPassword)}
                 >
-                  <Lock className="h-4 w-4" />
-                  Modifier le mot de passe
+                  {isChangingPassword ? t('pages.profile.cancel') : t('pages.profile.changePassword')}
                 </Button>
               </div>
-            </div>
-          </motion.div>
+
+              {isChangingPassword && (
+                <motion.form
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  onSubmit={handleUpdatePassword}
+                  className="space-y-4 max-w-md"
+                >
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">{t('pages.profile.currentPassword')}</label>
+                    <Input
+                      type="password"
+                      value={passwordData.currentPassword}
+                      onChange={(e) =>
+                        setPasswordData({ ...passwordData, currentPassword: e.target.value })
+                      }
+                      className="bg-background/50"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">{t('pages.profile.newPassword')}</label>
+                    <Input
+                      type="password"
+                      value={passwordData.newPassword}
+                      onChange={(e) =>
+                        setPasswordData({ ...passwordData, newPassword: e.target.value })
+                      }
+                      className="bg-background/50"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">{t('pages.profile.confirmPassword')}</label>
+                    <Input
+                      type="password"
+                      value={passwordData.confirmPassword}
+                      onChange={(e) =>
+                        setPasswordData({ ...passwordData, confirmPassword: e.target.value })
+                      }
+                      className="bg-background/50"
+                    />
+                  </div>
+                  <div className="flex justify-end pt-4">
+                    <Button type="submit" variant="neon" disabled={loading}>
+                      {loading ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Save className="w-4 h-4 mr-2" />
+                      )}
+                      {t('pages.profile.updatePassword')}
+                    </Button>
+                  </div>
+                </motion.form>
+              )}
+            </motion.div>
+          </div>
         </div>
-      </main >
-    </div >
+      </main>
+    </div>
   );
 };
 

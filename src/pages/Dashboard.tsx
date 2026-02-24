@@ -11,27 +11,30 @@ import { ActiveRecordingBanner } from "@/components/dashboard/ActiveRecordingBan
 import { StartRecordingModal } from "@/components/dashboard/StartRecordingModal";
 import { ShareVideoModal } from "@/components/dashboard/ShareVideoModal";
 import { VideoClipEditor } from "@/components/dashboard/VideoClipEditor";
-
 import { VideoPlayerModal } from "@/components/dashboard/VideoPlayerModal";
 import { EditVideoTitleModal } from "@/components/dashboard/EditVideoTitleModal";
-import QRScannerModal from "@/components/dashboard/QRScannerModal";
-import { Button } from "@/components/ui/button";
+import DirectRecordingModal from "@/components/dashboard/DirectRecordingModal"; // Corrected default import
+import { ReportIssueModal } from "@/components/dashboard/ReportIssueModal";
+import { toast } from "sonner"; // Assuming toast is from sonner
 import {
   Video,
   Scissors,
   CreditCard,
   Share2,
   Play,
-  Plus,
-  Filter,
-  Search,
   QrCode,
+  Plus,
+  GraduationCap,
+  Search,
+  Filter,
   Loader2,
-  GraduationCap
-} from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
+  AlertTriangle,
+} from "lucide-react"; // Assuming these icons are from lucide-react
+import { Button } from "@/components/ui/button"; // Assuming Button is from ui/button
+import { Input } from "@/components/ui/input"; // Assuming Input is from ui/input
+import { useTranslation } from "react-i18next";
 
+// Framer Motion variants for animations
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -43,18 +46,15 @@ const containerVariants = {
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { y: 20, opacity: 0 },
   visible: {
-    opacity: 1,
     y: 0,
-    transition: {
-      duration: 0.5,
-      ease: [0.25, 0.1, 0.25, 1] as const,
-    },
+    opacity: 1,
   },
 };
 
 const Dashboard = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const { startTutorial } = useTutorialContext();
@@ -70,6 +70,8 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [clipsCount, setClipsCount] = useState(0);
   const [isClipEditorOpen, setIsClipEditorOpen] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  // scannedQrCode removed as it's now handled internally by DirectRecordingModal
 
   // Fonction pour démarrer le tutoriel manuellement
   const handleStartTutorial = () => {
@@ -77,7 +79,7 @@ const Dashboard = () => {
     localStorage.removeItem('mysmash_tutorial_completed');
     localStorage.removeItem('mysmash_tutorial_status');
     startTutorial();
-    toast.success('Tutoriel démarré !');
+    toast.success(t("toasts.tutorialStarted"));
   };
 
   // Format duration from seconds to mm:ss
@@ -98,7 +100,7 @@ const Dashboard = () => {
       } catch (error: any) {
         console.error('Failed to fetch videos:', error);
         if (error.response?.status !== 401) {
-          toast.error('Impossible de charger les vidéos');
+          toast.error(t("toasts.videosLoadError"));
         }
       } finally {
         setLoading(false);
@@ -106,7 +108,7 @@ const Dashboard = () => {
     };
 
     fetchVideos();
-  }, []);
+  }, [t]);
 
   // Fetch clips count
   useEffect(() => {
@@ -149,13 +151,13 @@ const Dashboard = () => {
   const handleStopRecording = async () => {
     if (!activeRecording) return;
 
-    if (!confirm('Voulez-vous vraiment arrêter cet enregistrement ?')) {
+    if (!confirm(t("toasts.confirmStop"))) {
       return;
     }
 
     try {
       await recordingService.stopRecording(activeRecording.recording_id);
-      toast.success('Enregistrement arrêté avec succès');
+      toast.success(t("toasts.recordingStopped"));
       setActiveRecording(null);
 
       // Refresh videos after stopping
@@ -163,20 +165,49 @@ const Dashboard = () => {
       setVideos(response.data.videos || []);
     } catch (error: any) {
       console.error('Failed to stop recording:', error);
-      toast.error(error.response?.data?.error || 'Erreur lors de l\'arrêt de l\'enregistrement');
+      toast.error(error.response?.data?.error || t("toasts.recordingStopError"));
     }
   };
 
-  // Filter videos by search query AND processing status
-  // Hide videos being actively processed/uploaded on Bunny (0:00 duration videos)
-  // Show: 'ready', null, undefined, 'pending', and even 'failed' (user can see what went wrong)
-  const filteredVideos = videos.filter((video) => {
-    // Only hide videos that are actively being processed or uploaded RIGHT NOW
-    // This prevents showing unplayable 0:00 duration videos
-    if (video.processing_status === 'processing' || video.processing_status === 'uploading') {
-      return false;
+  // Poll for video status updates
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    const checkVideoStatus = async () => {
+      // Only poll if we have videos that are processing, uploading, OR PENDING
+      const hasProcessingVideos = videos.some(
+        v => ['processing', 'uploading', 'pending'].includes(v.processing_status)
+      );
+
+      if (!hasProcessingVideos) return;
+
+      try {
+        const response = await videoService.getMyVideos();
+        const newVideos = response.data.videos || [];
+
+        // Check for completions
+        newVideos.forEach((newVideo: any) => {
+          const oldVideo = videos.find(v => v.id === newVideo.id);
+          if (oldVideo && ['processing', 'uploading', 'pending'].includes(oldVideo.processing_status) && newVideo.processing_status === 'ready') {
+            toast.success(t("toasts.videoReady", { title: newVideo.title }));
+          }
+        });
+
+        setVideos(newVideos);
+      } catch (error) {
+        console.error('Error polling videos:', error);
+      }
+    };
+
+    if (videos.some(v => ['processing', 'uploading', 'pending'].includes(v.processing_status))) {
+      interval = setInterval(checkVideoStatus, 5000);
     }
 
+    return () => clearInterval(interval);
+  }, [videos, t]);
+
+  // Filter videos by search query
+  const filteredVideos = videos.filter((video) => {
     // Filter by search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
@@ -246,22 +277,22 @@ const Dashboard = () => {
         toast.success(response.data.message || `Vidéo supprimée (${selectedMode})`);
       } catch (error: any) {
         console.error('Failed to delete video:', error);
-        const errorMsg = error.response?.data?.error || 'Erreur lors de la suppression';
+        const errorMsg = error.response?.data?.error || t("toasts.deleteError");
         toast.error(errorMsg);
       }
     } else {
       // Regular user: simple deletion
-      if (!confirm('Êtes-vous sûr de vouloir supprimer cette vidéo ?')) {
+      if (!confirm(t("toasts.confirmDelete"))) {
         return;
       }
 
       try {
         await videoService.deleteVideo(video.id);
         setVideos(videos.filter(v => v.id !== video.id));
-        toast.success('Vidéo supprimée avec succès');
+        toast.success(t("toasts.videoDeleted"));
       } catch (error: any) {
         console.error('Failed to delete video:', error);
-        toast.error('Erreur lors de la suppression');
+        toast.error(t("toasts.deleteError"));
       }
     }
   };
@@ -269,18 +300,18 @@ const Dashboard = () => {
   const handleDownloadVideo = async (video: any) => {
     // Check if video is expired or deleted
     if (video.is_expired || video.processing_status !== 'ready') {
-      toast.error('Cette vidéo n\'est pas disponible pour téléchargement');
+      toast.error(t("toasts.downloadUnavailable"));
       return;
     }
 
     // Check if video has bunny_video_id
     if (!video.bunny_video_id) {
-      toast.error('Cette vidéo n\'a pas été uploadée sur Bunny Stream');
+      toast.error(t("toasts.bunnyMissing"));
       return;
     }
 
     try {
-      toast.loading('Recherche de la meilleure qualité...', { id: 'download-toast' });
+      toast.loading(t("toasts.findingQuality"), { id: 'download-toast' });
 
       // Importer le helper
       const { getWorkingVideoUrl } = await import('@/lib/bunnyVideoHelper');
@@ -288,7 +319,7 @@ const Dashboard = () => {
       // Trouver l'URL qui fonctionne avec fallback automatique
       const finalUrl = await getWorkingVideoUrl(video.bunny_video_id, '720p');
 
-      toast.loading('Téléchargement en cours...', { id: 'download-toast' });
+      toast.loading(t("toasts.downloading"), { id: 'download-toast' });
 
       // Fetch the file as a blob to force download
       const response = await fetch(finalUrl);
@@ -312,14 +343,14 @@ const Dashboard = () => {
       document.body.removeChild(link);
 
       toast.dismiss('download-toast');
-      toast.success('Téléchargement terminé !');
+      toast.success(t("toasts.downloadComplete"));
     } catch (error) {
       console.error('Download error:', error);
       toast.dismiss('download-toast');
 
       // Fallback: Open in new tab with default resolution
       window.open(`https://vz-9b857324-07d.b-cdn.net/${video.bunny_video_id}/play_720p.mp4`, '_blank');
-      toast.error('Téléchargement direct échoué, ouverture du lien...');
+      toast.error(t("toasts.downloadFailed"));
     }
   };
 
@@ -333,10 +364,10 @@ const Dashboard = () => {
   const sharedVideos = videos.filter(v => v.is_shared);   // Vidéos reçues/partagées avec moi
 
   const stats = [
-    { icon: Video, label: "Vidéos", value: ownedVideos.length.toString(), color: "primary" as const },
-    { icon: Scissors, label: "Clips", value: clipsCount.toString(), color: "accent" as const },
-    { icon: CreditCard, label: "Crédits", value: (user?.credits_balance || user?.credits)?.toString() || "0", color: "cyan" as const },
-    { icon: Share2, label: "Partagées", value: sharedVideos.length.toString(), color: "purple" as const },
+    { icon: Video, label: t('dashboard.stats.videos'), value: ownedVideos.length.toString(), color: "primary" as const },
+    { icon: Scissors, label: t('dashboard.stats.clips'), value: clipsCount.toString(), color: "accent" as const },
+    { icon: CreditCard, label: t('dashboard.stats.credits'), value: (user?.credits_balance || user?.credits)?.toString() || "0", color: "cyan" as const },
+    { icon: Share2, label: t('dashboard.stats.shared'), value: sharedVideos.length.toString(), color: "purple" as const },
   ];
 
   if (loading) {
@@ -344,7 +375,7 @@ const Dashboard = () => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary mb-4" />
-          <p className="text-muted-foreground">Chargement du dashboard...</p>
+          <p className="text-muted-foreground">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -375,10 +406,10 @@ const Dashboard = () => {
             className="mb-8"
           >
             <h1 className="text-3xl lg:text-4xl font-bold font-orbitron mb-2">
-              Bonjour, <span className="gradient-text">{user?.name || 'Joueur'}</span> 👋
+              {t('dashboard.welcome', { name: user?.name || 'Joueur' })}
             </h1>
             <p className="text-muted-foreground text-lg">
-              Prêt à analyser tes performances ?
+              {t('dashboard.readyToAnalyze')}
             </p>
           </motion.div>
 
@@ -415,7 +446,7 @@ const Dashboard = () => {
               disabled={!!activeRecording}
             >
               <Play className="h-4 w-4" />
-              Démarrer un enregistrement
+              {t('dashboard.startRecording')}
             </Button>
             <Button
               variant="neonOutline"
@@ -424,16 +455,24 @@ const Dashboard = () => {
               disabled={!!activeRecording}
             >
               <QrCode className="h-4 w-4" />
-              Scanner QR
+              {t('dashboard.scanQr')}
             </Button>
             <Button variant="neonOutline" className="gap-2" onClick={() => navigate('/credits')}>
               <Plus className="h-4 w-4" />
-              Acheter des crédits
+              {t('dashboard.buyCredits')}
             </Button>
             <Button variant="outline" className="gap-2" onClick={handleStartTutorial}>
               <GraduationCap className="h-4 w-4" />
-              Relancer le tutoriel
+              {t('dashboard.restartTutorial')}
             </Button>
+            {/* <Button
+              variant="outline"
+              className="gap-2 border-yellow-500 text-yellow-600 hover:bg-yellow-50 dark:text-yellow-400 dark:border-yellow-500 dark:hover:bg-yellow-900/20"
+              onClick={() => setIsReportModalOpen(true)}
+            >
+              <AlertTriangle className="h-4 w-4" />
+              {t('dashboard.reportIssue')}
+            </Button> */}
           </motion.div>
 
           {/* Videos Section */}
@@ -444,13 +483,13 @@ const Dashboard = () => {
           >
             {/* Section Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-              <h2 className="text-2xl font-bold font-orbitron">Mes Vidéos</h2>
+              <h2 className="text-2xl font-bold font-orbitron">{t('dashboard.myVideos')}</h2>
 
               <div className="flex items-center gap-3">
                 <div className="relative flex-1 sm:w-64">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Rechercher..."
+                    placeholder={t('dashboard.searchPlaceholder')}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-10 bg-card/50 border-border/50 focus:border-primary/50"
@@ -504,7 +543,7 @@ const Dashboard = () => {
               >
                 <Video className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
                 <p className="text-muted-foreground text-lg">
-                  {videos.length === 0 ? "Aucune vidéo enregistrée" : "Aucune vidéo trouvée"}
+                  {videos.length === 0 ? t('dashboard.noVideos') : t('dashboard.noVideosFound')}
                 </p>
                 {videos.length === 0 && (
                   <Button
@@ -513,7 +552,7 @@ const Dashboard = () => {
                     onClick={() => setIsRecordingModalOpen(true)}
                   >
                     <Play className="h-4 w-4 mr-2" />
-                    Créer votre première vidéo
+                    {t('dashboard.createFirstVideo')}
                   </Button>
                 )}
               </motion.div>
@@ -525,13 +564,16 @@ const Dashboard = () => {
       {/* Modals */}
       <StartRecordingModal
         open={isRecordingModalOpen}
-        onOpenChange={setIsRecordingModalOpen}
+        onOpenChange={(open) => {
+          setIsRecordingModalOpen(open);
+        }}
         onRecordingStarted={async (session) => {
           // Set immediately for instant UI feedback
           setActiveRecording(session);
           // Also fetch to get full recording details from server
           setTimeout(fetchActiveRecording, 1000);
         }}
+      // initialQrCode prop removed as it's for the manual flow only now
       />
 
       <ShareVideoModal
@@ -540,8 +582,6 @@ const Dashboard = () => {
         videoId={selectedVideo?.id}
         videoTitle={selectedVideo?.title || ""}
       />
-
-
 
       <VideoPlayerModal
         isOpen={isPlayerOpen}
@@ -576,7 +616,7 @@ const Dashboard = () => {
         }}
         video={selectedVideo}
         onClipCreated={async (clip) => {
-          toast.success('Clip créé avec succès !');
+          toast.success(t("toasts.clipCreated"));
           // Refresh clip count
           const { clipService } = await import('@/lib/api');
           const response = await clipService.getMyClips();
@@ -584,17 +624,23 @@ const Dashboard = () => {
         }}
       />
 
-      <QRScannerModal
+      <DirectRecordingModal
         isOpen={isQRScannerOpen}
         onClose={() => setIsQRScannerOpen(false)}
-        onCodeScanned={(qrCode) => {
-          setIsQRScannerOpen(false);
-          setIsRecordingModalOpen(true);
-          // The QR code will be handled by StartRecordingModal
+        onRecordingStarted={async (session) => {
+          setActiveRecording(session);
+          setTimeout(fetchActiveRecording, 1000);
         }}
+
+      />
+
+      <ReportIssueModal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
       />
     </div>
   );
 };
+
 
 export default Dashboard;

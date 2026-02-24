@@ -18,18 +18,41 @@ const api: AxiosInstance = axios.create({
 
 export const getAssetUrl = (path: string): string => {
     if (!path) return '';
-    if (path.startsWith('http')) return path;
 
-    const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+    let cleanPath = path;
 
-    // Use manual proxy for avatars to guarantee CORS
-    if (cleanPath.includes('uploads/avatars/')) {
+    // If it's an absolute URL but points to our domain without /api, strip the domain part
+    // This handles cases where old data might have stored absolute URLs
+    if (path.startsWith('http')) {
+        const url = new URL(path);
+        if (url.hostname === 'spovio.net' && !url.pathname.startsWith('/api')) {
+            cleanPath = url.pathname;
+        } else {
+            return path;
+        }
+    }
+
+    cleanPath = cleanPath.startsWith('/') ? cleanPath.slice(1) : cleanPath;
+
+    // All static assets go through /api/
+    // This ensures nginx routes them correctly to the Flask backend (which handles CORS too)
+    if (
+        cleanPath.includes('uploads/avatars/') ||
+        cleanPath.includes('static/avatars/') ||
+        cleanPath.includes('static/uploads/')
+    ) {
         const filename = cleanPath.split('/').pop();
         return `${API_BASE_URL}/static/avatars/${filename}`;
     }
 
-    const baseUrl = API_BASE_URL.replace(/\/api$/, '');
-    return `${baseUrl}/${cleanPath}`;
+    if (cleanPath.includes('static/overlays/')) {
+        const filename = cleanPath.split('/').pop();
+        return `${API_BASE_URL}/static/overlays/${filename}`;
+    }
+
+    // For other assets (e.g. overlay images stored elsewhere), use the API base URL directly
+    // so that nginx routes them to the backend
+    return `${API_BASE_URL}/${cleanPath}`;
 };
 
 let isRedirecting = false;
@@ -109,19 +132,21 @@ export const authService = {
     superAdminLogin: (credentials: any) => api.post('/auth/super-admin/login', credentials),
     superAdminVerify2FA: (data: any) => api.post('/auth/super-admin/verify-2fa', data),
     superAdminSetup2FA: (data: any) => api.post('/auth/super-admin/setup-2fa', data),
+    updateProfile: (data: any) => api.put('/auth/update-profile', data),
+    updateClubInfo: (data: FormData) => api.put('/clubs/info', data, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    }),
+    updateAvatar: (data: FormData) => api.post('/auth/upload-avatar', data, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    }),
+    updatePassword: (data: any) => api.post('/auth/change-password', data),
     logout: () => api.post('/auth/logout'),
     getCurrentUser: () => api.get('/auth/me'),
-    updateProfile: (profileData: any) => api.put('/auth/update-profile', profileData),
-    changePassword: (passwordData: any) => api.post('/auth/change-password', passwordData),
     verifyEmail: (email: string, code: string) => api.post('/auth/verify-email', { email, code }),
     resendVerificationCode: (email: string) => api.post('/auth/resend-verification', { email }),
     getGoogleAuthUrl: () => api.get('/auth/google-auth-url'),
     googleAuthenticate: (token: string) => api.post('/auth/google/authenticate', { token }),
-    uploadAvatar: (formData: FormData) => api.post('/auth/upload-avatar', formData, {
-        headers: {
-            'Content-Type': 'multipart/form-data',
-        },
-    }),
+    // uploadAvatar: reused above as updateAvatar
     forgotPassword: (email: string) => api.post('/auth/forgot-password', { email }),
     resetPassword: (token: string, newPassword: string) => api.post('/auth/reset-password', { token, new_password: newPassword }),
 };
@@ -346,6 +371,21 @@ export const adminService = {
         api.post(`/admin/clubs/${clubId}/overlays/upload`, formData, {
             headers: { 'Content-Type': 'multipart/form-data' }
         }),
+
+    // Recovery Management
+    getRecoveryRequests: () => api.get('/recovery/requests'),
+
+    // Logo & Avatar Management
+    uploadClubLogo: (clubId: string, formData: FormData) =>
+        api.post(`/admin/clubs/${clubId}/upload-logo`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        }),
+    deleteClubLogo: (clubId: string) => api.delete(`/admin/clubs/${clubId}/logo`),
+    uploadUserAvatar: (userId: string, formData: FormData) =>
+        api.post(`/admin/users/${userId}/upload-avatar`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        }),
+    deleteUserAvatar: (userId: string) => api.delete(`/admin/users/${userId}/avatar`),
 };
 
 // Settings Service
@@ -353,5 +393,14 @@ export const settingsService = {
     getSettings: () => api.get('/settings'),
     updateSettings: (settings: any) => api.put('/settings', settings),
 };
+
+// Recovery Service
+export const recoveryService = {
+    reportIssue: (data: { court_id: number; match_start: string; match_end: string; description?: string }) =>
+        api.post('/recovery/report', data),
+    getRequests: () => api.get('/recovery/requests'), // Admin only endpoint, but grouped here for context or can stay in adminService
+};
+
+
 
 export default api;

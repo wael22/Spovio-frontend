@@ -1,7 +1,10 @@
 ﻿import { ArrowRight, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 
 export function CTASection() {
+  const { t } = useTranslation();
+
   return (
     <section className="py-24 relative overflow-hidden">
       {/* Background */}
@@ -16,14 +19,13 @@ export function CTASection() {
         <div className="max-w-4xl mx-auto text-center">
           {/* Main Content */}
           <h2 className="font-display text-3xl md:text-5xl lg:text-6xl font-bold mb-6">
-            Prêt à Transformer
+            {t("landing.cta.title")}
             <br />
-            <span className="gradient-text">Votre Jeu de Padel ?</span>
+            <span className="gradient-text">{t("landing.cta.titleHighlight")}</span>
           </h2>
 
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
-            Rejoignez les joueurs qui utilisent déjà MySmash pour enregistrer,
-            analyser et améliorer leurs performances sur le terrain.
+            {t("landing.cta.subtitle")}
           </p>
 
           {/* CTA Buttons */}
@@ -31,18 +33,22 @@ export function CTASection() {
             <a href="/auth">
               <Button variant="hero" size="xl" className="group">
                 <Play className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
-                Commencer Gratuitement
+                {t("landing.cta.buttons.signup")}
                 <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
             </a>
-            <Button variant="glass" size="xl">
-              Parler à un Expert
+            <Button
+              variant="glass"
+              size="xl"
+              onClick={() => window.location.href = '/contact'}
+            >
+              {t("landing.cta.buttons.expert")}
             </Button>
           </div>
 
           {/* Trust Signals */}
           <p className="mt-8 text-sm text-muted-foreground">
-            ✓ Aucune carte bancaire requise &nbsp;&nbsp; ✓ 1 crédit offert à l'inscription &nbsp;&nbsp; ✓ Annulez à tout moment
+            {t("landing.cta.trust")}
           </p>
         </div>
       </div>

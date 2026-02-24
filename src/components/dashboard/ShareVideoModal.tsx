@@ -11,9 +11,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Mail, MessageSquare, Send } from "lucide-react";
+import { Mail, MessageSquare, Send, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { videoService } from "@/lib/api";
+import { useTranslation } from "react-i18next";
 
 interface ShareVideoModalProps {
     open: boolean;
@@ -28,6 +29,7 @@ export function ShareVideoModal({
     videoId,
     videoTitle,
 }: ShareVideoModalProps) {
+    const { t } = useTranslation();
     const { toast } = useToast();
     const [email, setEmail] = useState("");
     const [message, setMessage] = useState("");
@@ -36,8 +38,8 @@ export function ShareVideoModal({
     const handleShare = async () => {
         if (!email.trim()) {
             toast({
-                title: "Erreur",
-                description: "Veuillez entrer un email.",
+                title: t('modals.common.error'),
+                description: t('modals.shareVideo.errors.emailRequired'),
                 variant: "destructive",
             });
             return;
@@ -45,8 +47,8 @@ export function ShareVideoModal({
 
         if (!videoId) {
             toast({
-                title: "Erreur",
-                description: "ID de vidéo invalide.",
+                title: t('modals.common.error'),
+                description: t('modals.shareVideo.errors.invalidVideoId'),
                 variant: "destructive",
             });
             return;
@@ -56,8 +58,8 @@ export function ShareVideoModal({
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email.trim())) {
             toast({
-                title: "Erreur",
-                description: "Format d'email invalide.",
+                title: t('modals.common.error'),
+                description: t('modals.shareVideo.errors.invalidEmail'),
                 variant: "destructive",
             });
             return;
@@ -73,8 +75,8 @@ export function ShareVideoModal({
             );
 
             toast({
-                title: "✅ Vidéo partagée",
-                description: `La vidéo a été partagée avec ${email}. Un email de notification a été envoyé.`,
+                title: `✅ ${t('modals.common.success')}`,
+                description: t('modals.shareVideo.success', { email }),
             });
 
             setEmail("");
@@ -88,7 +90,7 @@ export function ShareVideoModal({
                 'Erreur lors du partage';
 
             toast({
-                title: "❌ Erreur de partage",
+                title: `❌ ${t('modals.common.error')}`,
                 description: errorMessage,
                 variant: "destructive",
             });
@@ -105,10 +107,10 @@ export function ShareVideoModal({
                         <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
                             <Send className="h-5 w-5 text-primary" />
                         </div>
-                        Partager la vidéo
+                        {t('modals.shareVideo.title')}
                     </DialogTitle>
                     <DialogDescription className="text-muted-foreground">
-                        Partagez "{videoTitle}" avec un autre joueur MySmash. Il recevra un email de notification.
+                        {t('modals.shareVideo.description', { title: videoTitle })}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -122,19 +124,19 @@ export function ShareVideoModal({
                     <div className="space-y-2">
                         <Label htmlFor="email" className="flex items-center gap-2">
                             <Mail className="h-4 w-4 text-muted-foreground" />
-                            Email du destinataire *
+                            {t('modals.shareVideo.emailLabel')} *
                         </Label>
                         <Input
                             id="email"
                             type="email"
-                            placeholder="exemple@email.com"
+                            placeholder={t('modals.shareVideo.emailPlaceholder')}
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             className="bg-card/50"
                             disabled={isLoading}
                         />
                         <p className="text-xs text-muted-foreground">
-                            Le destinataire doit avoir un compte MySmash
+                            {t('modals.shareVideo.helperText')}
                         </p>
                     </div>
 
@@ -142,11 +144,11 @@ export function ShareVideoModal({
                     <div className="space-y-2">
                         <Label htmlFor="message" className="flex items-center gap-2">
                             <MessageSquare className="h-4 w-4 text-muted-foreground" />
-                            Message (optionnel)
+                            {t('modals.shareVideo.messageLabel')}
                         </Label>
                         <Textarea
                             id="message"
-                            placeholder="Ajouter un message personnel..."
+                            placeholder={t('modals.shareVideo.messagePlaceholder')}
                             value={message}
                             onChange={(e) => setMessage(e.target.value)}
                             className="bg-card/50 min-h-[100px] resize-none"
@@ -165,7 +167,7 @@ export function ShareVideoModal({
                             onClick={() => onOpenChange(false)}
                             disabled={isLoading}
                         >
-                            Annuler
+                            {t('modals.common.cancel')}
                         </Button>
                         <Button
                             variant="neon"
@@ -174,11 +176,11 @@ export function ShareVideoModal({
                             className="gap-2"
                         >
                             {isLoading ? (
-                                <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                <Loader2 className="h-4 w-4 animate-spin" />
                             ) : (
                                 <Send className="h-4 w-4" />
                             )}
-                            Partager
+                            {t('modals.shareVideo.send')}
                         </Button>
                     </div>
                 </motion.div>

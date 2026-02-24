@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface CoachMarkProps {
     title?: string;
@@ -25,6 +26,8 @@ export const CoachMark = ({
     onSkip,
     isFinal = false,
 }: CoachMarkProps) => {
+    const { t } = useTranslation();
+
     // Calculer la position du coach mark
     // Sur mobile, toujours centrer pour éviter les coupures
     const getPositionStyles = () => {
@@ -89,18 +92,18 @@ export const CoachMark = ({
                 <div className="space-y-1.5 sm:space-y-3">
                     {title && (
                         <h3 className="text-base sm:text-xl font-bold text-gray-900 dark:text-white leading-tight">
-                            {title}
+                            {t(title)}
                         </h3>
                     )}
 
                     <p className="text-xs sm:text-base text-gray-700 dark:text-gray-300 leading-snug sm:leading-relaxed">
-                        {message}
+                        {t(message)}
                     </p>
 
                     {secondaryMessage && (
                         <div className="bg-blue-50 dark:bg-blue-900/20 border-l-2 sm:border-l-4 border-blue-500 p-1.5 sm:p-3 rounded">
                             <p className="text-[10px] sm:text-sm text-blue-900 dark:text-blue-200 leading-snug">
-                                {secondaryMessage}
+                                {t(secondaryMessage)}
                             </p>
                         </div>
                     )}
@@ -114,7 +117,7 @@ export const CoachMark = ({
                             onClick={onSkip}
                             className="flex-1 h-9 sm:h-12 text-xs sm:text-base"
                         >
-                            Passer
+                            {t('tutorial.buttons.skip')}
                         </Button>
                     )}
 
@@ -122,7 +125,7 @@ export const CoachMark = ({
                         onClick={onNext}
                         className="flex-1 h-9 sm:h-12 text-xs sm:text-base bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold shadow-lg"
                     >
-                        {isFinal ? 'Commencer' : 'Suivant'}
+                        {isFinal ? t('tutorial.buttons.start') : t('tutorial.buttons.next')}
                     </Button>
                 </div>
             </div>

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { adminService } from '@/lib/api';
+import React, { useState, useEffect, useRef } from 'react';
+import { adminService, getAssetUrl } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Plus, MoreVertical, Edit, Trash2, Coins, Loader2, Search, RefreshCw, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Plus, MoreVertical, Edit, Trash2, Coins, Loader2, Search, RefreshCw, ArrowUpDown, ArrowUp, ArrowDown, User, Upload, X } from 'lucide-react';
 
 interface User {
     id: string;
@@ -18,6 +18,7 @@ interface User {
     email: string;
     role: string;
     phone_number?: string;
+    avatar?: string;
     credits_balance: number;
     video_count?: number;
 }
@@ -42,6 +43,11 @@ const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate }) => {
     });
     const [creditsToAdd, setCreditsToAdd] = useState<number>(0);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [showAvatarModal, setShowAvatarModal] = useState(false);
+    const [avatarFile, setAvatarFile] = useState<File | null>(null);
+    const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+    const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+    const avatarInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         loadUsers();
@@ -141,6 +147,50 @@ const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate }) => {
         setSelectedUser(user);
         setCreditsToAdd(0);
         setShowCreditsModal(true);
+    };
+
+    const openAvatarModal = (user: User) => {
+        setSelectedUser(user);
+        setAvatarFile(null);
+        setAvatarPreview(user.avatar ? getAssetUrl(user.avatar) : null);
+        setShowAvatarModal(true);
+    };
+
+    const handleAvatarFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setAvatarFile(file);
+            const reader = new FileReader();
+            reader.onloadend = () => setAvatarPreview(reader.result as string);
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleUploadAvatar = async () => {
+        if (!selectedUser || !avatarFile) return;
+        setIsUploadingAvatar(true);
+        try {
+            const formData = new FormData();
+            formData.append('avatar', avatarFile);
+            await adminService.uploadUserAvatar(selectedUser.id, formData);
+            setShowAvatarModal(false);
+            loadUsers();
+        } catch (error) {
+            setError('Erreur lors de l\'upload de l\'avatar');
+        } finally {
+            setIsUploadingAvatar(false);
+        }
+    };
+
+    const handleDeleteAvatar = async () => {
+        if (!selectedUser || !confirm(`Supprimer l'avatar de ${selectedUser.name} ?`)) return;
+        try {
+            await adminService.deleteUserAvatar(selectedUser.id);
+            setShowAvatarModal(false);
+            loadUsers();
+        } catch (error) {
+            setError('Erreur lors de la suppression de l\'avatar');
+        }
     };
 
     const handleSort = (column: keyof User) => {
@@ -287,7 +337,23 @@ const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate }) => {
                             <TableBody>
                                 {sortedUsers.map((user) => (
                                     <TableRow key={user.id}>
-                                        <TableCell className="font-medium">{user.name}</TableCell>
+                                        <TableCell className="font-medium">
+                                            <div className="flex items-center space-x-3">
+                                                {user.avatar ? (
+                                                    <img
+                                                        src={getAssetUrl(user.avatar)}
+                                                        alt={user.name}
+                                                        className="h-8 w-8 rounded-full object-cover border border-gray-200 flex-shrink-0"
+                                                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                                    />
+                                                ) : (
+                                                    <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                                                        <User className="h-4 w-4 text-gray-400" />
+                                                    </div>
+                                                )}
+                                                <span>{user.name}</span>
+                                            </div>
+                                        </TableCell>
                                         <TableCell>{user.email}</TableCell>
                                         <TableCell>{user.phone_number || '-'}</TableCell>
                                         <TableCell>{getRoleBadge(user.role)}</TableCell>
@@ -302,6 +368,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate }) => {
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild><Button variant="ghost" size="sm"><MoreVertical className="h-4 w-4" /></Button></DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem onClick={() => openAvatarModal(user)}><Upload className="mr-2 h-4 w-4" />Changer Avatar</DropdownMenuItem>
                                                     <DropdownMenuItem onClick={() => openEditModal(user)}><Edit className="mr-2 h-4 w-4" />Modifier</DropdownMenuItem>
                                                     <DropdownMenuItem onClick={() => openCreditsModal(user)}><Coins className="mr-2 h-4 w-4" />Ajouter crédits</DropdownMenuItem>
                                                     <DropdownMenuItem onClick={() => handleDeleteUser(user.id)} className="text-red-600"><Trash2 className="mr-2 h-4 w-4" />Supprimer</DropdownMenuItem>
@@ -367,6 +434,46 @@ const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate }) => {
                             </Button>
                         </div>
                     </form>
+                </DialogContent>
+            </Dialog>
+
+            {/* Avatar Upload Modal */}
+            <Dialog open={showAvatarModal} onOpenChange={setShowAvatarModal}>
+                <DialogContent>
+                    <DialogHeader><DialogTitle>Avatar de {selectedUser?.name}</DialogTitle></DialogHeader>
+                    <div className="space-y-4">
+                        <div className="flex justify-center">
+                            {avatarPreview ? (
+                                <img src={avatarPreview} alt="Avatar" className="h-24 w-24 rounded-full object-cover border-2 border-blue-200" />
+                            ) : (
+                                <div className="h-24 w-24 rounded-full bg-gray-100 flex items-center justify-center">
+                                    <User className="h-10 w-10 text-gray-400" />
+                                </div>
+                            )}
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Nouvel avatar</Label>
+                            <input ref={avatarInputRef} type="file" accept="image/*" onChange={handleAvatarFileChange} className="hidden" />
+                            <Button variant="outline" className="w-full" onClick={() => avatarInputRef.current?.click()}>
+                                <Upload className="h-4 w-4 mr-2" />Choisir une image
+                            </Button>
+                            {avatarFile && <p className="text-sm text-green-600">✓ {avatarFile.name} sélectionné</p>}
+                        </div>
+                        <div className="flex justify-between">
+                            {selectedUser?.avatar && (
+                                <Button variant="destructive" size="sm" onClick={handleDeleteAvatar}>
+                                    <X className="h-4 w-4 mr-1" />Supprimer avatar
+                                </Button>
+                            )}
+                            <div className="flex gap-2 ml-auto">
+                                <Button variant="outline" onClick={() => setShowAvatarModal(false)}>Annuler</Button>
+                                <Button onClick={handleUploadAvatar} disabled={!avatarFile || isUploadingAvatar}>
+                                    {isUploadingAvatar && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                                    Uploader
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
                 </DialogContent>
             </Dialog>
         </div>

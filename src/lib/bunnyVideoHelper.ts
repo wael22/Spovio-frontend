@@ -66,3 +66,25 @@ export function getBunnyVideoUrl(
 export function getBunnyPlaylistUrl(bunnyVideoId: string): string {
     return `https://${CDN_HOSTNAME}/${bunnyVideoId}/playlist.m3u8`;
 }
+
+/**
+ * Retourne toutes les résolutions disponibles pour une vidéo
+ */
+export async function getAvailableResolutions(bunnyVideoId: string): Promise<string[]> {
+    const available: string[] = [];
+
+    // Vérifier chaque résolution en parallèle pour rapidité
+    const checks = RESOLUTIONS.map(async (res) => {
+        const url = `https://${CDN_HOSTNAME}/${bunnyVideoId}/play_${res}.mp4`;
+        try {
+            const response = await fetch(url, { method: 'HEAD' });
+            if (response.ok) return res;
+        } catch (e) {
+            // Ignore error
+        }
+        return null;
+    });
+
+    const results = await Promise.all(checks);
+    return results.filter((r): r is Resolution => r !== null);
+}
