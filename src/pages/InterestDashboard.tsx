@@ -16,8 +16,8 @@ interface Player {
     created_at: string;
 }
 
-// Utilisation de l'API backend locale
-const API_URL = "/api/player-interests";
+// Utilisation de l'API Serverless Vercel
+const API_URL = "/api/interest";
 
 const InterestDashboard = () => {
     const [players, setPlayers] = useState<Player[]>([]);
