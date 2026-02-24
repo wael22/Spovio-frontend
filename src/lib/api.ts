@@ -4,8 +4,16 @@
 import axios, { AxiosInstance } from 'axios';
 
 // LOCAL DEVELOPMENT - Backend on localhost:5000
-// Use environment variable VITE_API_URL if defined, otherwise default to localhost
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+let API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+// S'assurer que l'URL se termine bien par /api pour cibler les Blueprints Backend (ex: /api/auth)
+if (API_BASE_URL) {
+    API_BASE_URL = API_BASE_URL.replace(/\/$/, ''); // Enlever le slash final s'il y en a un
+    if (!API_BASE_URL.endsWith('/api')) {
+        API_BASE_URL = `${API_BASE_URL}/api`;
+    }
+}
+
 console.log('🔧 [CONFIG] API Base URL:', API_BASE_URL);
 
 const api: AxiosInstance = axios.create({
