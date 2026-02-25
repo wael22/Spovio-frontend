@@ -456,7 +456,7 @@ const Profile = () => {
                 transition={{ delay: 0.2 }}
                 className="bg-card border border-border/50 rounded-2xl p-6"
               >
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
                       <Lock className="w-5 h-5 text-accent" />
@@ -534,222 +534,218 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <DashboardNavbar credits={user?.credits_balance || user?.credits || 0} />
+    <>
+      <div className="container mx-auto px-4 lg:px-8 max-w-4xl">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <h1 className="text-3xl font-bold font-orbitron mb-2">
+            <span className="gradient-text">{t('pages.profile.title')}</span>
+          </h1>
+          <p className="text-muted-foreground">
+            {t('pages.profile.subtitle')}
+          </p>
+        </motion.div>
 
-      <main className="pt-20 pb-12">
-        <div className="container mx-auto px-4 lg:px-8 max-w-4xl">
+        <div className="grid gap-8">
+          {/* Profile Info Card */}
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-8"
+            transition={{ delay: 0.1 }}
+            className="bg-card border border-border/50 rounded-2xl p-6"
           >
-            <h1 className="text-3xl font-bold font-orbitron mb-2">
-              <span className="gradient-text">{t('pages.profile.title')}</span>
-            </h1>
-            <p className="text-muted-foreground">
-              {t('pages.profile.subtitle')}
-            </p>
+            <div className="flex flex-col md:flex-row gap-8 items-start">
+              <div className="relative group mx-auto md:mx-0">
+                <Avatar className="w-32 h-32 border-4 border-background shadow-xl">
+                  <AvatarImage src={getAssetUrl(user?.avatar || '')} className="object-cover" />
+                  <AvatarFallback className="text-4xl bg-primary/10 text-primary">
+                    {user?.first_name?.[0]}
+                    {user?.last_name?.[0]}
+                  </AvatarFallback>
+                </Avatar>
+                <button
+                  onClick={handleAvatarClick}
+                  className="absolute bottom-0 right-0 p-2 bg-primary text-primary-foreground rounded-full shadow-lg hover:bg-primary/90 transition-colors"
+                >
+                  <Camera className="w-5 h-5" />
+                </button>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  accept="image/*"
+                  className="hidden"
+                />
+              </div>
+
+              <div className="flex-1 w-full space-y-6">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div>
+                    <h2 className="text-2xl font-bold">
+                      {user?.first_name} {user?.last_name}
+                    </h2>
+                    <div className="flex items-center gap-2 text-muted-foreground mt-1">
+                      <Shield className="w-4 h-4 text-neon-green" />
+                      <span className="text-sm">{t('pages.profile.verifiedPlayer')}</span>
+                    </div>
+                  </div>
+                  <Button
+                    variant={isEditing ? "ghost" : "outline"}
+                    onClick={() => setIsEditing(!isEditing)}
+                  >
+                    {isEditing ? t('pages.profile.cancel') : t('pages.profile.edit')}
+                  </Button>
+                </div>
+
+                <form onSubmit={handleUpdateProfile} className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium flex items-center gap-2">
+                      <User className="w-4 h-4 text-primary" />
+                      {t('pages.profile.firstName')}
+                    </label>
+                    <Input
+                      value={formData.first_name}
+                      onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+                      disabled={!isEditing}
+                      className="bg-background/50"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium flex items-center gap-2">
+                      <User className="w-4 h-4 text-primary" />
+                      {t('pages.profile.lastName')}
+                    </label>
+                    <Input
+                      value={formData.last_name}
+                      onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+                      disabled={!isEditing}
+                      className="bg-background/50"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium flex items-center gap-2">
+                      <Mail className="w-4 h-4 text-primary" />
+                      {t('pages.profile.email')}
+                    </label>
+                    <Input
+                      value={formData.email}
+                      disabled={true}
+                      className="bg-background/50 opacity-70"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium flex items-center gap-2">
+                      <Phone className="w-4 h-4 text-primary" />
+                      {t('pages.profile.phone')}
+                    </label>
+                    <Input
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      disabled={!isEditing}
+                      className="bg-background/50"
+                    />
+                  </div>
+
+                  {isEditing && (
+                    <div className="md:col-span-2 flex justify-end mt-4">
+                      <Button type="submit" variant="neon" disabled={loading}>
+                        {loading ? (
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        ) : (
+                          <Save className="w-4 h-4 mr-2" />
+                        )}
+                        {loading ? t('pages.profile.saving') : t('pages.profile.save')}
+                      </Button>
+                    </div>
+                  )}
+                </form>
+              </div>
+            </div>
           </motion.div>
 
-          <div className="grid gap-8">
-            {/* Profile Info Card */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="bg-card border border-border/50 rounded-2xl p-6"
-            >
-              <div className="flex flex-col md:flex-row gap-8 items-start">
-                <div className="relative group mx-auto md:mx-0">
-                  <Avatar className="w-32 h-32 border-4 border-background shadow-xl">
-                    <AvatarImage src={getAssetUrl(user?.avatar || '')} className="object-cover" />
-                    <AvatarFallback className="text-4xl bg-primary/10 text-primary">
-                      {user?.first_name?.[0]}
-                      {user?.last_name?.[0]}
-                    </AvatarFallback>
-                  </Avatar>
-                  <button
-                    onClick={handleAvatarClick}
-                    className="absolute bottom-0 right-0 p-2 bg-primary text-primary-foreground rounded-full shadow-lg hover:bg-primary/90 transition-colors"
-                  >
-                    <Camera className="w-5 h-5" />
-                  </button>
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileChange}
-                    accept="image/*"
-                    className="hidden"
+          {/* Security Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="bg-card border border-border/50 rounded-2xl p-6"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
+                  <Lock className="w-5 h-5 text-accent" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold">{t('pages.profile.changePassword')}</h2>
+                </div>
+              </div>
+              <Button
+                variant={isChangingPassword ? "ghost" : "outline"}
+                onClick={() => setIsChangingPassword(!isChangingPassword)}
+              >
+                {isChangingPassword ? t('pages.profile.cancel') : t('pages.profile.changePassword')}
+              </Button>
+            </div>
+
+            {isChangingPassword && (
+              <motion.form
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                onSubmit={handleUpdatePassword}
+                className="space-y-4 max-w-md"
+              >
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">{t('pages.profile.currentPassword')}</label>
+                  <Input
+                    type="password"
+                    value={passwordData.currentPassword}
+                    onChange={(e) =>
+                      setPasswordData({ ...passwordData, currentPassword: e.target.value })
+                    }
+                    className="bg-background/50"
                   />
                 </div>
-
-                <div className="flex-1 w-full space-y-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="text-2xl font-bold">
-                        {user?.first_name} {user?.last_name}
-                      </h2>
-                      <div className="flex items-center gap-2 text-muted-foreground mt-1">
-                        <Shield className="w-4 h-4 text-neon-green" />
-                        <span className="text-sm">{t('pages.profile.verifiedPlayer')}</span>
-                      </div>
-                    </div>
-                    <Button
-                      variant={isEditing ? "ghost" : "outline"}
-                      onClick={() => setIsEditing(!isEditing)}
-                    >
-                      {isEditing ? t('pages.profile.cancel') : t('pages.profile.edit')}
-                    </Button>
-                  </div>
-
-                  <form onSubmit={handleUpdateProfile} className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium flex items-center gap-2">
-                        <User className="w-4 h-4 text-primary" />
-                        {t('pages.profile.firstName')}
-                      </label>
-                      <Input
-                        value={formData.first_name}
-                        onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
-                        disabled={!isEditing}
-                        className="bg-background/50"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium flex items-center gap-2">
-                        <User className="w-4 h-4 text-primary" />
-                        {t('pages.profile.lastName')}
-                      </label>
-                      <Input
-                        value={formData.last_name}
-                        onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
-                        disabled={!isEditing}
-                        className="bg-background/50"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium flex items-center gap-2">
-                        <Mail className="w-4 h-4 text-primary" />
-                        {t('pages.profile.email')}
-                      </label>
-                      <Input
-                        value={formData.email}
-                        disabled={true}
-                        className="bg-background/50 opacity-70"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium flex items-center gap-2">
-                        <Phone className="w-4 h-4 text-primary" />
-                        {t('pages.profile.phone')}
-                      </label>
-                      <Input
-                        value={formData.phone}
-                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        disabled={!isEditing}
-                        className="bg-background/50"
-                      />
-                    </div>
-
-                    {isEditing && (
-                      <div className="md:col-span-2 flex justify-end mt-4">
-                        <Button type="submit" variant="neon" disabled={loading}>
-                          {loading ? (
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          ) : (
-                            <Save className="w-4 h-4 mr-2" />
-                          )}
-                          {loading ? t('pages.profile.saving') : t('pages.profile.save')}
-                        </Button>
-                      </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">{t('pages.profile.newPassword')}</label>
+                  <Input
+                    type="password"
+                    value={passwordData.newPassword}
+                    onChange={(e) =>
+                      setPasswordData({ ...passwordData, newPassword: e.target.value })
+                    }
+                    className="bg-background/50"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">{t('pages.profile.confirmPassword')}</label>
+                  <Input
+                    type="password"
+                    value={passwordData.confirmPassword}
+                    onChange={(e) =>
+                      setPasswordData({ ...passwordData, confirmPassword: e.target.value })
+                    }
+                    className="bg-background/50"
+                  />
+                </div>
+                <div className="flex justify-end pt-4">
+                  <Button type="submit" variant="neon" disabled={loading}>
+                    {loading ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <Save className="w-4 h-4 mr-2" />
                     )}
-                  </form>
+                    {t('pages.profile.updatePassword')}
+                  </Button>
                 </div>
-              </div>
-            </motion.div>
-
-            {/* Security Card */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="bg-card border border-border/50 rounded-2xl p-6"
-            >
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
-                    <Lock className="w-5 h-5 text-accent" />
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-semibold">{t('pages.profile.changePassword')}</h2>
-                  </div>
-                </div>
-                <Button
-                  variant={isChangingPassword ? "ghost" : "outline"}
-                  onClick={() => setIsChangingPassword(!isChangingPassword)}
-                >
-                  {isChangingPassword ? t('pages.profile.cancel') : t('pages.profile.changePassword')}
-                </Button>
-              </div>
-
-              {isChangingPassword && (
-                <motion.form
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  onSubmit={handleUpdatePassword}
-                  className="space-y-4 max-w-md"
-                >
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">{t('pages.profile.currentPassword')}</label>
-                    <Input
-                      type="password"
-                      value={passwordData.currentPassword}
-                      onChange={(e) =>
-                        setPasswordData({ ...passwordData, currentPassword: e.target.value })
-                      }
-                      className="bg-background/50"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">{t('pages.profile.newPassword')}</label>
-                    <Input
-                      type="password"
-                      value={passwordData.newPassword}
-                      onChange={(e) =>
-                        setPasswordData({ ...passwordData, newPassword: e.target.value })
-                      }
-                      className="bg-background/50"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">{t('pages.profile.confirmPassword')}</label>
-                    <Input
-                      type="password"
-                      value={passwordData.confirmPassword}
-                      onChange={(e) =>
-                        setPasswordData({ ...passwordData, confirmPassword: e.target.value })
-                      }
-                      className="bg-background/50"
-                    />
-                  </div>
-                  <div className="flex justify-end pt-4">
-                    <Button type="submit" variant="neon" disabled={loading}>
-                      {loading ? (
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      ) : (
-                        <Save className="w-4 h-4 mr-2" />
-                      )}
-                      {t('pages.profile.updatePassword')}
-                    </Button>
-                  </div>
-                </motion.form>
-              )}
-            </motion.div>
-          </div>
+              </motion.form>
+            )}
+          </motion.div>
         </div>
-      </main>
-    </div>
+      </div>
+    </>
   );
 };
 

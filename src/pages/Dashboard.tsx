@@ -382,90 +382,87 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <DashboardNavbar credits={user?.credits_balance || user?.credits || 0} />
+    <>
+      {/* Active Recording Banner */}
+      {activeRecording && (
+        <ActiveRecordingBanner
+          court={activeRecording.court?.name || "Court"}
+          club={activeRecording.club?.name || "Club"}
+          startTime={new Date(activeRecording.start_time.endsWith('Z') ? activeRecording.start_time : activeRecording.start_time + 'Z')}
+          duration={activeRecording.planned_duration}
+          onStop={handleStopRecording}
+        />
+      )}
 
-      <main className="pt-20 pb-12">
-        {/* Active Recording Banner */}
-        {activeRecording && (
-          <ActiveRecordingBanner
-            court={activeRecording.court?.name || "Court"}
-            club={activeRecording.club?.name || "Club"}
-            startTime={new Date(activeRecording.start_time.endsWith('Z') ? activeRecording.start_time : activeRecording.start_time + 'Z')}
-            duration={activeRecording.planned_duration}
-            onStop={handleStopRecording}
-          />
-        )}
+      <div className="container mx-auto px-4 lg:px-8">
+        {/* Welcome Section */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="mb-8"
+        >
+          <h1 className="text-3xl lg:text-4xl font-bold font-orbitron mb-2">
+            {t('dashboard.welcome', { name: user?.name || 'Joueur' })}
+          </h1>
+          <p className="text-muted-foreground text-lg">
+            {t('dashboard.readyToAnalyze')}
+          </p>
+        </motion.div>
 
-        <div className="container mx-auto px-4 lg:px-8">
-          {/* Welcome Section */}
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="mb-8"
+        {/* Stats Grid */}
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8"
+        >
+          {stats.map((stat, index) => (
+            <motion.div key={stat.label} variants={itemVariants}>
+              <StatCardModern
+                icon={stat.icon}
+                label={stat.label}
+                value={stat.value}
+                color={stat.color}
+              />
+            </motion.div>
+          ))}
+        </motion.div>
+
+        {/* Quick Actions */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+          className="flex flex-wrap gap-3 mb-8"
+        >
+          <Button
+            variant="neon"
+            className="gap-2"
+            onClick={() => setIsRecordingModalOpen(true)}
+            disabled={!!activeRecording}
           >
-            <h1 className="text-3xl lg:text-4xl font-bold font-orbitron mb-2">
-              {t('dashboard.welcome', { name: user?.name || 'Joueur' })}
-            </h1>
-            <p className="text-muted-foreground text-lg">
-              {t('dashboard.readyToAnalyze')}
-            </p>
-          </motion.div>
-
-          {/* Stats Grid */}
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8"
+            <Play className="h-4 w-4" />
+            {t('dashboard.startRecording')}
+          </Button>
+          <Button
+            variant="neonOutline"
+            className="gap-2"
+            onClick={() => setIsQRScannerOpen(true)}
+            disabled={!!activeRecording}
           >
-            {stats.map((stat, index) => (
-              <motion.div key={stat.label} variants={itemVariants}>
-                <StatCardModern
-                  icon={stat.icon}
-                  label={stat.label}
-                  value={stat.value}
-                  color={stat.color}
-                />
-              </motion.div>
-            ))}
-          </motion.div>
-
-          {/* Quick Actions */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.5 }}
-            className="flex flex-wrap gap-3 mb-8"
-          >
-            <Button
-              variant="neon"
-              className="gap-2"
-              onClick={() => setIsRecordingModalOpen(true)}
-              disabled={!!activeRecording}
-            >
-              <Play className="h-4 w-4" />
-              {t('dashboard.startRecording')}
-            </Button>
-            <Button
-              variant="neonOutline"
-              className="gap-2"
-              onClick={() => setIsQRScannerOpen(true)}
-              disabled={!!activeRecording}
-            >
-              <QrCode className="h-4 w-4" />
-              {t('dashboard.scanQr')}
-            </Button>
-            <Button variant="neonOutline" className="gap-2" onClick={() => navigate('/credits')}>
-              <Plus className="h-4 w-4" />
-              {t('dashboard.buyCredits')}
-            </Button>
-            <Button variant="outline" className="gap-2" onClick={handleStartTutorial}>
-              <GraduationCap className="h-4 w-4" />
-              {t('dashboard.restartTutorial')}
-            </Button>
-            {/* <Button
+            <QrCode className="h-4 w-4" />
+            {t('dashboard.scanQr')}
+          </Button>
+          <Button variant="neonOutline" className="gap-2" onClick={() => navigate('/credits')}>
+            <Plus className="h-4 w-4" />
+            {t('dashboard.buyCredits')}
+          </Button>
+          <Button variant="outline" className="gap-2" onClick={handleStartTutorial}>
+            <GraduationCap className="h-4 w-4" />
+            {t('dashboard.restartTutorial')}
+          </Button>
+          {/* <Button
               variant="outline"
               className="gap-2 border-yellow-500 text-yellow-600 hover:bg-yellow-50 dark:text-yellow-400 dark:border-yellow-500 dark:hover:bg-yellow-900/20"
               onClick={() => setIsReportModalOpen(true)}
@@ -473,93 +470,92 @@ const Dashboard = () => {
               <AlertTriangle className="h-4 w-4" />
               {t('dashboard.reportIssue')}
             </Button> */}
+        </motion.div>
+
+        {/* Videos Section */}
+        <motion.section
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+        >
+          {/* Section Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <h2 className="text-2xl font-bold font-orbitron">{t('dashboard.myVideos')}</h2>
+
+            <div className="flex items-center gap-3">
+              <div className="relative flex-1 sm:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder={t('dashboard.searchPlaceholder')}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 bg-card/50 border-border/50 focus:border-primary/50"
+                />
+              </div>
+              <Button variant="ghost" size="icon" className="shrink-0">
+                <Filter className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Videos Grid */}
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+          >
+            {filteredVideos.map((video, index) => (
+              <motion.div
+                key={video.id}
+                variants={itemVariants}
+                custom={index}
+              >
+                <VideoCardModern
+                  id={video.id}
+                  title={video.title || 'Sans titre'}
+                  thumbnail={video.thumbnail || 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=400'}
+                  duration={formatDuration(video.duration || 0)}
+                  date={video.created_at || new Date().toISOString()}
+                  shared={video.is_shared || false}
+                  court={video.court_name || 'Court'}
+                  isExpired={video.is_expired || false}
+                  processingStatus={video.processing_status}
+                  onPlay={() => handlePlayVideo(video)}
+                  onShare={() => handleShareVideo(video)}
+                  onEdit={() => handleEditVideo(video)}
+                  onDelete={() => handleDeleteVideo(video)}
+                  onDownload={() => handleDownloadVideo(video)}
+                  onCreateClip={() => handleCreateClip(video)}
+                />
+              </motion.div>
+            ))}
           </motion.div>
 
-          {/* Videos Section */}
-          <motion.section
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-          >
-            {/* Section Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-              <h2 className="text-2xl font-bold font-orbitron">{t('dashboard.myVideos')}</h2>
-
-              <div className="flex items-center gap-3">
-                <div className="relative flex-1 sm:w-64">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder={t('dashboard.searchPlaceholder')}
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 bg-card/50 border-border/50 focus:border-primary/50"
-                  />
-                </div>
-                <Button variant="ghost" size="icon" className="shrink-0">
-                  <Filter className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-
-            {/* Videos Grid */}
+          {filteredVideos.length === 0 && (
             <motion.div
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center py-16"
             >
-              {filteredVideos.map((video, index) => (
-                <motion.div
-                  key={video.id}
-                  variants={itemVariants}
-                  custom={index}
+              <Video className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
+              <p className="text-muted-foreground text-lg">
+                {videos.length === 0 ? t('dashboard.noVideos') : t('dashboard.noVideosFound')}
+              </p>
+              {videos.length === 0 && (
+                <Button
+                  variant="neon"
+                  className="mt-4"
+                  onClick={() => setIsRecordingModalOpen(true)}
                 >
-                  <VideoCardModern
-                    id={video.id}
-                    title={video.title || 'Sans titre'}
-                    thumbnail={video.thumbnail || 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=400'}
-                    duration={formatDuration(video.duration || 0)}
-                    date={video.created_at || new Date().toISOString()}
-                    shared={video.is_shared || false}
-                    court={video.court_name || 'Court'}
-                    isExpired={video.is_expired || false}
-                    processingStatus={video.processing_status}
-                    onPlay={() => handlePlayVideo(video)}
-                    onShare={() => handleShareVideo(video)}
-                    onEdit={() => handleEditVideo(video)}
-                    onDelete={() => handleDeleteVideo(video)}
-                    onDownload={() => handleDownloadVideo(video)}
-                    onCreateClip={() => handleCreateClip(video)}
-                  />
-                </motion.div>
-              ))}
+                  <Play className="h-4 w-4 mr-2" />
+                  {t('dashboard.createFirstVideo')}
+                </Button>
+              )}
             </motion.div>
-
-            {filteredVideos.length === 0 && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-center py-16"
-              >
-                <Video className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
-                <p className="text-muted-foreground text-lg">
-                  {videos.length === 0 ? t('dashboard.noVideos') : t('dashboard.noVideosFound')}
-                </p>
-                {videos.length === 0 && (
-                  <Button
-                    variant="neon"
-                    className="mt-4"
-                    onClick={() => setIsRecordingModalOpen(true)}
-                  >
-                    <Play className="h-4 w-4 mr-2" />
-                    {t('dashboard.createFirstVideo')}
-                  </Button>
-                )}
-              </motion.div>
-            )}
-          </motion.section>
-        </div>
-      </main>
+          )}
+        </motion.section>
+      </div>
 
       {/* Modals */}
       <StartRecordingModal
@@ -638,7 +634,7 @@ const Dashboard = () => {
         isOpen={isReportModalOpen}
         onClose={() => setIsReportModalOpen(false)}
       />
-    </div>
+    </>
   );
 };
 

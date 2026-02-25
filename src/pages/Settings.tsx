@@ -84,9 +84,8 @@ const Settings = () => {
     };
 
     return (
-        <div className="min-h-screen bg-background">
-            <Navbar />
-            <div className="container mx-auto py-10 pt-24 max-w-4xl px-4">
+        <>
+            <div className="container mx-auto py-10 max-w-4xl px-4">
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold tracking-tight mb-2">Paramètres</h1>
                     <p className="text-muted-foreground">
@@ -303,7 +302,7 @@ const Settings = () => {
                     </TabsContent>
                 </Tabs>
             </div>
-        </div>
+        </>
     );
 };
 

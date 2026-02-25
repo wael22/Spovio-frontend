@@ -9,6 +9,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { TutorialProvider } from "@/contexts/TutorialContext";
 import { TutorialOverlay } from "@/components/tutorial";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import DashboardLayout from "@/components/layout/DashboardLayout";
 
 // Landing pages — lazy loaded
 const Index = lazy(() => import("./pages/Index"));
@@ -102,62 +103,64 @@ const App = () => (
                   />
 
                   {/* Protected MySmash App Routes */}
-                  <Route
-                    path="/dashboard"
-                    element={
-                      <ProtectedRoute requiredRole="player">
-                        <Dashboard />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/my-clips"
-                    element={
-                      <ProtectedRoute requiredRole="player">
-                        <MyClips />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/clubs"
-                    element={
-                      <ProtectedRoute requiredRole="player">
-                        <Clubs />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/credits"
-                    element={
-                      <ProtectedRoute requiredRole="player">
-                        <Credits />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/profile"
-                    element={
-                      <ProtectedRoute requiredRole={['player', 'club', 'super_admin']}>
-                        <Profile />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/support"
-                    element={
-                      <ProtectedRoute requiredRole="player">
-                        <Support />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/settings"
-                    element={
-                      <ProtectedRoute requiredRole="player">
-                        <Settings />
-                      </ProtectedRoute>
-                    }
-                  />
+                  <Route element={<DashboardLayout />}>
+                    <Route
+                      path="/dashboard"
+                      element={
+                        <ProtectedRoute requiredRole="player">
+                          <Dashboard />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/my-clips"
+                      element={
+                        <ProtectedRoute requiredRole="player">
+                          <MyClips />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/clubs"
+                      element={
+                        <ProtectedRoute requiredRole="player">
+                          <Clubs />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/credits"
+                      element={
+                        <ProtectedRoute requiredRole="player">
+                          <Credits />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/profile"
+                      element={
+                        <ProtectedRoute requiredRole={['player', 'club', 'super_admin']}>
+                          <Profile />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/support"
+                      element={
+                        <ProtectedRoute requiredRole="player">
+                          <Support />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/settings"
+                      element={
+                        <ProtectedRoute requiredRole="player">
+                          <Settings />
+                        </ProtectedRoute>
+                      }
+                    />
+                  </Route>
 
                   {/* 404 */}
                   <Route path="*" element={<NotFound />} />
