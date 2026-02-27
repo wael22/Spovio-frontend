@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Camera, Circle, StopCircle, User, Clock } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { LiveVideoPlayer } from './LiveVideoPlayer';
 
 interface Court {
     id: string;
@@ -39,6 +40,24 @@ const ClubCourtsTab: React.FC<ClubCourtsTabProps> = ({ courts, onCourtUpdated })
             setError(err.response?.data?.error || 'Erreur lors de l\'arrêt de l\'enregistrement');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const getHlsUrl = (rtmpUrl?: string) => {
+        if (!rtmpUrl) return null;
+        try {
+            // Convert rtmp://213.32.23.209:1935/camira1 to http://213.32.23.209:8888/camira1/index.m3u8
+            const match = rtmpUrl.match(/rtmp:\/\/([^:]+)(:\d+)?\/(.+)/);
+            if (match) {
+                const [, ip, , path] = match;
+                // Important: On the front-end (HTTPS app), trying to load HTTP HLS will cause Mixed Content error.
+                // It's recommended to have HTTPS setup on MediaMTX (VPS) and use https here.
+                // For now, this will point to MediaMTX default HLS port (8888).
+                return `http://${ip}:8888/${path}/index.m3u8`;
+            }
+            return null;
+        } catch {
+            return null;
         }
     };
 
@@ -99,13 +118,27 @@ const ClubCourtsTab: React.FC<ClubCourtsTabProps> = ({ courts, onCourtUpdated })
                                         </div>
                                     )}
 
-                                    {/* Camera URL */}
-                                    <div className="flex items-center space-x-2 text-sm">
-                                        <Camera className="h-4 w-4 text-gray-400" />
-                                        <span className="text-gray-600 dark:text-gray-400 text-xs truncate">
-                                            {court.camera_url || 'Non configuré'}
-                                        </span>
-                                    </div>
+                                    {/* Live Video Player (Replaces raw Camera URL) */}
+                                    {court.camera_url ? (
+                                        <div className="mt-4 border border-slate-200 dark:border-slate-800 rounded-lg p-1 bg-slate-50 dark:bg-black/20">
+                                            <div className="flex items-center space-x-2 text-sm mb-2 px-1">
+                                                <Camera className="h-4 w-4 text-emerald-500" />
+                                                <span className="text-gray-700 dark:text-gray-300 font-medium">Flux Vidéo</span>
+                                            </div>
+                                            {getHlsUrl(court.camera_url) ? (
+                                                <LiveVideoPlayer streamUrl={getHlsUrl(court.camera_url)!} />
+                                            ) : (
+                                                <div className="text-xs text-red-500 p-2">Lien caméra invalide.</div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center space-x-2 text-sm">
+                                            <Camera className="h-4 w-4 text-gray-400" />
+                                            <span className="text-gray-600 dark:text-gray-400 text-xs">
+                                                Caméra non configurée
+                                            </span>
+                                        </div>
+                                    )}
 
                                     {/* Stop Recording Button */}
                                     {court.is_occupied && (
