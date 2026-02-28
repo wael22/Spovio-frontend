@@ -20,6 +20,7 @@ const Contact = lazy(() => import("./pages/Contact"));
 const Terms = lazy(() => import("./pages/Terms"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const CourtRedirect = lazy(() => import("./pages/CourtRedirect"));
 
 // Auth pages — lazy loaded
 const Auth = lazy(() => import("./pages/Auth"));
@@ -73,6 +74,7 @@ const App = () => (
                   <Route path="/contact" element={<Contact />} />
                   <Route path="/terms" element={<Terms />} />
                   <Route path="/privacy" element={<Privacy />} />
+                  <Route path="/c/:qrCode" element={<CourtRedirect />} />
 
                   {/* Authentication */}
                   <Route path="/auth" element={<Auth />} />

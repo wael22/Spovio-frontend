@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { adminService, getAssetUrl } from '@/lib/api';
+import { QRCodeCanvas } from 'qrcode.react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import { Plus, Building, MapPin, Phone, Mail, Loader2, Edit, Trash2, MoreVertical, Coins, Video, Eye, Settings, ArrowUpDown, ArrowUp, ArrowDown, Image, Upload, X } from 'lucide-react';
+import { Plus, Building, MapPin, Phone, Mail, Loader2, Edit, Trash2, MoreVertical, Coins, Video, Eye, Settings, ArrowUpDown, ArrowUp, ArrowDown, Image, Upload, X, Download } from 'lucide-react';
 import ClubOverlayManager from './ClubOverlayManager';
 import CourtControlPanel from './CourtControlPanel';
 
@@ -49,7 +50,7 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
         name: '', address: '', phone_number: '', email: '', password: '', credits_balance: 0
     });
     const [courtFormData, setCourtFormData] = useState({
-        name: '', camera_url: '', qr_code: ''
+        name: '', camera_url: '', qr_code: '', short_code: ''
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showLogoModal, setShowLogoModal] = useState(false);
@@ -80,6 +81,19 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
             setClubCourts(response.data.courts || []);
         } catch (error) {
             setError('Erreur lors du chargement des terrains');
+        }
+    };
+
+    const handleDeleteCourt = async (courtId: string) => {
+        if (!confirm('Êtes-vous sûr de vouloir supprimer ce terrain ? Cette action supprimera également toutes les sessions d\'enregistrement associées.')) return;
+        try {
+            await adminService.deleteCourt(courtId);
+            if (selectedClub) {
+                loadClubCourts(selectedClub.id);
+            }
+            onDataChange?.();
+        } catch (error) {
+            setError('Erreur lors de la suppression du terrain');
         }
     };
 
@@ -248,6 +262,19 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
         }
         return 0;
     });
+
+    const handleDownloadQRCode = (court: any) => {
+        const canvas = document.getElementById(`qr-code-${court.id}`) as HTMLCanvasElement;
+        if (canvas) {
+            const pngUrl = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+            let downloadLink = document.createElement("a");
+            downloadLink.href = pngUrl;
+            downloadLink.download = `QR_${court.name.replace(/\s+/g, '_')}_${court.short_code || ''}.png`;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+        }
+    };
 
     return (
         <div className="space-y-6">
@@ -563,29 +590,58 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                                                         <span className="text-gray-600 font-mono text-xs">{court.camera_url}</span>
                                                     </div>
                                                     {court.qr_code && (
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="text-gray-500 font-medium">QR Code:</span>
-                                                            <span className="text-blue-600 font-mono text-xs bg-blue-50 px-2 py-1 rounded">{court.qr_code}</span>
+                                                        <div className="flex items-center gap-3 mt-3">
+                                                            <div className="p-2 bg-white rounded-md border border-gray-200">
+                                                                <QRCodeCanvas
+                                                                    id={`qr-code-${court.id}`}
+                                                                    value={`${window.location.origin}/c/${court.qr_code}`}
+                                                                    size={90}
+                                                                    level={"H"}
+                                                                />
+                                                            </div>
+                                                            <div className="flex flex-col gap-2">
+                                                                {court.short_code && (
+                                                                    <div className="flex items-center gap-2">
+                                                                        <span className="text-gray-500 font-medium text-xs">Code direct:</span>
+                                                                        <span className="text-blue-700 font-mono text-lg font-bold bg-blue-50 px-3 py-1 rounded shadow-sm tracking-widest">{court.short_code}</span>
+                                                                    </div>
+                                                                )}
+                                                                <Button variant="outline" size="sm" onClick={() => handleDownloadQRCode(court)} className="flex items-center gap-1 h-8 w-fit">
+                                                                    <Download className="h-3 w-3" />
+                                                                    Télécharger QR Code
+                                                                </Button>
+                                                            </div>
                                                         </div>
                                                     )}
                                                 </div>
                                             </div>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => {
-                                                    setSelectedCourt(court);
-                                                    setCourtFormData({
-                                                        name: court.name,
-                                                        camera_url: court.camera_url,
-                                                        qr_code: court.qr_code || ''
-                                                    });
-                                                    setShowEditCourtModal(true);
-                                                }}
-                                            >
-                                                <Edit className="h-4 w-4 mr-1" />
-                                                Modifier
-                                            </Button>
+                                            <div className="flex flex-col gap-2">
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => {
+                                                        setSelectedCourt(court);
+                                                        setCourtFormData({
+                                                            name: court.name,
+                                                            camera_url: court.camera_url,
+                                                            qr_code: court.qr_code || '',
+                                                            short_code: court.short_code || ''
+                                                        });
+                                                        setShowEditCourtModal(true);
+                                                    }}
+                                                >
+                                                    <Edit className="h-4 w-4 mr-1" />
+                                                    Modifier
+                                                </Button>
+                                                <Button
+                                                    variant="destructive"
+                                                    size="sm"
+                                                    onClick={() => handleDeleteCourt(court.id)}
+                                                >
+                                                    <Trash2 className="h-4 w-4 mr-1" />
+                                                    Supprimer
+                                                </Button>
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
@@ -744,6 +800,21 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                             />
                             <p className="text-xs text-gray-500">
                                 Modifiez le QR code unique de ce terrain. Les joueurs devront scanner ce code pour enregistrer.
+                            </p>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="edit-short-code">Code Direct (4 caractères)</Label>
+                            <Input
+                                id="edit-short-code"
+                                value={courtFormData.short_code}
+                                onChange={(e) => setCourtFormData(prev => ({ ...prev, short_code: e.target.value.toUpperCase().slice(0, 4) }))}
+                                placeholder="Ex: DZQI"
+                                maxLength={4}
+                                className="font-mono uppercase"
+                            />
+                            <p className="text-xs text-gray-500">
+                                Saisissez un code de 4 lettres/chiffres.
                             </p>
                         </div>
 

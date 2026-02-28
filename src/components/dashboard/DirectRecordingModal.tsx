@@ -35,13 +35,14 @@ interface DirectRecordingModalProps {
     isOpen: boolean;
     onClose: () => void;
     onRecordingStarted?: (session: any) => void;
+    initialQrCode?: string;
 }
 
 type ModalStep = "scanning" | "configuring";
 
 // Durations moved inside component
 
-const DirectRecordingModal = ({ isOpen, onClose, onRecordingStarted }: DirectRecordingModalProps) => {
+const DirectRecordingModal = ({ isOpen, onClose, onRecordingStarted, initialQrCode }: DirectRecordingModalProps) => {
     const { t } = useTranslation();
     const { user } = useAuth();
     const [step, setStep] = useState<ModalStep>("scanning");
@@ -59,6 +60,13 @@ const DirectRecordingModal = ({ isOpen, onClose, onRecordingStarted }: DirectRec
     const [selectedDuration, setSelectedDuration] = useState(90);
     const [qrCode, setQrCode] = useState("");
     const [scannedData, setScannedData] = useState<{ club: any; court: any } | null>(null);
+    const [manualCode, setManualCode] = useState("");
+
+    useEffect(() => {
+        if (isOpen && initialQrCode) {
+            handleScanSuccess(initialQrCode);
+        }
+    }, [isOpen, initialQrCode]);
 
     // UI State
     const [starting, setStarting] = useState(false);
@@ -204,6 +212,25 @@ const DirectRecordingModal = ({ isOpen, onClose, onRecordingStarted }: DirectRec
                                         <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-primary rounded-tr-lg" />
                                         <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-primary rounded-bl-lg" />
                                         <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-primary rounded-br-lg" />
+                                    </div>
+                                </div>
+
+                                <div className="mt-4 pt-4 border-t border-border/50 text-center space-y-3">
+                                    <p className="text-sm font-medium text-muted-foreground">Ou entrez le code du terrain :</p>
+                                    <div className="flex max-w-[240px] mx-auto gap-2">
+                                        <Input
+                                            placeholder="Ex: A1B2"
+                                            value={manualCode}
+                                            onChange={(e) => setManualCode(e.target.value.toUpperCase())}
+                                            className="uppercase text-center font-bold tracking-widest"
+                                            maxLength={6}
+                                        />
+                                        <Button
+                                            onClick={() => handleScanSuccess(manualCode)}
+                                            disabled={!manualCode || validating}
+                                        >
+                                            Valider
+                                        </Button>
                                     </div>
                                 </div>
 

@@ -71,6 +71,16 @@ const Dashboard = () => {
   const [clipsCount, setClipsCount] = useState(0);
   const [isClipEditorOpen, setIsClipEditorOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [initialQrCode, setInitialQrCode] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    const pendingQr = localStorage.getItem('pending_court_qr');
+    if (pendingQr) {
+      localStorage.removeItem('pending_court_qr');
+      setInitialQrCode(pendingQr);
+      setIsQRScannerOpen(true);
+    }
+  }, []);
   // scannedQrCode removed as it's now handled internally by DirectRecordingModal
 
   // Fonction pour démarrer le tutoriel manuellement
@@ -622,7 +632,11 @@ const Dashboard = () => {
 
       <DirectRecordingModal
         isOpen={isQRScannerOpen}
-        onClose={() => setIsQRScannerOpen(false)}
+        onClose={() => {
+          setIsQRScannerOpen(false);
+          setInitialQrCode(undefined);
+        }}
+        initialQrCode={initialQrCode}
         onRecordingStarted={async (session) => {
           setActiveRecording(session);
           setTimeout(fetchActiveRecording, 1000);

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { tutorialSteps, TUTORIAL_STORAGE_KEY, TUTORIAL_COMPLETED_KEY } from '@/config/tutorialSteps';
+import { tutorialService } from '@/lib/api';
 
 interface UseTutorialReturn {
     isActive: boolean;
@@ -32,14 +33,19 @@ export const useTutorial = (): UseTutorialReturn => {
     }, []);
 
     // Démarrer le tutoriel
-    const startTutorial = useCallback(() => {
+    const startTutorial = useCallback(async () => {
         setIsActive(true);
         setCurrentStep(0);
         localStorage.setItem(TUTORIAL_STORAGE_KEY, '0');
+        try {
+            await tutorialService.reset();
+        } catch (error) {
+            console.error('Failed to reset tutorial on backend:', error);
+        }
     }, []);
 
     // Passer à l'étape suivante
-    const nextStep = useCallback(() => {
+    const nextStep = useCallback(async () => {
         const next = currentStep + 1;
 
         if (next >= tutorialSteps.length) {
@@ -47,23 +53,38 @@ export const useTutorial = (): UseTutorialReturn => {
         } else {
             setCurrentStep(next);
             localStorage.setItem(TUTORIAL_STORAGE_KEY, next.toString());
+            try {
+                await tutorialService.updateStep(next + 1); // API expects 1-based steps
+            } catch (error) {
+                console.error('Failed to update tutorial step on backend:', error);
+            }
         }
     }, [currentStep]);
 
     // Passer le tutoriel
-    const skipTutorial = useCallback(() => {
+    const skipTutorial = useCallback(async () => {
         setIsActive(false);
         localStorage.setItem(TUTORIAL_COMPLETED_KEY, 'true');
         localStorage.removeItem(TUTORIAL_STORAGE_KEY);
         setIsCompleted(true);
+        try {
+            await tutorialService.skip();
+        } catch (error) {
+            console.error('Failed to skip tutorial on backend:', error);
+        }
     }, []);
 
     // Terminer le tutoriel
-    const completeTutorial = useCallback(() => {
+    const completeTutorial = useCallback(async () => {
         setIsActive(false);
         localStorage.setItem(TUTORIAL_COMPLETED_KEY, 'true');
         localStorage.removeItem(TUTORIAL_STORAGE_KEY);
         setIsCompleted(true);
+        try {
+            await tutorialService.complete();
+        } catch (error) {
+            console.error('Failed to complete tutorial on backend:', error);
+        }
     }, []);
 
     // Obtenir les données de l'étape actuelle
