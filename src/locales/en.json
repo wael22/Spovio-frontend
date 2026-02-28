@@ -572,6 +572,8 @@
             "unsupported": "Your browser does not support video playback.",
             "selection": "Selection",
             "preview": "Preview",
+            "startTime": "Start",
+            "endTime": "End",
             "goToStart": "Go to start",
             "goToEnd": "Go to end",
             "titleLabel": "Title",

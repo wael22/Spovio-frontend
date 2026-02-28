@@ -576,6 +576,8 @@
             "unsupported": "Votre navigateur ne supporte pas la lecture vidéo.",
             "selection": "Sélection",
             "preview": "Prévisualiser",
+            "startTime": "Début",
+            "endTime": "Fin",
             "goToStart": "Aller au début",
             "goToEnd": "Aller à la fin",
             "titleLabel": "Titre",
