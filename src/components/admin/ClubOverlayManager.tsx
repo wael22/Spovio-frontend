@@ -5,10 +5,20 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, VideoIcon, Edit, Trash2, Plus, X, Image as ImageIcon } from 'lucide-react';
-import { adminService, getAssetUrl } from '@/lib/api';
+import { Loader2, VideoIcon, Edit, Trash2, Plus, X, Image as ImageIcon, Eye } from 'lucide-react';
+import { adminService } from '@/lib/api';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+
+// Resolve overlay image URL robustly - handles relative paths & absolute URLs
+const resolveOverlayUrl = (path: string): string => {
+    if (!path) return '';
+    // Already a full URL
+    if (path.startsWith('http://') || path.startsWith('https://')) return path;
+    // Relative path like /static/overlays/... or static/overlays/...
+    const cleanPath = path.startsWith('/') ? path : `/${path}`;
+    return `https://api.spovio.net${cleanPath}`;
+};
 
 interface ClubOverlayManagerProps {
     club: { id: string; name: string } | null;
@@ -197,9 +207,19 @@ const ClubOverlayManager: React.FC<ClubOverlayManagerProps> = ({ club, isOpen, o
                                     <div className="space-y-2">
                                         <Label>Image de l'overlay</Label>
                                         <div className="flex gap-4 items-start p-4 bg-white border rounded-lg">
-                                            <div className="border rounded bg-gray-50 w-20 h-20 flex items-center justify-center">
+                                            <div
+                                                className="border rounded w-20 h-20 flex items-center justify-center overflow-hidden"
+                                                style={{
+                                                    background: 'repeating-conic-gradient(#d1d5db 0% 25%, white 0% 50%) 0 0 / 16px 16px'
+                                                }}
+                                            >
                                                 {formData.image_url ? (
-                                                    <img src={getAssetUrl(formData.image_url)} alt="Preview" className="w-full h-full object-contain" />
+                                                    <img
+                                                        src={resolveOverlayUrl(formData.image_url)}
+                                                        alt="Preview"
+                                                        className="w-full h-full object-contain"
+                                                        onError={(e) => console.error('❌ Image preview failed:', resolveOverlayUrl(formData.image_url))}
+                                                    />
                                                 ) : (
                                                     <ImageIcon className="text-gray-300 h-6 w-6" />
                                                 )}
@@ -319,7 +339,29 @@ const ClubOverlayManager: React.FC<ClubOverlayManagerProps> = ({ club, isOpen, o
 
                                     {overlays.map((ov) => (
                                         <div key={ov.id} className="p-3 border rounded-lg bg-white hover:shadow transition-all">
-                                            <div className="flex items-start justify-between">
+                                            <div className="flex items-start gap-3">
+                                                {/* Thumbnail */}
+                                                <div
+                                                    className="border rounded w-14 h-14 shrink-0 flex items-center justify-center overflow-hidden"
+                                                    style={{
+                                                        background: 'repeating-conic-gradient(#d1d5db 0% 25%, white 0% 50%) 0 0 / 12px 12px'
+                                                    }}
+                                                >
+                                                    {ov.image_url ? (
+                                                        <img
+                                                            src={resolveOverlayUrl(ov.image_url)}
+                                                            alt={ov.name}
+                                                            className="w-full h-full object-contain"
+                                                            onError={(e) => {
+                                                                console.error('❌ Overlay image failed:', resolveOverlayUrl(ov.image_url));
+                                                                (e.target as HTMLImageElement).style.display = 'none';
+                                                            }}
+                                                        />
+                                                    ) : (
+                                                        <ImageIcon className="text-gray-300 h-5 w-5" />
+                                                    )}
+                                                </div>
+                                                {/* Info */}
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex items-center gap-2 mb-1">
                                                         <h4 className="font-medium text-sm truncate">{ov.name || 'Sans nom'}</h4>
@@ -328,16 +370,20 @@ const ClubOverlayManager: React.FC<ClubOverlayManagerProps> = ({ club, isOpen, o
                                                         </Badge>
                                                     </div>
                                                     <div className="flex gap-1 text-xs text-gray-600 flex-wrap">
-                                                        <span className="bg-gray-100 px-1.5 py-0.5 rounded font-mono">{ov.position_x}%/{ov.position_y}%</span>
-                                                        <span className="bg-gray-100 px-1.5 py-0.5 rounded font-mono">{ov.width}%</span>
-                                                        <span className="bg-gray-100 px-1.5 py-0.5 rounded font-mono">{ov.opacity.toFixed(2)}</span>
+                                                        <span className="bg-gray-100 px-1.5 py-0.5 rounded font-mono">X:{ov.position_x}% Y:{ov.position_y}%</span>
+                                                        <span className="bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-mono">Taille: {ov.width}%</span>
+                                                        <span className="bg-gray-100 px-1.5 py-0.5 rounded font-mono">Opacité: {ov.opacity.toFixed(2)}</span>
                                                     </div>
+                                                    <p className="text-xs text-gray-400 mt-1 truncate" title={resolveOverlayUrl(ov.image_url)}>
+                                                        🔗 {resolveOverlayUrl(ov.image_url)}
+                                                    </p>
                                                 </div>
-                                                <div className="flex flex-col gap-1 ml-2">
-                                                    <Button variant="outline" size="sm" onClick={() => startEdit(ov)} className="h-7 w-7 p-0">
+                                                {/* Actions */}
+                                                <div className="flex flex-col gap-1">
+                                                    <Button variant="outline" size="sm" onClick={() => startEdit(ov)} className="h-7 w-7 p-0" title="Modifier">
                                                         <Edit className="h-3 w-3" />
                                                     </Button>
-                                                    <Button variant="destructive" size="sm" onClick={() => handleDelete(ov.id, ov.name)} className="h-7 w-7 p-0">
+                                                    <Button variant="destructive" size="sm" onClick={() => handleDelete(ov.id, ov.name)} className="h-7 w-7 p-0" title="Supprimer">
                                                         <Trash2 className="h-3 w-3" />
                                                     </Button>
                                                 </div>
@@ -357,16 +403,22 @@ const ClubOverlayManager: React.FC<ClubOverlayManagerProps> = ({ club, isOpen, o
                             Prévisualisation Vidéo (16:9)
                         </h3>
 
-                        <div className="relative w-full max-w-4xl aspect-video bg-gray-900 rounded-lg border border-gray-800 shadow-2xl overflow-hidden z-10">
-                            <div className="absolute inset-0 flex items-center justify-center text-gray-800 font-bold text-4xl select-none">
+                        <div
+                            className="relative w-full max-w-4xl aspect-video rounded-lg border border-gray-700 shadow-2xl overflow-hidden z-10"
+                            style={{
+                                background: 'repeating-conic-gradient(#374151 0% 25%, #1f2937 0% 50%) 0 0 / 32px 32px'
+                            }}
+                        >
+                            <div className="absolute inset-0 flex items-center justify-center text-gray-600 font-bold text-3xl select-none">
                                 VIDEO PADEL
                             </div>
 
                             {/* Overlay en cours d'édition */}
                             {editingOverlay && formData.image_url && (
                                 <img
-                                    src={getAssetUrl(formData.image_url)}
+                                    src={resolveOverlayUrl(formData.image_url)}
                                     alt="Preview"
+                                    onError={(e) => console.error('❌ Preview img failed:', resolveOverlayUrl(formData.image_url))}
                                     style={{
                                         position: 'absolute',
                                         left: `${formData.position_x}%`,
@@ -374,7 +426,7 @@ const ClubOverlayManager: React.FC<ClubOverlayManagerProps> = ({ club, isOpen, o
                                         width: `${formData.width}%`,
                                         opacity: formData.opacity,
                                         transition: 'all 0.15s ease',
-                                        border: '2px dashed yellow',
+                                        outline: '2px dashed yellow',
                                         zIndex: 50
                                     }}
                                 />
@@ -384,8 +436,10 @@ const ClubOverlayManager: React.FC<ClubOverlayManagerProps> = ({ club, isOpen, o
                             {!editingOverlay && overlays.map(ov => ov.is_active && (
                                 <img
                                     key={ov.id}
-                                    src={getAssetUrl(ov.image_url)}
+                                    src={resolveOverlayUrl(ov.image_url)}
                                     alt={ov.name}
+                                    title={`${ov.name} — ${ov.width}% de largeur`}
+                                    onError={(e) => console.error('❌ Active overlay img failed:', resolveOverlayUrl(ov.image_url))}
                                     style={{
                                         position: 'absolute',
                                         left: `${ov.position_x}%`,
