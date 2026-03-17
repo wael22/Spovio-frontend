@@ -10,6 +10,7 @@ import { TutorialProvider } from "@/contexts/TutorialContext";
 import { TutorialOverlay } from "@/components/tutorial";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import DashboardLayout from "@/components/layout/DashboardLayout";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 // Landing pages — lazy loaded
 const Index = lazy(() => import("./pages/Index"));
@@ -64,110 +65,112 @@ const App = () => (
             <TutorialProvider>
               {/* Tutorial Overlay - rendered globally for all routes */}
               <TutorialOverlay />
-              <Suspense fallback={<PageLoader />}>
-                <Routes>
-                  {/* Spovio Landing Pages */}
-                  <Route path="/" element={<Index />} />
-                  <Route path="/ai-features" element={<AIFeatures />} />
-                  <Route path="/how-it-works" element={<HowItWorks />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/contact" element={<Contact />} />
-                  <Route path="/terms" element={<Terms />} />
-                  <Route path="/privacy" element={<Privacy />} />
-                  <Route path="/c/:qrCode" element={<CourtRedirect />} />
+              <ErrorBoundary>
+                <Suspense fallback={<PageLoader />}>
+                  <Routes>
+                    {/* Spovio Landing Pages */}
+                    <Route path="/" element={<Index />} />
+                    <Route path="/ai-features" element={<AIFeatures />} />
+                    <Route path="/how-it-works" element={<HowItWorks />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/contact" element={<Contact />} />
+                    <Route path="/terms" element={<Terms />} />
+                    <Route path="/privacy" element={<Privacy />} />
+                    <Route path="/c/:qrCode" element={<CourtRedirect />} />
 
-                  {/* Authentication */}
-                  <Route path="/auth" element={<Auth />} />
-                  <Route path="/verify-email" element={<EmailVerification />} />
-                  <Route path="/google-auth-callback" element={<GoogleAuthCallback />} />
-                  <Route path="/forgot-password" element={<ForgotPassword />} />
-                  <Route path="/reset-password" element={<ResetPassword />} />
-                  <Route path="/super-secret-login" element={<SuperAdminLogin />} />
-                  <Route path="/player-interest" element={<PlayerInterest />} />
-                  <Route path="/interest-dashboard" element={<InterestDashboard />} />
+                    {/* Authentication */}
+                    <Route path="/auth" element={<Auth />} />
+                    <Route path="/verify-email" element={<EmailVerification />} />
+                    <Route path="/google-auth-callback" element={<GoogleAuthCallback />} />
+                    <Route path="/forgot-password" element={<ForgotPassword />} />
+                    <Route path="/reset-password" element={<ResetPassword />} />
+                    <Route path="/super-secret-login" element={<SuperAdminLogin />} />
+                    <Route path="/player-interest" element={<PlayerInterest />} />
+                    <Route path="/interest-dashboard" element={<InterestDashboard />} />
 
-                  {/* Protected Admin & Club Routes */}
-                  <Route
-                    path="/admin"
-                    element={
-                      <ProtectedRoute requiredRole="super_admin">
-                        <Admin />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/club"
-                    element={
-                      <ProtectedRoute requiredRole="club">
-                        <Club />
-                      </ProtectedRoute>
-                    }
-                  />
+                    {/* Protected Admin & Club Routes */}
+                    <Route
+                      path="/admin"
+                      element={
+                        <ProtectedRoute requiredRole="super_admin">
+                          <Admin />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/club"
+                      element={
+                        <ProtectedRoute requiredRole="club">
+                          <Club />
+                        </ProtectedRoute>
+                      }
+                    />
 
-                  {/* Protected MySmash App Routes */}
-                  <Route element={<DashboardLayout />}>
-                    <Route
-                      path="/dashboard"
-                      element={
-                        <ProtectedRoute requiredRole="player">
-                          <Dashboard />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/my-clips"
-                      element={
-                        <ProtectedRoute requiredRole="player">
-                          <MyClips />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/clubs"
-                      element={
-                        <ProtectedRoute requiredRole="player">
-                          <Clubs />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/credits"
-                      element={
-                        <ProtectedRoute requiredRole="player">
-                          <Credits />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/profile"
-                      element={
-                        <ProtectedRoute requiredRole={['player', 'club', 'super_admin']}>
-                          <Profile />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/support"
-                      element={
-                        <ProtectedRoute requiredRole="player">
-                          <Support />
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/settings"
-                      element={
-                        <ProtectedRoute requiredRole="player">
-                          <Settings />
-                        </ProtectedRoute>
-                      }
-                    />
-                  </Route>
+                    {/* Protected MySmash App Routes */}
+                    <Route element={<DashboardLayout />}>
+                      <Route
+                        path="/dashboard"
+                        element={
+                          <ProtectedRoute requiredRole="player">
+                            <Dashboard />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/my-clips"
+                        element={
+                          <ProtectedRoute requiredRole="player">
+                            <MyClips />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/clubs"
+                        element={
+                          <ProtectedRoute requiredRole="player">
+                            <Clubs />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/credits"
+                        element={
+                          <ProtectedRoute requiredRole="player">
+                            <Credits />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/profile"
+                        element={
+                          <ProtectedRoute requiredRole={['player', 'club', 'super_admin']}>
+                            <Profile />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/support"
+                        element={
+                          <ProtectedRoute requiredRole="player">
+                            <Support />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/settings"
+                        element={
+                          <ProtectedRoute requiredRole="player">
+                            <Settings />
+                          </ProtectedRoute>
+                        }
+                      />
+                    </Route>
 
-                  {/* 404 */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
+                    {/* 404 */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
+              </ErrorBoundary>
             </TutorialProvider>
           </BrowserRouter>
         </TooltipProvider>
