@@ -9,6 +9,7 @@ import { StatCardModern } from "@/components/dashboard/StatCardModern";
 import { VideoCardModern } from "@/components/dashboard/VideoCardModern";
 import { ActiveRecordingBanner } from "@/components/dashboard/ActiveRecordingBanner";
 import { StartRecordingModal } from "@/components/dashboard/StartRecordingModal";
+import QRScannerModal from "@/components/dashboard/QRScannerModal";
 import { ShareVideoModal } from "@/components/dashboard/ShareVideoModal";
 import { VideoClipEditor } from "@/components/dashboard/VideoClipEditor";
 import { VideoPlayerModal } from "@/components/dashboard/VideoPlayerModal";
@@ -459,8 +460,7 @@ const Dashboard = () => {
             className="gap-2"
             onClick={() => {
               setInitialQrCode(undefined); // Clear any pending QR
-              setIsQRScannerOpen(true); // Set local state for QR mode
-              setIsRecordingModalOpen(true); // Actually open the modal
+              setIsQRScannerOpen(true); // Open ONLY the scanner
             }}
             disabled={!!activeRecording}
           >
@@ -577,7 +577,6 @@ const Dashboard = () => {
           setIsRecordingModalOpen(open);
           if (!open) {
             setInitialQrCode(undefined);
-            setIsQRScannerOpen(false);
           }
         }}
         onRecordingStarted={async (session) => {
@@ -586,7 +585,17 @@ const Dashboard = () => {
           // Also fetch to get full recording details from server
           setTimeout(fetchActiveRecording, 1000);
         }}
-        initialQrCode={initialQrCode || (isQRScannerOpen ? 'SCAN' : undefined)}
+        initialQrCode={initialQrCode}
+      />
+
+      <QRScannerModal
+        isOpen={isQRScannerOpen}
+        onClose={() => setIsQRScannerOpen(false)}
+        onCodeScanned={(code) => {
+          setIsQRScannerOpen(false);
+          setInitialQrCode(code);
+          setIsRecordingModalOpen(true);
+        }}
       />
 
       <ShareVideoModal
