@@ -457,7 +457,11 @@ const Dashboard = () => {
           <Button
             variant="neonOutline"
             className="gap-2"
-            onClick={() => setIsQRScannerOpen(true)}
+            onClick={() => {
+              setInitialQrCode(undefined); // Clear any pending QR
+              setIsQRScannerOpen(true); // Set local state for QR mode
+              setIsRecordingModalOpen(true); // Actually open the modal
+            }}
             disabled={!!activeRecording}
           >
             <QrCode className="h-4 w-4" />
@@ -571,6 +575,10 @@ const Dashboard = () => {
         open={isRecordingModalOpen}
         onOpenChange={(open) => {
           setIsRecordingModalOpen(open);
+          if (!open) {
+            setInitialQrCode(undefined);
+            setIsQRScannerOpen(false);
+          }
         }}
         onRecordingStarted={async (session) => {
           // Set immediately for instant UI feedback
@@ -578,7 +586,7 @@ const Dashboard = () => {
           // Also fetch to get full recording details from server
           setTimeout(fetchActiveRecording, 1000);
         }}
-      // initialQrCode prop removed as it's for the manual flow only now
+        initialQrCode={initialQrCode || (isQRScannerOpen ? 'SCAN' : undefined)}
       />
 
       <ShareVideoModal
