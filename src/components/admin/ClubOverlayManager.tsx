@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,20 +11,75 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 // Resolve overlay image URL robustly - handles relative paths & absolute URLs
+import api from '@/lib/api';
+
+// Extract the base URL from the configured axios instance
+const API_BASE_URL = api.defaults.baseURL || 'https://api.spovio.net/api';
+
+// Resolve overlay image URL robustly - handles relative paths & absolute URLs
+// This function returns the primary URL to try. In components we use fallback logic on error.
 const resolveOverlayUrl = (path: string): string => {
     if (!path) return '';
-    // Already a full URL - return as-is
     if (path.startsWith('http://') || path.startsWith('https://')) return path;
 
-    // Relative path: The backend serves overlays via the auth blueprint
-    // Route in backend: @auth_bp.route('/static/overlays/<path:filename>')
-    // Mount point: /api/auth
-    // Example: "static/overlays/file.png" → "https://api.spovio.net/api/auth/static/overlays/file.png"
+    // In dev: API_BASE_URL is usually http://localhost:5000/api
+    // In prod: API_BASE_URL is https://api.spovio.net/api
     const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+
+    // Primary attempt: using the auth blueprint mount point format
+    // Because auth.py serves overlays via @auth_bp.route('/static/overlays/')
     if (cleanPath.startsWith('static/overlays')) {
-        return `https://api.spovio.net/api/auth/${cleanPath}`;
+        return `${API_BASE_URL}/auth/${cleanPath}`;
     }
-    return `https://api.spovio.net/api/${cleanPath}`;
+    return `${API_BASE_URL}/${cleanPath}`;
+};
+
+// Helper component that tries multiple URLs for an overlay image to ensure it loads
+const OverlayImage = ({ src, alt, className, style, title }: { src: string, alt: string, className?: string, style?: React.CSSProperties, title?: string }) => {
+    const [currentSrc, setCurrentSrc] = useState(resolveOverlayUrl(src));
+    const [fallbackIndex, setFallbackIndex] = useState(0);
+
+    // List of fallback patterns to try if the primary URL fails
+    const getFallbacks = (originalPath: string) => {
+        const cleanPath = originalPath.startsWith('/') ? originalPath.slice(1) : originalPath;
+        const apiBase = API_BASE_URL; // e.g., https://api.spovio.net/api
+        const hostBase = apiBase.replace(/\/api$/, ''); // e.g., https://api.spovio.net
+
+        return [
+            `${apiBase}/auth/${cleanPath}`, // 1. Try auth blueprint (primary)
+            `${apiBase}/${cleanPath}`,      // 2. Try raw api static 
+            `${hostBase}/${cleanPath}`      // 3. Try host static directly (e.g. via Nginx)
+        ];
+    };
+
+    const fallbacks = useMemo(() => getFallbacks(src), [src]);
+
+    useEffect(() => {
+        setCurrentSrc(fallbacks[0]);
+        setFallbackIndex(0);
+    }, [src, fallbacks]);
+
+    const handleError = () => {
+        if (fallbackIndex < fallbacks.length - 1) {
+            const nextIndex = fallbackIndex + 1;
+            console.log(`Image failed: ${currentSrc}. Trying fallback ${nextIndex}: ${fallbacks[nextIndex]}`);
+            setFallbackIndex(nextIndex);
+            setCurrentSrc(fallbacks[nextIndex]);
+        } else {
+            console.error('All image fallbacks failed for:', src);
+        }
+    };
+
+    return (
+        <img
+            src={currentSrc}
+            alt={alt}
+            className={className}
+            style={style}
+            title={title}
+            onError={handleError}
+        />
+    );
 };
 
 interface ClubOverlayManagerProps {
@@ -231,11 +286,10 @@ const ClubOverlayManager: React.FC<ClubOverlayManagerProps> = ({ club, isOpen, o
                                                 }}
                                             >
                                                 {formData.image_url ? (
-                                                    <img
-                                                        src={resolveOverlayUrl(formData.image_url)}
+                                                    <OverlayImage
+                                                        src={formData.image_url}
                                                         alt="Preview"
                                                         className="w-full h-full object-contain"
-                                                        onError={(e) => console.error('❌ Image preview failed:', resolveOverlayUrl(formData.image_url))}
                                                     />
                                                 ) : (
                                                     <ImageIcon className="text-gray-300 h-6 w-6" />
@@ -365,14 +419,10 @@ const ClubOverlayManager: React.FC<ClubOverlayManagerProps> = ({ club, isOpen, o
                                                     }}
                                                 >
                                                     {ov.image_url ? (
-                                                        <img
-                                                            src={resolveOverlayUrl(ov.image_url)}
+                                                        <OverlayImage
+                                                            src={ov.image_url}
                                                             alt={ov.name}
                                                             className="w-full h-full object-contain"
-                                                            onError={(e) => {
-                                                                console.error('❌ Overlay image failed:', resolveOverlayUrl(ov.image_url));
-                                                                (e.target as HTMLImageElement).style.display = 'none';
-                                                            }}
                                                         />
                                                     ) : (
                                                         <ImageIcon className="text-gray-300 h-5 w-5" />
@@ -453,10 +503,9 @@ const ClubOverlayManager: React.FC<ClubOverlayManagerProps> = ({ club, isOpen, o
 
                             {/* Overlay en cours d'édition */}
                             {editingOverlay && formData.image_url && (
-                                <img
-                                    src={resolveOverlayUrl(formData.image_url)}
+                                <OverlayImage
+                                    src={formData.image_url}
                                     alt="Preview"
-                                    onError={(e) => console.error('❌ Preview img failed:', resolveOverlayUrl(formData.image_url))}
                                     style={{
                                         position: 'absolute',
                                         left: `${formData.position_x}%`,
@@ -472,12 +521,11 @@ const ClubOverlayManager: React.FC<ClubOverlayManagerProps> = ({ club, isOpen, o
 
                             {/* Tous les overlays actifs (mode liste) */}
                             {!editingOverlay && overlays.map(ov => ov.is_active && (
-                                <img
+                                <OverlayImage
                                     key={ov.id}
-                                    src={resolveOverlayUrl(ov.image_url)}
+                                    src={ov.image_url}
                                     alt={ov.name}
                                     title={`${ov.name} — ${ov.width}% de largeur`}
-                                    onError={(e) => console.error('❌ Active overlay img failed:', resolveOverlayUrl(ov.image_url))}
                                     style={{
                                         position: 'absolute',
                                         left: `${ov.position_x}%`,
