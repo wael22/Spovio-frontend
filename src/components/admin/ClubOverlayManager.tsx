@@ -15,9 +15,15 @@ const resolveOverlayUrl = (path: string): string => {
     if (!path) return '';
     // Already a full URL - return as-is
     if (path.startsWith('http://') || path.startsWith('https://')) return path;
-    // Relative path: Flask serves static files under /api/static/...
-    // e.g. "static/overlays/file.png" → "https://api.spovio.net/api/static/overlays/file.png"
+
+    // Relative path: The backend serves overlays via the auth blueprint
+    // Route in backend: @auth_bp.route('/static/overlays/<path:filename>')
+    // Mount point: /api/auth
+    // Example: "static/overlays/file.png" → "https://api.spovio.net/api/auth/static/overlays/file.png"
     const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+    if (cleanPath.startsWith('static/overlays')) {
+        return `https://api.spovio.net/api/auth/${cleanPath}`;
+    }
     return `https://api.spovio.net/api/${cleanPath}`;
 };
 
