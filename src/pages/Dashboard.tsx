@@ -629,19 +629,7 @@ const Dashboard = () => {
         }}
       />
 
-      <DirectRecordingModal
-        isOpen={isQRScannerOpen}
-        onClose={() => {
-          setIsQRScannerOpen(false);
-          setInitialQrCode(undefined);
-        }}
-        initialQrCode={initialQrCode}
-        onRecordingStarted={async (session) => {
-          setActiveRecording(session);
-          setTimeout(fetchActiveRecording, 1000);
-        }}
 
-      />
 
       <ReportIssueModal
         isOpen={isReportModalOpen}
