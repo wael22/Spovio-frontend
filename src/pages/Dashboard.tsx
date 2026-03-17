@@ -13,7 +13,6 @@ import { ShareVideoModal } from "@/components/dashboard/ShareVideoModal";
 import { VideoClipEditor } from "@/components/dashboard/VideoClipEditor";
 import { VideoPlayerModal } from "@/components/dashboard/VideoPlayerModal";
 import { EditVideoTitleModal } from "@/components/dashboard/EditVideoTitleModal";
-import DirectRecordingModal from "@/components/dashboard/DirectRecordingModal"; // Corrected default import
 import { ReportIssueModal } from "@/components/dashboard/ReportIssueModal";
 import { toast } from "sonner"; // Assuming toast is from sonner
 import {
