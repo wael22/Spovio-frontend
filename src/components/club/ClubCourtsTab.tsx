@@ -61,6 +61,11 @@ const ClubCourtsTab: React.FC<ClubCourtsTabProps> = ({ courts, onCourtUpdated })
         }
     };
 
+    const isMjpegUrl = (url?: string) => {
+        if (!url) return false;
+        return url.toLowerCase().includes('.mjpg') || url.toLowerCase().includes('.mjpeg') || url.toLowerCase().includes('/mjpg/');
+    };
+
     return (
         <Card>
             <CardHeader>
@@ -125,7 +130,11 @@ const ClubCourtsTab: React.FC<ClubCourtsTabProps> = ({ courts, onCourtUpdated })
                                                 <Camera className="h-4 w-4 text-emerald-500" />
                                                 <span className="text-gray-700 dark:text-gray-300 font-medium">Flux Vidéo</span>
                                             </div>
-                                            {getHlsUrl(court.camera_url) ? (
+                                            {isMjpegUrl(court.camera_url) ? (
+                                                <div className="relative bg-black rounded-md overflow-hidden aspect-video w-full flex items-center justify-center">
+                                                    <img src={court.camera_url} alt="Flux Vidéo MJPEG" className="w-full h-full object-contain" />
+                                                </div>
+                                            ) : getHlsUrl(court.camera_url) ? (
                                                 <LiveVideoPlayer streamUrl={getHlsUrl(court.camera_url)!} />
                                             ) : (
                                                 <div className="text-xs text-red-500 p-2">Lien caméra invalide.</div>

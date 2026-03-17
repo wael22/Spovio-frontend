@@ -516,16 +516,23 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted, in
             {/* Club Selection */}
             <div className="space-y-2">
               <Label>{t('modals.startRecording.clubLabel')} *</Label>
-              {loadingClubs ? (
-                <div className="flex items-center justify-center py-4">
-                  <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                </div>
-              ) : (
-                <Select value={selectedClub} onValueChange={setSelectedClub}>
+              <div className="relative">
+                <Select
+                  value={selectedClub}
+                  onValueChange={setSelectedClub}
+                  disabled={loadingClubs}
+                >
                   <SelectTrigger className="bg-background/50 border-border/50">
-                    <SelectValue placeholder={t('modals.startRecording.selectClub')} />
+                    {loadingClubs ? (
+                      <span className="flex items-center gap-2 text-muted-foreground">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Chargement...
+                      </span>
+                    ) : (
+                      <SelectValue placeholder={t('modals.startRecording.selectClub')} />
+                    )}
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent position="popper">
                     {clubs.map((club) => (
                       <SelectItem key={club.id} value={club.id.toString()}>
                         {club.name}
@@ -533,7 +540,7 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted, in
                     ))}
                   </SelectContent>
                 </Select>
-              )}
+              </div>
             </div>
 
             {/* Court Selection */}
