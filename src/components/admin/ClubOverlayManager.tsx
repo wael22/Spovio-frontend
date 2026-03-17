@@ -13,11 +13,12 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 // Resolve overlay image URL robustly - handles relative paths & absolute URLs
 const resolveOverlayUrl = (path: string): string => {
     if (!path) return '';
-    // Already a full URL
+    // Already a full URL - return as-is
     if (path.startsWith('http://') || path.startsWith('https://')) return path;
-    // Relative path like /static/overlays/... or static/overlays/...
-    const cleanPath = path.startsWith('/') ? path : `/${path}`;
-    return `https://api.spovio.net${cleanPath}`;
+    // Relative path: Flask serves static files under /api/static/...
+    // e.g. "static/overlays/file.png" → "https://api.spovio.net/api/static/overlays/file.png"
+    const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+    return `https://api.spovio.net/api/${cleanPath}`;
 };
 
 interface ClubOverlayManagerProps {
@@ -47,6 +48,15 @@ interface FormData {
     is_active: boolean;
 }
 
+const CAMERA_RESOLUTIONS = [
+    { label: '16:9 — HD (1920×1080)', ratio: '56.25%', tag: '16:9' },
+    { label: '16:9 — 720p (1280×720)', ratio: '56.25%', tag: '16:9' },
+    { label: '4:3 — Standard (1280×960)', ratio: '75%', tag: '4:3' },
+    { label: '4:3 — VGA (640×480)', ratio: '75%', tag: '4:3' },
+    { label: '1:1 — Carré (1080×1080)', ratio: '100%', tag: '1:1' },
+    { label: '9:16 — Vertical (1080×1920)', ratio: '177.78%', tag: '9:16' },
+];
+
 const ClubOverlayManager: React.FC<ClubOverlayManagerProps> = ({ club, isOpen, onClose }) => {
     const [overlays, setOverlays] = useState<Overlay[]>([]);
     const [loading, setLoading] = useState(true);
@@ -54,6 +64,7 @@ const ClubOverlayManager: React.FC<ClubOverlayManagerProps> = ({ club, isOpen, o
     const [editingOverlay, setEditingOverlay] = useState<Overlay | { new: boolean } | null>(null);
     const [formData, setFormData] = useState<FormData>(getInitialFormData());
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [selectedResolution, setSelectedResolution] = useState(CAMERA_RESOLUTIONS[0]);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     function getInitialFormData(): FormData {
@@ -398,14 +409,35 @@ const ClubOverlayManager: React.FC<ClubOverlayManagerProps> = ({ club, isOpen, o
                     {/* COLONNE DROITE: Prévisualisation Vidéo */}
                     <div className="flex-1 bg-black flex flex-col items-center justify-center p-8 relative overflow-hidden">
                         <div className="absolute inset-0 bg-gradient-to-br from-gray-900 to-black pointer-events-none" />
-                        <h3 className="mb-6 text-gray-400 font-medium z-10 flex items-center gap-2">
+
+                        {/* Resolution Selector */}
+                        <div className="z-10 mb-4 flex items-center gap-3 flex-wrap justify-center">
+                            <span className="text-gray-400 text-sm font-medium">📷 Résolution caméra :</span>
+                            <div className="flex gap-2 flex-wrap justify-center">
+                                {CAMERA_RESOLUTIONS.map((res) => (
+                                    <button
+                                        key={res.label}
+                                        onClick={() => setSelectedResolution(res)}
+                                        className={`px-3 py-1 rounded-full text-xs font-mono border transition-all ${selectedResolution.label === res.label
+                                            ? 'bg-blue-600 border-blue-500 text-white'
+                                            : 'border-gray-600 text-gray-400 hover:border-blue-500 hover:text-white'
+                                            }`}
+                                    >
+                                        {res.tag} — {res.label.split('(')[1]?.replace(')', '') || ''}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <h3 className="mb-3 text-gray-400 font-medium z-10 flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-                            Prévisualisation Vidéo (16:9)
+                            Prévisualisation — {selectedResolution.label}
                         </h3>
 
                         <div
-                            className="relative w-full max-w-4xl aspect-video rounded-lg border border-gray-700 shadow-2xl overflow-hidden z-10"
+                            className="relative w-full max-w-2xl rounded-lg border border-gray-700 shadow-2xl overflow-hidden z-10"
                             style={{
+                                paddingBottom: selectedResolution.ratio,
                                 background: 'repeating-conic-gradient(#374151 0% 25%, #1f2937 0% 50%) 0 0 / 32px 32px'
                             }}
                         >
