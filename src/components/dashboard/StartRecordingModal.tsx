@@ -117,7 +117,11 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted, in
       console.log('⚡ Handling initialQrCode prop:', initialQrCode);
       // Ensure this runs after the reset
       const timer = setTimeout(() => {
-        handleQRCodeScanned(initialQrCode);
+        if (initialQrCode === 'SCAN') {
+          setIsScannerOpen(true);
+        } else {
+          handleQRCodeScanned(initialQrCode);
+        }
       }, 100);
       return () => clearTimeout(timer);
     }
