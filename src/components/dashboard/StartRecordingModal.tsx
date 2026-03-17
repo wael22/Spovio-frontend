@@ -11,13 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+// Radix Select intentionally NOT used inside Dialog to avoid Portal-in-Portal removeChild crash
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -513,33 +507,30 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted, in
               )}
             </div>
 
-            {/* Club Selection */}
+            {/* Club Selection - using native select to avoid Radix Portal-in-Dialog crash */}
             <div className="space-y-2">
               <Label>{t('modals.startRecording.clubLabel')} *</Label>
               <div className="relative">
-                <Select
-                  value={selectedClub}
-                  onValueChange={setSelectedClub}
-                  disabled={loadingClubs}
-                >
-                  <SelectTrigger className="bg-background/50 border-border/50">
-                    {loadingClubs ? (
-                      <span className="flex items-center gap-2 text-muted-foreground">
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Chargement...
-                      </span>
-                    ) : (
-                      <SelectValue placeholder={t('modals.startRecording.selectClub')} />
-                    )}
-                  </SelectTrigger>
-                  <SelectContent position="popper">
+                {loadingClubs ? (
+                  <div className="flex h-10 w-full items-center gap-2 rounded-md border border-input bg-background/50 px-3 py-2 text-sm text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Chargement...</span>
+                  </div>
+                ) : (
+                  <select
+                    value={selectedClub}
+                    onChange={(e) => setSelectedClub(e.target.value)}
+                    className="flex h-10 w-full items-center rounded-md border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    style={{ color: selectedClub ? 'inherit' : 'var(--muted-foreground)' }}
+                  >
+                    <option value="" disabled>{t('modals.startRecording.selectClub')}</option>
                     {clubs.map((club) => (
-                      <SelectItem key={club.id} value={club.id.toString()}>
+                      <option key={club.id} value={club.id.toString()}>
                         {club.name}
-                      </SelectItem>
+                      </option>
                     ))}
-                  </SelectContent>
-                </Select>
+                  </select>
+                )}
               </div>
             </div>
 
