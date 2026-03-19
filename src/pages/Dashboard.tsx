@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -9,6 +9,7 @@ import { StatCardModern } from "@/components/dashboard/StatCardModern";
 import { VideoCardModern } from "@/components/dashboard/VideoCardModern";
 import { ActiveRecordingBanner } from "@/components/dashboard/ActiveRecordingBanner";
 import { StartRecordingModal } from "@/components/dashboard/StartRecordingModal";
+import DirectRecordingModal from "@/components/dashboard/DirectRecordingModal";
 import QRScannerModal from "@/components/dashboard/QRScannerModal";
 import { ShareVideoModal } from "@/components/dashboard/ShareVideoModal";
 import { VideoClipEditor } from "@/components/dashboard/VideoClipEditor";
@@ -64,6 +65,7 @@ const Dashboard = () => {
   const [isQRScannerOpen, setIsQRScannerOpen] = useState(false);
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDirectRecordingModalOpen, setIsDirectRecordingModalOpen] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState<any | null>(null);
   const [videos, setVideos] = useState<any[]>([]);
   const [activeRecording, setActiveRecording] = useState<any>(null);
@@ -78,7 +80,7 @@ const Dashboard = () => {
     if (pendingQr) {
       localStorage.removeItem('pending_court_qr');
       setInitialQrCode(pendingQr);
-      setIsQRScannerOpen(true);
+      setIsDirectRecordingModalOpen(true);
     }
   }, []);
   // scannedQrCode removed as it's now handled internally by DirectRecordingModal
@@ -459,8 +461,8 @@ const Dashboard = () => {
             variant="neonOutline"
             className="gap-2"
             onClick={() => {
-              setInitialQrCode(undefined); // Clear any pending QR
-              setIsQRScannerOpen(true); // Open ONLY the scanner
+              setInitialQrCode(undefined);
+              setIsDirectRecordingModalOpen(true);
             }}
             disabled={!!activeRecording}
           >
@@ -588,13 +590,26 @@ const Dashboard = () => {
         initialQrCode={initialQrCode}
       />
 
+      <DirectRecordingModal
+        isOpen={isDirectRecordingModalOpen}
+        onClose={() => {
+          setIsDirectRecordingModalOpen(false);
+          setInitialQrCode(undefined);
+        }}
+        initialQrCode={initialQrCode}
+        onRecordingStarted={async (session) => {
+          setActiveRecording(session);
+          setTimeout(fetchActiveRecording, 1000);
+        }}
+      />
+
       <QRScannerModal
         isOpen={isQRScannerOpen}
         onClose={() => setIsQRScannerOpen(false)}
         onCodeScanned={(code) => {
           setIsQRScannerOpen(false);
           setInitialQrCode(code);
-          setIsRecordingModalOpen(true);
+          setIsDirectRecordingModalOpen(true);
         }}
       />
 
