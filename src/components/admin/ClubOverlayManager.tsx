@@ -118,6 +118,14 @@ const CAMERA_RESOLUTIONS = [
     { label: '9:16 — Vertical (1080×1920)', ratio: '177.78%', tag: '9:16' },
 ];
 
+const OVERLAY_PRESETS = [
+    { label: 'En haut à gauche',   x: 5, y: 5, width: 15, opacity: 0.9 },
+    { label: 'En haut à droite',   x: 80, y: 5, width: 15, opacity: 0.9 },
+    { label: 'En bas à gauche',    x: 10, y: 85, width: 20, opacity: 0.9 },
+    { label: 'En bas au centre',   x: 40, y: 85, width: 20, opacity: 0.9 },
+    { label: 'En bas à droite',    x: 70, y: 85, width: 20, opacity: 0.9 },
+];
+
 const ClubOverlayManager: React.FC<ClubOverlayManagerProps> = ({ club, isOpen, onClose }) => {
     const [overlays, setOverlays] = useState<Overlay[]>([]);
     const [loading, setLoading] = useState(true);
@@ -129,13 +137,14 @@ const ClubOverlayManager: React.FC<ClubOverlayManagerProps> = ({ club, isOpen, o
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     function getInitialFormData(): FormData {
+        const defaultPreset = OVERLAY_PRESETS[4]; // En bas à droite
         return {
             name: '',
             image_url: '',
-            position_x: 0,
-            position_y: 0,
-            width: 3,
-            opacity: 0.2,
+            position_x: defaultPreset.x,
+            position_y: defaultPreset.y,
+            width: defaultPreset.width,
+            opacity: defaultPreset.opacity,
             is_active: true
         };
     }
@@ -322,47 +331,34 @@ const ClubOverlayManager: React.FC<ClubOverlayManagerProps> = ({ club, isOpen, o
                                         />
                                     </div>
 
-                                    {/* Sliders */}
-                                    <div className="space-y-3">
-                                        <div className="space-y-1">
-                                            <Label className="text-sm">Position X ({formData.position_x}%)</Label>
-                                            <Slider
-                                                value={[formData.position_x]}
-                                                max={100}
-                                                step={1}
-                                                onValueChange={([val]) => setFormData({ ...formData, position_x: val })}
-                                            />
+                                    {/* Position Prédéfinie */}
+                                    <div className="space-y-3 pt-2">
+                                        <Label className="text-sm font-semibold">Position Idéale sur la vidéo</Label>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {OVERLAY_PRESETS.map((preset) => (
+                                                <Button
+                                                    key={preset.label}
+                                                    type="button"
+                                                    variant={formData.position_x === preset.x && formData.position_y === preset.y ? "default" : "outline"}
+                                                    className="justify-start text-xs h-9 px-3"
+                                                    onClick={() => {
+                                                        setFormData(prev => ({
+                                                            ...prev,
+                                                            position_x: preset.x,
+                                                            position_y: preset.y,
+                                                            width: preset.width,
+                                                            opacity: preset.opacity
+                                                        }));
+                                                    }}
+                                                >
+                                                    <div className={`w-2 h-2 rounded-full mr-2 ${formData.position_x === preset.x && formData.position_y === preset.y ? 'bg-white' : 'bg-blue-500'}`} />
+                                                    {preset.label}
+                                                </Button>
+                                            ))}
                                         </div>
-
-                                        <div className="space-y-1">
-                                            <Label className="text-sm">Position Y ({formData.position_y}%)</Label>
-                                            <Slider
-                                                value={[formData.position_y]}
-                                                max={100}
-                                                step={1}
-                                                onValueChange={([val]) => setFormData({ ...formData, position_y: val })}
-                                            />
-                                        </div>
-
-                                        <div className="space-y-1">
-                                            <Label className="text-sm">Largeur ({formData.width}%)</Label>
-                                            <Slider
-                                                value={[formData.width]}
-                                                max={40}
-                                                step={1}
-                                                onValueChange={([val]) => setFormData({ ...formData, width: val })}
-                                            />
-                                        </div>
-
-                                        <div className="space-y-1">
-                                            <Label className="text-sm">Opacité ({formData.opacity.toFixed(2)})</Label>
-                                            <Slider
-                                                value={[formData.opacity]}
-                                                max={1}
-                                                step={0.05}
-                                                onValueChange={([val]) => setFormData({ ...formData, opacity: val })}
-                                            />
-                                        </div>
+                                        <p className="text-xs text-gray-500 italic mt-1">
+                                            La taille et l'opacité sont ajustées automatiquement pour un rendu professionnel.
+                                        </p>
                                     </div>
 
                                     {/* Active & Actions */}
