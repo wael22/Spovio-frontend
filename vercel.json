@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "http://213.32.23.209:5000/api/$1"
+      "destination": "https://api.spovio.net/api/$1"
     },
     {
       "source": "/(.*)",
