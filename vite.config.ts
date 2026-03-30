@@ -13,7 +13,23 @@ export default defineConfig(({ mode }) => ({
       // Required for FFmpeg.wasm to work (SharedArrayBuffer)
       'Cross-Origin-Opener-Policy': 'same-origin',
       'Cross-Origin-Embedder-Policy': 'require-corp',
-    }
+    },
+    proxy: {
+      // Forward all /api requests to Flask backend on port 5000
+      // Use 127.0.0.1 explicitly to force IPv4 (localhost resolves to ::1 on Windows)
+      '/api': {
+        target: 'http://127.0.0.1:5000',
+        changeOrigin: true,
+        secure: false,
+        configure: (proxy) => {
+          proxy.on('proxyRes', (proxyRes) => {
+            // Ensure proxied responses have CORP header for COEP compatibility
+            proxyRes.headers['cross-origin-resource-policy'] = 'cross-origin';
+            proxyRes.headers['access-control-allow-origin'] = '*';
+          });
+        },
+      },
+    },
   },
   plugins: [
     react(),

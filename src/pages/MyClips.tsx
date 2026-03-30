@@ -1,8 +1,8 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { clipService } from "@/lib/api";
+import { clipService, getAssetUrl, getVideoThumbnailUrl } from "@/lib/api";
 import { DashboardNavbar } from "@/components/dashboard/DashboardNavbar";
 import { ClipCard } from "@/components/dashboard/ClipCard";
 import { ShareClipModal } from "@/components/dashboard/ShareClipModal";
@@ -292,7 +292,7 @@ const MyClips = () => {
                 <ClipCard
                   id={clip.id}
                   title={clip.title || 'Sans titre'}
-                  thumbnail={clip.thumbnail_url || 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=400'}
+                  thumbnail={getVideoThumbnailUrl({ thumbnail_url: clip.thumbnail_url, bunny_video_id: clip.bunny_video_id })}
                   duration={clip.duration ? `${Math.floor(clip.duration / 60)}:${(clip.duration % 60).toString().padStart(2, '0')}` : '0:00'}
                   date={clip.created_at || new Date().toISOString()}
                   videoTitle={clip.video_title || 'Vidéo'}

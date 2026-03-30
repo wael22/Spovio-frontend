@@ -31,7 +31,13 @@ const SystemConfiguration: React.FC = () => {
         try {
             setLoading(true);
             const response = await adminService.getBunnyCDNConfig();
-            setConfig(response.data);
+            const data = response.data || {};
+            setConfig({
+                library_id: data.library_id || '',
+                api_key: data.api_key || '',
+                hostname: data.hostname || '',
+                cdn_hostname: data.cdn_hostname || ''
+            });
         } catch (error) {
             setError('Erreur lors du chargement de la configuration');
         } finally {

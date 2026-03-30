@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useTutorialContext } from "@/contexts/TutorialContext";
-import { videoService, recordingService } from "@/lib/api";
+import { videoService, recordingService, getAssetUrl, getVideoThumbnailUrl } from "@/lib/api";
 import { DashboardNavbar } from "@/components/dashboard/DashboardNavbar";
 import { StatCardModern } from "@/components/dashboard/StatCardModern";
 import { VideoCardModern } from "@/components/dashboard/VideoCardModern";
@@ -529,7 +529,7 @@ const Dashboard = () => {
                 <VideoCardModern
                   id={video.id}
                   title={video.title || 'Sans titre'}
-                  thumbnail={video.thumbnail || 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=400'}
+                  thumbnail={getVideoThumbnailUrl(video)}
                   duration={formatDuration(video.duration || 0)}
                   date={video.created_at || new Date().toISOString()}
                   shared={video.is_shared || false}
