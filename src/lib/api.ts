@@ -3,63 +3,118 @@
 
 import axios, { AxiosInstance } from 'axios';
 
-// LOCAL DEVELOPMENT - Backend on localhost:5000
-let API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// Use relative /api path in dev so requests go through the Vite proxy (same-origin).
+// This avoids COEP (Cross-Origin-Embedder-Policy) blocking cross-origin fetches,
+// which Vite enables globally for FFmpeg.wasm SharedArrayBuffer support.
+// VITE_API_URL can override this for production deployments where frontend and backend
+// are on different domains.
+let API_BASE_URL: string;
 
-// S'assurer que l'URL se termine bien par /api pour cibler les Blueprints Backend (ex: /api/auth)
-if (API_BASE_URL) {
-    API_BASE_URL = API_BASE_URL.replace(/\/$/, ''); // Enlever le slash final s'il y en a un
+if (import.meta.env.VITE_API_URL) {
+    // Production: explicit full URL provided
+    API_BASE_URL = import.meta.env.VITE_API_URL.replace(/\/$/, '');
     if (!API_BASE_URL.endsWith('/api')) {
         API_BASE_URL = `${API_BASE_URL}/api`;
     }
+} else {
+    // Development: use relative path → goes through Vite proxy → same-origin → no COEP issues
+    API_BASE_URL = '/api';
 }
 
-console.log('🔧 [CONFIG] API Base URL:', API_BASE_URL);
+console.log('[CONFIG] API Base URL:', API_BASE_URL);
 
 const api: AxiosInstance = axios.create({
     baseURL: API_BASE_URL,
-    withCredentials: true,  // ?? CRITICAL: Enable session cookies for authentication
+    withCredentials: true,  // CRITICAL: Enable session cookies for authentication
     headers: {
         'Content-Type': 'application/json',
     },
 });
 
+/**
+ * Converts a Bunny CDN thumbnail URL to its proxied equivalent.
+ * Ex: https://vz-9b857324-07d.b-cdn.net/video-id/thumbnail.jpg
+ *  -> /api/proxy/bunny-thumbnail/9b857324-07d/video-id/thumbnail.jpg
+ */
+export const getBunnyThumbnailUrl = (bunnyCdnUrl: string): string => {
+    if (!bunnyCdnUrl) return '';
+    const match = bunnyCdnUrl.match(/https?:\/\/(?:vz-)?([^.]+(?:\.[^.]+)*)?\.b-cdn\.net\/([^/?#]+)\/([^?#]+)/);
+    if (match) {
+        const libId = match[1];   // e.g. "9b857324-07d"
+        const vidId = match[2];   // e.g. "963155c0-..."
+        const filename = match[3]; // e.g. "thumbnail.jpg"
+        return `/api/proxy/bunny-thumbnail/${libId}/${vidId}/${filename}`;
+    }
+    return bunnyCdnUrl; // Fallback to original URL
+};
+
+/**
+ * Builds the URL for a video thumbnail given backend video data.
+ * Handles: proxied paths, static paths, Bunny video IDs.
+ */
+export const getVideoThumbnailUrl = (video: {
+    thumbnail_url?: string | null;
+    bunny_video_id?: string | null;
+}, fallback = 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=400'): string => {
+    const { thumbnail_url, bunny_video_id } = video;
+
+    // Already a proxied path -> use as relative URL (Vite proxy will forward to Flask)
+    if (thumbnail_url?.startsWith('/api/proxy/')) {
+        return thumbnail_url;
+    }
+
+    // Full Bunny CDN URL -> convert to proxy path
+    if (thumbnail_url?.includes('.b-cdn.net')) {
+        return getBunnyThumbnailUrl(thumbnail_url);
+    }
+
+    // Local static thumbnail path
+    if (thumbnail_url) {
+        return getAssetUrl(thumbnail_url);
+    }
+
+    // Fallback: build from bunny_video_id (hardcoded library ID from Bunny account)
+    if (bunny_video_id) {
+        return `/api/proxy/bunny-thumbnail/9b857324-07d/${bunny_video_id}/thumbnail.jpg`;
+    }
+
+    return fallback;
+};
+
 export const getAssetUrl = (path: string): string => {
     if (!path) return '';
 
-    let cleanPath = path;
-
-    // If it's an absolute URL but points to our domain without /api, strip the domain part
-    // This handles cases where old data might have stored absolute URLs
-    if (path.startsWith('http')) {
-        const url = new URL(path);
-        if (url.hostname === 'spovio.net' && !url.pathname.startsWith('/api')) {
-            cleanPath = url.pathname;
-        } else {
-            return path;
-        }
+    // Already a proxied path -> relative URL works via Vite proxy in dev, directly in prod
+    if (path.startsWith('/api/proxy/')) {
+        return path;
     }
 
-    cleanPath = cleanPath.startsWith('/') ? cleanPath.slice(1) : cleanPath;
+    // Full external URL -> return as-is
+    if (path.startsWith('http')) {
+        return path;
+    }
 
-    // All static assets go through /api/
-    // This ensures nginx routes them correctly to the Flask backend (which handles CORS too)
-    if (
-        cleanPath.includes('uploads/avatars/') ||
-        cleanPath.includes('static/avatars/') ||
-        cleanPath.includes('static/uploads/')
-    ) {
+    let cleanPath = path.startsWith('/') ? path.slice(1) : path;
+
+    // Static assets: avatars, overlays, thumbnails
+    if (cleanPath.includes('uploads/avatars/') || cleanPath.includes('static/avatars/')) {
         const filename = cleanPath.split('/').pop();
         return `${API_BASE_URL}/static/avatars/${filename}`;
     }
-
     if (cleanPath.includes('static/overlays/')) {
         const filename = cleanPath.split('/').pop();
         return `${API_BASE_URL}/static/overlays/${filename}`;
     }
+    if (cleanPath.includes('static/thumbnails/') || cleanPath.includes('static\\thumbnails\\')) {
+        const filename = cleanPath.split(/[/\\]/).pop();
+        return `${API_BASE_URL}/static/thumbnails/${filename}`;
+    }
 
-    // For other assets (e.g. overlay images stored elsewhere), use the API base URL directly
-    // so that nginx routes them to the backend
+    // Path already starts with api/ -> avoid double-prefixing
+    if (cleanPath.startsWith('api/')) {
+        return `${API_BASE_URL.replace('/api', '')}/${cleanPath}`;
+    }
+
     return `${API_BASE_URL}/${cleanPath}`;
 };
 
