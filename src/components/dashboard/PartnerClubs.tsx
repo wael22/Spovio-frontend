@@ -11,7 +11,7 @@ interface Club {
     letterUrl: string;
 }
 
-const clubs: Club[] = [
+export const clubs: Club[] = [
     {
         id: 1,
         name: "YALLA PADEL",
@@ -56,7 +56,7 @@ const clubs: Club[] = [
 
 const PartnerClubs = () => {
     return (
-        <div className="mt-12">
+        <div>
             <div className="mb-6">
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">
                     Clubs Partenaires

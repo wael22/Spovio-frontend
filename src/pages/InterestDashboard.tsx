@@ -3,7 +3,8 @@ import React, { useEffect, useState } from "react";
 import { Users, Activity, Trophy, MapPin, Phone, Calendar, User } from "lucide-react";
 import { toast } from "sonner";
 import StatCard from "../components/dashboard/StatCard";
-import PartnerClubs from "../components/dashboard/PartnerClubs";
+import PartnerClubs, { clubs } from "../components/dashboard/PartnerClubs";
+import { Building2 } from "lucide-react";
 
 interface Player {
     id: string;
@@ -59,7 +60,7 @@ const InterestDashboard = () => {
             <main className="max-w-6xl mx-auto py-8 px-4">
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                        Dashboard - Intérêt Joueurs et Clubs
+                        Dashboard - Intérêt Clubs et Joueurs
                     </h1>
                     <p className="text-gray-600">
                         Vue d'ensemble des joueurs et clubs intéressés par la plateforme Spovio.
@@ -73,7 +74,13 @@ const InterestDashboard = () => {
                 ) : (
                     <>
                         {/* Stats Cards */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+                            <StatCard
+                                title="Total Clubs"
+                                value={clubs.length}
+                                icon={Building2}
+                                variant="total"
+                            />
                             <StatCard
                                 title="Total Joueurs"
                                 value={totalPlayers}
@@ -92,6 +99,11 @@ const InterestDashboard = () => {
                                 icon={Trophy}
                                 variant="tennis"
                             />
+                        </div>
+
+                        {/* Partner Clubs Section */}
+                        <div className="mb-12">
+                            <PartnerClubs />
                         </div>
 
                         {/* Players List */}
@@ -156,11 +168,6 @@ const InterestDashboard = () => {
                                     </table>
                                 </div>
                             )}
-                        </div>
-
-                        {/* Partner Clubs Section */}
-                        <div className="mb-12">
-                            <PartnerClubs />
                         </div>
                     </>
                 )}
