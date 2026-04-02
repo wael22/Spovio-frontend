@@ -1,4 +1,4 @@
-﻿import { lazy, Suspense } from "react";
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,6 +11,7 @@ import { TutorialOverlay } from "@/components/tutorial";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import ErrorButton from "@/components/ErrorButton";
 
 // Landing pages — lazy loaded
 const Index = lazy(() => import("./pages/Index"));
@@ -70,6 +71,7 @@ const App = () => (
                   <Routes>
                     {/* Spovio Landing Pages */}
                     <Route path="/" element={<Index />} />
+                    <Route path="/test-error" element={<ErrorButton />} />
                     <Route path="/ai-features" element={<AIFeatures />} />
                     <Route path="/how-it-works" element={<HowItWorks />} />
                     <Route path="/about" element={<About />} />
