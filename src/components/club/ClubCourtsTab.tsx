@@ -3,7 +3,8 @@ import { clubService } from '@/lib/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Camera, Circle, StopCircle, User, Clock } from 'lucide-react';
+import { Camera, Circle, StopCircle, User, Clock, Maximize2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogTrigger, DialogTitle } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { LiveVideoPlayer } from './LiveVideoPlayer';
 
@@ -66,6 +67,14 @@ const ClubCourtsTab: React.FC<ClubCourtsTabProps> = ({ courts, onCourtUpdated })
         return url.toLowerCase().includes('.mjpg') || url.toLowerCase().includes('.mjpeg') || url.toLowerCase().includes('/mjpg/');
     };
 
+    const getProxiedMjpegUrl = (courtId: string, rawUrl?: string) => {
+        if (!rawUrl || !isMjpegUrl(rawUrl)) return null;
+        // Check if backend proxy should be used
+        // Extract the token dynamically
+        const token = localStorage.getItem('token');
+        return `/api/preview/court/${courtId}/stream.mjpeg${token ? `?token=${token}` : ''}`;
+    };
+
     return (
         <Card>
             <CardHeader>
@@ -125,14 +134,42 @@ const ClubCourtsTab: React.FC<ClubCourtsTabProps> = ({ courts, onCourtUpdated })
 
                                     {/* Live Video Player (Replaces raw Camera URL) */}
                                     {court.camera_url ? (
-                                        <div className="mt-4 border border-slate-200 dark:border-slate-800 rounded-lg p-1 bg-slate-50 dark:bg-black/20">
-                                            <div className="flex items-center space-x-2 text-sm mb-2 px-1">
-                                                <Camera className="h-4 w-4 text-emerald-500" />
-                                                <span className="text-gray-700 dark:text-gray-300 font-medium">Flux Vidéo</span>
+                                        <div className="mt-4 border border-slate-200 dark:border-slate-800 rounded-lg p-1 bg-slate-50 dark:bg-black/20 group">
+                                            <div className="flex items-center justify-between space-x-2 text-sm mb-2 px-1">
+                                                <div className="flex items-center space-x-2">
+                                                    <Camera className="h-4 w-4 text-emerald-500" />
+                                                    <span className="text-gray-700 dark:text-gray-300 font-medium">Flux Vidéo</span>
+                                                </div>
+                                                
+                                                <Dialog>
+                                                    <DialogTrigger asChild>
+                                                        <Button variant="ghost" size="icon" className="h-6 w-6 text-slate-500 hover:text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity" title="Agrandir">
+                                                            <Maximize2 className="h-4 w-4" />
+                                                        </Button>
+                                                    </DialogTrigger>
+                                                    <DialogContent className="max-w-4xl w-[95vw] border-slate-800 bg-black p-0 overflow-hidden rounded-xl">
+                                                        <DialogTitle className="sr-only">{court.name} - Flux Vidéo</DialogTitle>
+                                                        <div className="w-full flex items-center justify-center relative bg-black aspect-video">
+                                                            {isMjpegUrl(court.camera_url) ? (
+                                                                <img 
+                                                                    src={getProxiedMjpegUrl(court.id, court.camera_url) || court.camera_url} 
+                                                                    alt="Flux Vidéo MJPEG (Agrandit)" 
+                                                                    className="w-full h-full object-contain" 
+                                                                />
+                                                            ) : getHlsUrl(court.camera_url) ? (
+                                                                <div className="w-full h-full">
+                                                                    <LiveVideoPlayer streamUrl={getHlsUrl(court.camera_url)!} />
+                                                                </div>
+                                                            ) : (
+                                                                <div className="text-red-500">Flux vidéo indisponible.</div>
+                                                            )}
+                                                        </div>
+                                                    </DialogContent>
+                                                </Dialog>
                                             </div>
                                             {isMjpegUrl(court.camera_url) ? (
                                                 <div className="relative bg-black rounded-md overflow-hidden aspect-video w-full flex items-center justify-center">
-                                                    <img src={court.camera_url} alt="Flux Vidéo MJPEG" className="w-full h-full object-contain" />
+                                                    <img src={getProxiedMjpegUrl(court.id, court.camera_url) || court.camera_url} alt="Flux Vidéo MJPEG" className="w-full h-full object-contain" />
                                                 </div>
                                             ) : getHlsUrl(court.camera_url) ? (
                                                 <LiveVideoPlayer streamUrl={getHlsUrl(court.camera_url)!} />

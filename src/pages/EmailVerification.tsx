@@ -24,13 +24,24 @@ const EmailVerification = () => {
     const [email, setEmail] = useState("");
 
     useEffect(() => {
-        // Get email from navigation state or redirect to auth
+        // Get email from URL query params or navigation state or redirect to auth
+        const queryParams = new URLSearchParams(location.search);
+        const queryEmail = queryParams.get('email');
         const stateEmail = location.state?.email;
-        if (!stateEmail) {
+        
+        const finalEmail = queryEmail || stateEmail;
+        
+        if (!finalEmail) {
             navigate("/auth");
             return;
         }
-        setEmail(stateEmail);
+        setEmail(finalEmail);
+
+        // Auto-fill code if provided in URL
+        const queryCode = queryParams.get('code');
+        if (queryCode && queryCode.length === 6) {
+            setCode(queryCode);
+        }
     }, [location, navigate]);
 
     const handleVerify = async (e: React.FormEvent) => {
