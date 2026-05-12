@@ -722,6 +722,12 @@
                     "title": "Visionnez et Progressez",
                     "desc": "Accédez à vos vidéos instantanément. Analysez votre jeu et suivez votre progression."
                 }
+            },
+            "stats": {
+                "custom1": "Délai de traitement",
+                "custom2": "Qualité Full HD",
+                "custom3": "Stockage Cloud",
+                "custom4": "Simplicité"
             }
         },
         "pricing": {

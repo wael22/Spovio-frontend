@@ -718,6 +718,12 @@
                     "title": "Watch and Improve",
                     "desc": "Access your videos instantly. Analyze your game and track your progress."
                 }
+            },
+            "stats": {
+                "custom1": "Processing Time",
+                "custom2": "Full HD Quality",
+                "custom3": "Cloud Storage",
+                "custom4": "Simplicity"
             }
         },
         "pricing": {
