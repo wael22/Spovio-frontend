@@ -83,7 +83,7 @@ const Credits = () => {
   const { t } = useTranslation();
   const { user, fetchUser } = useAuth();
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
-  const [selectedPayment, setSelectedPayment] = useState<string | null>(null);
+  const [selectedPayment, setSelectedPayment] = useState<string>('carte_bancaire');
   const [packages, setPackages] = useState<CreditPackage[]>([]);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [loading, setLoading] = useState(true);
@@ -155,7 +155,7 @@ const Credits = () => {
 
       // Reset selections
       setSelectedPackage(null);
-      setSelectedPayment(null);
+      setSelectedPayment('carte_bancaire');
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('Purchase failed:', error);
@@ -324,48 +324,35 @@ const Credits = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            {paymentMethods.map((method) => {
-              const IconComponent = getPaymentIcon(method.id);
-              const isAvailable = method.enabled !== false;
-
-              return (
-                <motion.button
-                  key={method.id}
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
-                  onClick={() => isAvailable && setSelectedPayment(method.id)}
-                  disabled={!isAvailable}
-                  className={`p-4 rounded-xl border flex items-center justify-between transition-all ${selectedPayment === method.id
-                    ? "border-primary bg-primary/10"
-                    : "border-border/50 bg-background/50 hover:border-primary/50"
-                    } ${!isAvailable && "opacity-50 cursor-not-allowed"}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
-                      <IconComponent className="h-5 w-5" />
-                    </div>
-                    <div className="text-left">
-                      <p className="font-medium">{method.name}</p>
-                      <p className="text-xs text-muted-foreground">{method.description}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <span className={`px-2 py-1 rounded-full text-xs ${isAvailable
-                      ? "bg-neon-green/10 text-neon-green"
-                      : "bg-muted text-muted-foreground"
-                      }`}>
-                      {isAvailable ? t('pages.credits.methodAvailable') : t('pages.credits.methodComingSoon')}
-                    </span>
-                    {method.processing_time && (
-                      <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1 justify-end">
-                        <Clock className="h-3 w-3" />
-                        {method.processing_time}
-                      </p>
-                    )}
-                  </div>
-                </motion.button>
-              );
-            })}
+            <motion.button
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
+              onClick={() => setSelectedPayment('carte_bancaire')}
+              className={`p-4 rounded-xl border flex items-center justify-between transition-all ${
+                selectedPayment === 'carte_bancaire'
+                  ? 'border-primary bg-primary/10'
+                  : 'border-border/50 bg-background/50 hover:border-primary/50'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+                  <CreditCard className="h-5 w-5" />
+                </div>
+                <div className="text-left">
+                  <p className="font-medium">{t('pages.credits.carteBancaire') || 'Carte Bancaire'}</p>
+                  <p className="text-xs text-muted-foreground">{t('pages.credits.carteBancaireDesc') || 'Paiement par carte Visa/MasterCard'}</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <span className="px-2 py-1 rounded-full text-xs bg-neon-green/10 text-neon-green">
+                  {t('pages.credits.methodAvailable') || 'Disponible'}
+                </span>
+                <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1 justify-end">
+                  <Clock className="h-3 w-3" />
+                  Instantané
+                </p>
+              </div>
+            </motion.button>
           </div>
 
           <Button
