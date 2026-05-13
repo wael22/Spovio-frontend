@@ -357,21 +357,11 @@ const Credits = () => {
 
           <Button
             variant="neon"
-            className="w-full gap-2"
-            onClick={handlePurchase}
-            disabled={!selectedPackage || purchasing}
+            className="w-full gap-2 opacity-50 cursor-not-allowed"
+            disabled={true}
           >
-            {purchasing ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                {t('pages.credits.processing')}
-              </>
-            ) : (
-              <>
-                <CreditCard className="h-4 w-4" />
-                {t('pages.credits.proceedPayment')}
-              </>
-            )}
+            <CreditCard className="h-4 w-4" />
+            {t('pages.credits.proceedPayment')}
           </Button>
         </motion.div>
       </div>
