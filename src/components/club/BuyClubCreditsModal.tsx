@@ -37,7 +37,7 @@ interface PaymentMethod {
 
 const BuyClubCreditsModal: React.FC<BuyClubCreditsModalProps> = ({ open, onClose, onSuccess, club }) => {
     const [selectedPackage, setSelectedPackage] = useState('pack_500');
-    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('konnect');
+    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('carte_bancaire');
     const [creditPackages, setCreditPackages] = useState<CreditPackage[]>([]);
     const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -62,7 +62,7 @@ const BuyClubCreditsModal: React.FC<BuyClubCreditsModalProps> = ({ open, onClose
                 .filter((m: any) => m.id !== 'simulation')
                 .map((m: any) => ({ ...m, enabled: false }));
             setPaymentMethods(filteredMethods);
-            setSelectedPaymentMethod(paymentResponse.data.default_method || 'konnect');
+            setSelectedPaymentMethod(paymentResponse.data.default_method || 'carte_bancaire');
         } catch (error) {
             console.error('Erreur chargement packages/paiements:', error);
             setError('Erreur lors du chargement des données');
