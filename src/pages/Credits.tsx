@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { videoService } from "@/lib/api";
@@ -100,16 +100,16 @@ const Credits = () => {
 
         setPackages(packagesRes.data.packages || []);
 
-        // Filter out simulation payment method and disable others
+        // Filter out simulation payment method, keep enabled status from API
         const filteredMethods = (paymentRes.data.payment_methods || [])
           .filter((method: PaymentMethod) => method.id !== 'simulation')
-          .map((method: PaymentMethod) => ({ ...method, enabled: false })); // Disable all for now
+          .map((method: PaymentMethod) => ({ ...method, enabled: true })); // Enable all non-simulation methods
         setPaymentMethods(filteredMethods);
 
         // Set default payment method
         const defaultMethod = paymentRes.data.default_method === 'simulation'
-          ? 'konnect'
-          : paymentRes.data.default_method || 'konnect';
+          ? 'carte_bancaire'
+          : paymentRes.data.default_method || 'carte_bancaire';
         setSelectedPayment(defaultMethod);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
@@ -372,7 +372,7 @@ const Credits = () => {
             variant="neon"
             className="w-full gap-2"
             onClick={handlePurchase}
-            disabled={!selectedPackage || !selectedPayment || purchasing}
+            disabled={!selectedPackage || purchasing}
           >
             {purchasing ? (
               <>
