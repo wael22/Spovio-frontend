@@ -206,6 +206,8 @@
             "economy": "Économie",
             "noPackages": "Aucun package disponible pour le moment",
             "paymentMethodsTitle": "Méthodes de Paiement Sécurisées",
+            "carteBancaire": "Carte Bancaire",
+            "carteBancaireDesc": "Paiement par carte Visa/MasterCard",
             "methodAvailable": "Disponible",
             "methodComingSoon": "Bientôt",
             "processing": "Traitement en cours...",

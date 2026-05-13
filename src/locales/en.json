@@ -206,6 +206,8 @@
             "economy": "Savings",
             "noPackages": "No packages available at the moment",
             "paymentMethodsTitle": "Secure Payment Methods",
+            "carteBancaire": "Credit Card",
+            "carteBancaireDesc": "Payment via Visa/MasterCard",
             "methodAvailable": "Available",
             "methodComingSoon": "Coming Soon",
             "processing": "Processing...",
