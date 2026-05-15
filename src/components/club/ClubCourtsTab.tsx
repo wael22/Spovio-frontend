@@ -151,10 +151,10 @@ const ClubCourtsTab: React.FC<ClubCourtsTabProps> = ({ courts, onCourtUpdated })
                                                     <DialogContent className="max-w-4xl w-[95vw] border-slate-800 bg-black p-0 overflow-hidden rounded-xl">
                                                         <DialogTitle className="sr-only">{court.name} - Flux Vidéo</DialogTitle>
                                                         <div className="w-full flex items-center justify-center relative bg-black aspect-video">
-                                                            {isMjpegUrl(court.camera_url) ? (
+                                                            {isMjpegUrl(court.camera_url) || court.camera_url?.startsWith('rtmp://') ? (
                                                                 <img 
-                                                                    src={getProxiedMjpegUrl(court.id, court.camera_url) || court.camera_url} 
-                                                                    alt="Flux Vidéo MJPEG (Agrandit)" 
+                                                                    src={`https://api.spovio.net/api/recording/stream/${court.id}`} 
+                                                                    alt="Flux Vidéo Agrandi" 
                                                                     className="w-full h-full object-contain" 
                                                                 />
                                                             ) : getHlsUrl(court.camera_url) ? (
