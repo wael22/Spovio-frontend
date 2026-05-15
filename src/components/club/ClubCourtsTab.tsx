@@ -152,11 +152,11 @@ const ClubCourtsTab: React.FC<ClubCourtsTabProps> = ({ courts, onCourtUpdated })
                                                         <DialogTitle className="sr-only">{court.name} - Flux Vidéo</DialogTitle>
                                                         <div className="w-full flex items-center justify-center relative bg-black aspect-video">
                                                             {isMjpegUrl(court.camera_url) || court.camera_url?.startsWith('rtmp://') ? (
-                                                                <img 
-                                                                    src={`https://api.spovio.net/api/recording/stream/${court.id}`} 
-                                                                    alt="Flux Vidéo Agrandi" 
-                                                                    className="w-full h-full object-contain" 
-                                                                />
+                                                        <img 
+                                                            src={`/api/recording/stream/${court.id}`} 
+                                                            alt="Flux Vidéo Agrandi" 
+                                                            className="w-full h-full object-contain" 
+                                                        />
                                                             ) : getHlsUrl(court.camera_url) ? (
                                                                 <div className="w-full h-full">
                                                                     <LiveVideoPlayer streamUrl={getHlsUrl(court.camera_url)!} />
@@ -172,12 +172,12 @@ const ClubCourtsTab: React.FC<ClubCourtsTabProps> = ({ courts, onCourtUpdated })
                                             {isMjpegUrl(court.camera_url) || court.camera_url?.startsWith('rtmp://') ? (
                                                 <div className="relative bg-black rounded-md overflow-hidden aspect-video w-full flex items-center justify-center">
                                                     <img 
-                                                        src={`https://api.spovio.net/api/recording/stream/${court.id}`} 
+                                                        src={`/api/recording/stream/${court.id}`} 
                                                         alt="Flux Vidéo" 
                                                         className="w-full h-full object-contain"
                                                         onError={(e) => {
                                                             // Fallback si le flux échoue
-                                                            (e.target as HTMLImageElement).src = 'https://api.spovio.net/static/placeholder.svg';
+                                                            (e.target as HTMLImageElement).src = '/static/placeholder.svg';
                                                         }}
                                                     />
                                                 </div>
