@@ -168,8 +168,17 @@ const ClubCourtsTab: React.FC<ClubCourtsTabProps> = ({ courts, onCourtUpdated })
                                                     </DialogContent>
                                                 </Dialog>
                                             </div>
-                                            {/* On utilise le Proxy MJPEG par défaut car il supporte le HTTPS (Mixed Content Fix) */}
-                                            {isMjpegUrl(court.camera_url) || court.camera_url?.startsWith('rtmp://') ? (
+                                            {/* Zéro CPU : Utilisation de l'Iframe via Reverse Proxy HTTPS */}
+                                            {court.direct_preview_url ? (
+                                                <div className="relative bg-black rounded-md overflow-hidden aspect-video w-full">
+                                                    <iframe 
+                                                        src={court.direct_preview_url} 
+                                                        className="w-full h-full border-none"
+                                                        allowFullScreen
+                                                        title={`Flux ${court.name}`}
+                                                    />
+                                                </div>
+                                            ) : isMjpegUrl(court.camera_url) || court.camera_url?.startsWith('rtmp://') ? (
                                                 <div className="relative bg-black rounded-md overflow-hidden aspect-video w-full flex items-center justify-center">
                                                     <img 
                                                         src={`/api/recording/stream/${court.id}`} 
@@ -179,15 +188,6 @@ const ClubCourtsTab: React.FC<ClubCourtsTabProps> = ({ courts, onCourtUpdated })
                                                             // Fallback si le flux échoue
                                                             (e.target as HTMLImageElement).src = '/static/placeholder.svg';
                                                         }}
-                                                    />
-                                                </div>
-                                            ) : court.direct_preview_url ? (
-                                                <div className="relative bg-black rounded-md overflow-hidden aspect-video w-full">
-                                                    <iframe 
-                                                        src={court.direct_preview_url} 
-                                                        className="w-full h-full border-none"
-                                                        allowFullScreen
-                                                        title={`Flux ${court.name}`}
                                                     />
                                                 </div>
                                             ) : getHlsUrl(court.camera_url) ? (
