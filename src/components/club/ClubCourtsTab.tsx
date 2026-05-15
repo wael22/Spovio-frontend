@@ -17,6 +17,7 @@ interface Court {
     current_player?: string;
     recording_player?: string;
     recording_remaining?: number;
+    direct_preview_url?: string;
 }
 
 interface ClubCourtsTabProps {
@@ -167,7 +168,16 @@ const ClubCourtsTab: React.FC<ClubCourtsTabProps> = ({ courts, onCourtUpdated })
                                                     </DialogContent>
                                                 </Dialog>
                                             </div>
-                                            {isMjpegUrl(court.camera_url) ? (
+                                            {court.direct_preview_url ? (
+                                                <div className="relative bg-black rounded-md overflow-hidden aspect-video w-full">
+                                                    <iframe 
+                                                        src={court.direct_preview_url} 
+                                                        className="w-full h-full border-none"
+                                                        allowFullScreen
+                                                        title={`Flux ${court.name}`}
+                                                    />
+                                                </div>
+                                            ) : isMjpegUrl(court.camera_url) ? (
                                                 <div className="relative bg-black rounded-md overflow-hidden aspect-video w-full flex items-center justify-center">
                                                     <img src={getProxiedMjpegUrl(court.id, court.camera_url) || court.camera_url} alt="Flux Vidéo MJPEG" className="w-full h-full object-contain" />
                                                 </div>
