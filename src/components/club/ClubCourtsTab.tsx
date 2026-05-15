@@ -168,7 +168,20 @@ const ClubCourtsTab: React.FC<ClubCourtsTabProps> = ({ courts, onCourtUpdated })
                                                     </DialogContent>
                                                 </Dialog>
                                             </div>
-                                            {court.direct_preview_url ? (
+                                            {/* On utilise le Proxy MJPEG par défaut car il supporte le HTTPS (Mixed Content Fix) */}
+                                            {isMjpegUrl(court.camera_url) || court.camera_url?.startsWith('rtmp://') ? (
+                                                <div className="relative bg-black rounded-md overflow-hidden aspect-video w-full flex items-center justify-center">
+                                                    <img 
+                                                        src={`https://api.spovio.net/api/recording/stream/${court.id}`} 
+                                                        alt="Flux Vidéo" 
+                                                        className="w-full h-full object-contain"
+                                                        onError={(e) => {
+                                                            // Fallback si le flux échoue
+                                                            (e.target as HTMLImageElement).src = 'https://api.spovio.net/static/placeholder.svg';
+                                                        }}
+                                                    />
+                                                </div>
+                                            ) : court.direct_preview_url ? (
                                                 <div className="relative bg-black rounded-md overflow-hidden aspect-video w-full">
                                                     <iframe 
                                                         src={court.direct_preview_url} 
@@ -176,10 +189,6 @@ const ClubCourtsTab: React.FC<ClubCourtsTabProps> = ({ courts, onCourtUpdated })
                                                         allowFullScreen
                                                         title={`Flux ${court.name}`}
                                                     />
-                                                </div>
-                                            ) : isMjpegUrl(court.camera_url) ? (
-                                                <div className="relative bg-black rounded-md overflow-hidden aspect-video w-full flex items-center justify-center">
-                                                    <img src={getProxiedMjpegUrl(court.id, court.camera_url) || court.camera_url} alt="Flux Vidéo MJPEG" className="w-full h-full object-contain" />
                                                 </div>
                                             ) : getHlsUrl(court.camera_url) ? (
                                                 <LiveVideoPlayer streamUrl={getHlsUrl(court.camera_url)!} />
