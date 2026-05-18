@@ -299,9 +299,14 @@ const Dashboard = () => {
       }
 
       try {
-        await videoService.deleteVideo(video.id);
+        if (video.is_shared && video.shared_video_id) {
+          await videoService.removeSharedAccess(video.shared_video_id);
+          toast.success("Partage supprimé avec succès");
+        } else {
+          await videoService.deleteVideo(video.id);
+          toast.success(t("toasts.videoDeleted"));
+        }
         setVideos(videos.filter(v => v.id !== video.id));
-        toast.success(t("toasts.videoDeleted"));
       } catch (error: any) {
         console.error('Failed to delete video:', error);
         toast.error(t("toasts.deleteError"));

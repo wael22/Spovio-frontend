@@ -31,6 +31,8 @@ import SystemLogs from './SystemLogs';
 import SupportManagement from './SupportManagement';
 import RecoveryManagement from './RecoveryManagement';
 import OverviewTab from './OverviewTab';
+import SharedVideosManagement from './SharedVideosManagement';
+import ClipsManagement from './ClipsManagement';
 import { useAuth } from '@/hooks/useAuth';
 
 interface AdminStats {
@@ -239,7 +241,7 @@ const AdminDashboard: React.FC = () => {
                 )}
 
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                    <TabsList className="grid w-full grid-cols-8">
+                    <TabsList className="flex flex-wrap w-full h-auto justify-start">
                         <TabsTrigger value="overview">Vue d'Ensemble</TabsTrigger>
                         <TabsTrigger value="users">Utilisateurs</TabsTrigger>
                         <TabsTrigger value="clubs">Clubs</TabsTrigger>
@@ -249,6 +251,8 @@ const AdminDashboard: React.FC = () => {
                                 <History className="h-4 w-4" />Historique
                             </span>
                         </TabsTrigger>
+                        <TabsTrigger value="shared">Partages</TabsTrigger>
+                        <TabsTrigger value="clips">Clips</TabsTrigger>
                         <TabsTrigger value="configuration">
                             <span className="inline-flex items-center gap-1">
                                 <Settings className="h-4 w-4" />Configuration
@@ -289,6 +293,14 @@ const AdminDashboard: React.FC = () => {
 
                     <TabsContent value="history" className="mt-6">
                         <ClubHistoryAdmin />
+                    </TabsContent>
+
+                    <TabsContent value="shared" className="mt-6">
+                        <SharedVideosManagement />
+                    </TabsContent>
+
+                    <TabsContent value="clips" className="mt-6">
+                        <ClipsManagement />
                     </TabsContent>
 
                     <TabsContent value="configuration" className="mt-6">

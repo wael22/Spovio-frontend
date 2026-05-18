@@ -375,6 +375,14 @@ export const adminService = {
 
     // Video Management
     getAllVideos: () => api.get('/admin/videos'),
+    getAllSharedVideos: () => api.get('/admin/shared-videos'),
+    getAllClips: () => api.get('/admin/clips'),
+    deleteSharedVideo: (sharedId: number) => api.delete(`/admin/shared-videos/${sharedId}`),
+    deleteClip: (clipId: number) => api.delete(`/admin/clips/${clipId}`),
+    updateSharedVideo: (sharedId: number, data: { message?: string; video_id?: number; shared_with_user_id?: number }) => 
+        api.patch(`/admin/shared-videos/${sharedId}`, data),
+    updateClip: (clipId: number, data: { title?: string; description?: string; bunny_video_id?: string; file_url?: string; storage_download_url?: string }) => 
+        api.patch(`/admin/clips/${clipId}`, data),
     deleteVideo: (videoId: string, mode: 'local_only' | 'cloud_only' | 'local_and_cloud' = 'local_and_cloud') =>
         api.delete(`/admin/videos/${videoId}`, { data: { mode } }),
 
