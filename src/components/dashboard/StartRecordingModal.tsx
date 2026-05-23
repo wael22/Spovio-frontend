@@ -24,7 +24,6 @@ import {
   AlertCircle,
   CheckCircle,
   User,
-  Infinity,
   Camera
 } from "lucide-react";
 import { playerService, recordingService, videoService } from "@/lib/api";
@@ -50,7 +49,6 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted, in
     { value: 60, label: "60 minutes", description: t('modals.startRecording.durations.short') },
     { value: 90, label: "90 minutes", description: t('modals.startRecording.durations.standard') },
     { value: 120, label: "120 minutes", description: t('modals.startRecording.durations.long') },
-    { value: 200, label: t('modals.startRecording.durations.max'), description: t('modals.startRecording.durations.max') },
   ];
 
   // Form state
@@ -484,11 +482,7 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted, in
                       }`}
                   >
                     <div className="flex items-center gap-2">
-                      {duration.value === 200 ? (
-                        <Infinity className="h-4 w-4 text-muted-foreground" />
-                      ) : (
-                        <Clock className="h-4 w-4 text-muted-foreground" />
-                      )}
+                      <Clock className="h-4 w-4 text-muted-foreground" />
                       <div>
                         <p className="text-sm font-medium">{duration.label}</p>
                         <p className="text-xs text-muted-foreground">{duration.description}</p>

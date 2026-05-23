@@ -22,7 +22,6 @@ import {
     AlertCircle,
     Camera,
     ArrowLeft,
-    Infinity as InfinityIcon,
     CheckCircle
 } from "lucide-react";
 import { recordingService, videoService } from "@/lib/api";
@@ -51,7 +50,6 @@ const DirectRecordingModal = ({ isOpen, onClose, onRecordingStarted, initialQrCo
         { value: 60, label: "60 minutes", description: t('modals.startRecording.durations.short') },
         { value: 90, label: "90 minutes", description: t('modals.startRecording.durations.standard') },
         { value: 120, label: "120 minutes", description: t('modals.startRecording.durations.long') },
-        { value: 200, label: t('modals.startRecording.durations.max'), description: t('modals.startRecording.durations.max') },
     ];
 
     // Form State
@@ -294,7 +292,7 @@ const DirectRecordingModal = ({ isOpen, onClose, onRecordingStarted, initialQrCo
                                                     }`}
                                             >
                                                 <div className="flex items-center gap-2">
-                                                    {d.value === 200 ? <InfinityIcon className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
+                                                    <Clock className="h-3 w-3" />
                                                     <span className="text-sm font-bold">{d.value} min</span>
                                                 </div>
                                                 <p className="text-[10px] opacity-70 mt-0.5">{d.description}</p>
