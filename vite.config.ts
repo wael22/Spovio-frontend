@@ -103,9 +103,12 @@ export default defineConfig(({ mode }) => ({
     format: 'es',
   },
   build: {
-    // manualChunks removed: function-based splitting causes React initialization
-    // order errors (forwardRef/createContext undefined) because vendor chunks
-    // load before vendor-react. Lazy-loaded routes already split the bundle effectively.
     chunkSizeWarningLimit: 1000,
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+      },
+    },
   },
 }));

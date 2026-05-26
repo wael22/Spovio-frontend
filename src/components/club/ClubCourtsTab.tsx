@@ -70,10 +70,7 @@ const ClubCourtsTab: React.FC<ClubCourtsTabProps> = ({ courts, onCourtUpdated })
 
     const getProxiedMjpegUrl = (courtId: string, rawUrl?: string) => {
         if (!rawUrl || !isMjpegUrl(rawUrl)) return null;
-        // Check if backend proxy should be used
-        // Extract the token dynamically
-        const token = localStorage.getItem('token');
-        return `/api/preview/court/${courtId}/stream.mjpeg${token ? `?token=${token}` : ''}`;
+        return `/api/preview/court/${courtId}/stream.mjpeg`;
     };
 
     return (

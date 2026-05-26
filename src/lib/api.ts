@@ -21,8 +21,6 @@ if (import.meta.env.VITE_API_URL) {
     API_BASE_URL = '/api';
 }
 
-console.log('[CONFIG] API Base URL:', API_BASE_URL);
-
 const api: AxiosInstance = axios.create({
     baseURL: API_BASE_URL,
     withCredentials: true,  // CRITICAL: Enable session cookies for authentication
@@ -120,25 +118,16 @@ export const getAssetUrl = (path: string): string => {
 
 let isRedirecting = false;
 
-// Request interceptor - Add JWT token if available and logging
+// Request interceptor - Add JWT token if available
 api.interceptors.request.use(
     (config) => {
-        // Add JWT token if available in localStorage
         const token = localStorage.getItem('token');
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
-
-        console.log('[API DEBUG] Request:', {
-            url: config.url,
-            baseURL: config.baseURL,
-            method: config.method,
-            hasAuth: !!token
-        });
         return config;
     },
     (error) => {
-        console.error('[API DEBUG] Request error:', error);
         return Promise.reject(error);
     }
 );
@@ -149,18 +138,7 @@ api.interceptors.response.use(
         return response;
     },
     (error) => {
-        console.error('[API DEBUG] Response error:', {
-            status: error.response?.status,
-            statusText: error.response?.statusText,
-            url: error.config?.url,
-            data: error.response?.data,
-            message: error.message
-        });
-
-        // Redirect to /auth on 401 (session expired or not authenticated)
-        // Redirect to /auth on 401 (session expired or not authenticated)
         if (error.response?.status === 401) {
-            // 🛑 IGNORE 401 for check-auth endpoint - this is expected for guests calling /auth/me
             if (error.config?.url?.includes('/auth/me')) {
                 return Promise.reject(error);
             }
@@ -171,7 +149,6 @@ api.interceptors.response.use(
                 '/about', '/contact', '/ai-features', '/how-it-works', '/player-interest', '/interest-dashboard'
             ];
 
-            // Special handling for root path to avoid matching everything with startsWith('/')
             const isHomePage = window.location.pathname === '/';
             const isPublicRoute = isHomePage || publicRoutes.some(route => window.location.pathname.startsWith(route));
 
