@@ -32,8 +32,10 @@ const api: AxiosInstance = axios.create({
 /**
  * Converts a Bunny CDN thumbnail URL to its proxied equivalent.
  * Ex: https://vz-9b857324-07d.b-cdn.net/video-id/thumbnail.jpg
- *  -> /api/proxy/bunny-thumbnail/9b857324-07d/video-id/thumbnail.jpg
+ *  -> https://api.spovio.net/api/proxy/bunny-thumbnail/9b857324-07d/video-id/thumbnail.jpg
  */
+const API_DOMAIN = API_BASE_URL.replace(/\/api\/?$/, '');
+
 export const getBunnyThumbnailUrl = (bunnyCdnUrl: string): string => {
     if (!bunnyCdnUrl) return '';
     const match = bunnyCdnUrl.match(/https?:\/\/(?:vz-)?([^.]+(?:\.[^.]+)*)?\.b-cdn\.net\/([^/?#]+)\/([^?#]+)/);
@@ -41,7 +43,7 @@ export const getBunnyThumbnailUrl = (bunnyCdnUrl: string): string => {
         const libId = match[1];   // e.g. "9b857324-07d"
         const vidId = match[2];   // e.g. "963155c0-..."
         const filename = match[3]; // e.g. "thumbnail.jpg"
-        return `/api/proxy/bunny-thumbnail/${libId}/${vidId}/${filename}`;
+        return `${API_DOMAIN}/api/proxy/bunny-thumbnail/${libId}/${vidId}/${filename}`;
     }
     return bunnyCdnUrl; // Fallback to original URL
 };
@@ -56,9 +58,9 @@ export const getVideoThumbnailUrl = (video: {
 }, fallback = 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=400'): string => {
     const { thumbnail_url, bunny_video_id } = video;
 
-    // Already a proxied path -> use as relative URL (Vite proxy will forward to Flask)
+    // Already a proxied path -> use absolute URL pointing to API domain
     if (thumbnail_url?.startsWith('/api/proxy/')) {
-        return thumbnail_url;
+        return `${API_DOMAIN}${thumbnail_url}`;
     }
 
     // Full Bunny CDN URL -> convert to proxy path
@@ -73,7 +75,7 @@ export const getVideoThumbnailUrl = (video: {
 
     // Fallback: build from bunny_video_id (hardcoded library ID from Bunny account)
     if (bunny_video_id) {
-        return `/api/proxy/bunny-thumbnail/9b857324-07d/${bunny_video_id}/thumbnail.jpg`;
+        return `${API_DOMAIN}/api/proxy/bunny-thumbnail/9b857324-07d/${bunny_video_id}/thumbnail.jpg`;
     }
 
     return fallback;
@@ -82,9 +84,9 @@ export const getVideoThumbnailUrl = (video: {
 export const getAssetUrl = (path: string): string => {
     if (!path) return '';
 
-    // Already a proxied path -> relative URL works via Vite proxy in dev, directly in prod
+    // Already a proxied path -> use absolute URL pointing to API domain
     if (path.startsWith('/api/proxy/')) {
-        return path;
+        return `${API_DOMAIN}${path}`;
     }
 
     // Full external URL -> return as-is
