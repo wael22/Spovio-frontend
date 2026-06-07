@@ -155,7 +155,7 @@ const ClubCourtsTab: React.FC<ClubCourtsTabProps> = ({ courts, onCourtUpdated })
                                                                     allowFullScreen
                                                                     title={`Flux Agrandir ${court.name}`}
                                                                 />
-                                                            ) : isMjpegUrl(court.camera_url) || court.camera_url?.startsWith('rtmp://') ? (
+                                                            ) : isMjpegUrl(court.camera_url) || court.camera_url?.startsWith('rtmp://') || court.camera_url?.startsWith('rtsp://') ? (
                                                                 <img 
                                                                     src={`/api/recording/stream/${court.id}`} 
                                                                     alt="Flux Vidéo Agrandi" 
@@ -182,7 +182,7 @@ const ClubCourtsTab: React.FC<ClubCourtsTabProps> = ({ courts, onCourtUpdated })
                                                         title={`Flux ${court.name}`}
                                                     />
                                                 </div>
-                                            ) : isMjpegUrl(court.camera_url) || court.camera_url?.startsWith('rtmp://') ? (
+                                            ) : isMjpegUrl(court.camera_url) || court.camera_url?.startsWith('rtmp://') || court.camera_url?.startsWith('rtsp://') ? (
                                                 <div className="relative bg-black rounded-md overflow-hidden aspect-video w-full flex items-center justify-center">
                                                     <img 
                                                         src={`/api/recording/stream/${court.id}`} 

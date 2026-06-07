@@ -50,7 +50,7 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
         name: '', address: '', phone_number: '', email: '', password: '', credits_balance: 0
     });
     const [courtFormData, setCourtFormData] = useState({
-        name: '', camera_url: '', qr_code: '', short_code: ''
+        name: '', camera_url: '', qr_code: '', short_code: '', has_audio: true
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showLogoModal, setShowLogoModal] = useState(false);
@@ -625,7 +625,8 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                                                             name: court.name,
                                                             camera_url: court.camera_url,
                                                             qr_code: court.qr_code || '',
-                                                            short_code: court.short_code || ''
+                                                            short_code: court.short_code || '',
+                                                            has_audio: court.has_audio !== false
                                                         });
                                                         setShowEditCourtModal(true);
                                                     }}
@@ -686,7 +687,8 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                         const formData = new FormData(e.currentTarget);
                         const courtData = {
                             name: formData.get('court-name') as string,
-                            camera_url: formData.get('camera-url') as string
+                            camera_url: formData.get('camera-url') as string,
+                            has_audio: formData.get('has-audio') === 'on'
                         };
 
                         if (!selectedClub) return;
@@ -718,6 +720,22 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                                 placeholder="http://212.231.225.55:88/axis-cgi/mjpg/video.cgi"
                                 required
                             />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="has-audio">Son</Label>
+                            <div className="flex items-center space-x-2">
+                                <input
+                                    id="has-audio"
+                                    name="has-audio"
+                                    type="checkbox"
+                                    defaultChecked={true}
+                                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                />
+                                <label htmlFor="has-audio" className="text-sm text-gray-700 cursor-pointer">
+                                    Activer l'enregistrement audio sur ce terrain
+                                </label>
+                            </div>
                         </div>
 
                         <div className="bg-blue-50 p-4 rounded-lg">
@@ -816,6 +834,19 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                             <p className="text-xs text-gray-500">
                                 Saisissez un code de 4 lettres/chiffres.
                             </p>
+                        </div>
+
+                        <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                            <input
+                                id="edit-has-audio"
+                                type="checkbox"
+                                checked={courtFormData.has_audio}
+                                onChange={(e) => setCourtFormData(prev => ({ ...prev, has_audio: e.target.checked }))}
+                                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            />
+                            <label htmlFor="edit-has-audio" className="text-sm text-gray-700 cursor-pointer">
+                                Activer l'enregistrement audio sur ce terrain
+                            </label>
                         </div>
 
                         <div className="flex justify-end space-x-2">

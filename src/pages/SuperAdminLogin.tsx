@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Shield, Key, QrCode } from 'lucide-react';
+import { QRCodeCanvas } from 'qrcode.react';
 
 const SuperAdminLogin: React.FC = () => {
     const navigate = useNavigate();
@@ -132,10 +133,13 @@ const SuperAdminLogin: React.FC = () => {
                                     <div className="mb-4 p-4 bg-gray-50 rounded border text-left">
                                         <p className="text-sm font-medium mb-2">Scannez ce QR Code avec Google Authenticator :</p>
                                         <div className="bg-white p-2 flex justify-center mb-2">
-                                            {/* Fallback to secret key display since we can't easily render QR without lib */}
-                                            <p className="font-mono text-xs break-all">{secret}</p>
+                                            {qrCode ? (
+                                                <QRCodeCanvas value={qrCode} size={180} level="H" />
+                                            ) : (
+                                                <p className="font-mono text-xs break-all">{secret}</p>
+                                            )}
                                         </div>
-                                        <p className="text-xs text-muted-foreground">Ou entrez cette clé manuellement.</p>
+                                        <p className="text-xs text-muted-foreground">Ou entrez cette clé manuellement : <span className="font-mono font-bold">{secret}</span></p>
                                     </div>
                                 ) : (
                                     <Key className="h-12 w-12 text-blue-600 mx-auto mb-2" />
