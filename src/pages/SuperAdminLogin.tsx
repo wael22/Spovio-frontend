@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { authService } from '@/lib/api';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +12,7 @@ import { QRCodeCanvas } from 'qrcode.react';
 
 const SuperAdminLogin: React.FC = () => {
     const navigate = useNavigate();
+    const { fetchUser } = useAuth();
     const [formData, setFormData] = useState({ email: '', password: '', code: '' });
     const [step, setStep] = useState<'login' | '2fa' | 'setup_2fa'>('login');
     const [loading, setLoading] = useState(false);
@@ -68,7 +70,8 @@ const SuperAdminLogin: React.FC = () => {
             } else {
                 await authService.superAdminVerify2FA({ code: formData.code });
             }
-            // Success!
+            // Success! Sync auth context with backend
+            await fetchUser();
             navigate('/admin');
         } catch (error: any) {
             console.error('2FA error:', error);
