@@ -5,6 +5,22 @@
       "destination": "https://api.spovio.net/api/$1"
     },
     {
+      "source": "/arbitre",
+      "destination": "https://api.spovio.net/arbitre"
+    },
+    {
+      "source": "/watch/(.*)",
+      "destination": "https://api.spovio.net/watch/$1"
+    },
+    {
+      "source": "/live",
+      "destination": "https://api.spovio.net/live"
+    },
+    {
+      "source": "/static/(.*)",
+      "destination": "https://api.spovio.net/static/$1"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
