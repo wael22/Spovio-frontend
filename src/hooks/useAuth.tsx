@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { authService } from '../lib/api';  // Session-based auth, no tokenManager needed
+import { authService, videoService } from '../lib/api';  // Session-based auth, no tokenManager needed
 
 interface User {
     id: string;
@@ -26,6 +26,7 @@ interface AuthContextType {
     isAdmin: boolean;
     isPlayer: boolean;
     isClub: boolean;
+    claimPendingShare: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -224,6 +225,22 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     const isPlayer = user?.role === 'player';
     const isClub = user?.role === 'club' || user?.role === 'club_admin';
 
+    const claimPendingShare = async () => {
+        const pendingToken = localStorage.getItem('pending_share_token');
+        if (!pendingToken) return;
+
+        try {
+            const resolveResponse = await videoService.resolveShareLink(pendingToken);
+            const { video_id } = resolveResponse.data;
+            await videoService.claimShare(video_id);
+            localStorage.removeItem('pending_share_token');
+            console.log(`[claimPendingShare] Video ${video_id} claimed successfully`);
+        } catch (error) {
+            console.error('[claimPendingShare] Failed to claim pending share:', error);
+            localStorage.removeItem('pending_share_token');
+        }
+    };
+
     const value: AuthContextType = {
         user,
         setUser,
@@ -239,6 +256,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         isAdmin,
         isPlayer,
         isClub,
+        claimPendingShare,
     };
 
     return (

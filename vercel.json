@@ -21,6 +21,10 @@
       "destination": "https://api.spovio.net/static/$1"
     },
     {
+      "source": "/s/:shareToken",
+      "destination": "/index.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

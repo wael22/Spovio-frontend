@@ -65,6 +65,21 @@ const EmailVerification = () => {
                 localStorage.setItem('token', response.data.token);
             }
 
+            // Claim pending share if any
+            try {
+                const pendingToken = localStorage.getItem('pending_share_token');
+                if (pendingToken) {
+                    const { videoService } = await import('@/lib/api');
+                    const resolveResponse = await videoService.resolveShareLink(pendingToken);
+                    const { video_id } = resolveResponse.data;
+                    await videoService.claimShare(video_id);
+                    localStorage.removeItem('pending_share_token');
+                }
+            } catch (e) {
+                console.error('Failed to claim pending share after verification:', e);
+                localStorage.removeItem('pending_share_token');
+            }
+
             toast({
                 title: "Email vérifié !",
                 description: "Votre compte est maintenant actif. Vous pouvez vous connecter.",

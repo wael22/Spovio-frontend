@@ -23,6 +23,7 @@ const Terms = lazy(() => import("./pages/Terms"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const CourtRedirect = lazy(() => import("./pages/CourtRedirect"));
+const ShareRedirect = lazy(() => import("./pages/ShareRedirect"));
 
 // Auth pages — lazy loaded
 const Auth = lazy(() => import("./pages/Auth"));
@@ -79,6 +80,7 @@ const App = () => (
                     <Route path="/terms" element={<Terms />} />
                     <Route path="/privacy" element={<Privacy />} />
                     <Route path="/c/:qrCode" element={<CourtRedirect />} />
+                    <Route path="/s/:shareToken" element={<ShareRedirect />} />
 
                     {/* Authentication */}
                     <Route path="/auth" element={<Auth />} />

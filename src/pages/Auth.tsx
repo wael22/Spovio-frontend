@@ -54,7 +54,7 @@ const Auth = () => {
    * FIX: Use useAuth hook instead of direct service call to properly update 
    * global state and trigger redirects in ProtectedRoute
    */
-  const { login, register } = useAuth();
+  const { login, register, claimPendingShare } = useAuth();
 
   // Sauvegarder l'acceptation des CGU dans localStorage
   useEffect(() => {
@@ -74,6 +74,9 @@ const Auth = () => {
           title: t("auth.loginSuccess"),
           description: t("auth.welcomeUser", { name: result.user.name || '' }),
         });
+
+        // Claim pending share if any
+        await claimPendingShare();
 
         // Redirect based on role
         const role = result.user.role;
@@ -148,6 +151,9 @@ const Auth = () => {
         navigate('/verify-email', { state: { email: userData.email } });
       } else {
         // Old flow - direct success (shouldn't happen normally)
+        // Claim pending share if any
+        await claimPendingShare();
+
         toast({
           title: t("auth.registrationSuccess"),
           description: t("auth.registrationSuccessDesc"),

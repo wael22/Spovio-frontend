@@ -222,6 +222,9 @@ export const videoService = {
     removeSharedAccess: (sharedVideoId: string) => api.delete(`/videos/shared/${sharedVideoId}`),
     getMySharedVideos: () => api.get('/videos/my-shared-videos'),
     getVideoOverlays: (videoId: string) => api.get(`/videos/${videoId}/overlays`),
+    getShareLink: (videoId: string) => api.post(`/videos/${videoId}/share-link`),
+    claimShare: (videoId: string) => api.post(`/videos/${videoId}/claim-share`),
+    resolveShareLink: (token: string) => api.get(`/videos/public/share-link/${token}`),
 };
 
 // Recording Service
