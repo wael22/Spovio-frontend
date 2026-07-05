@@ -88,6 +88,12 @@ const DirectRecordingModal = ({ isOpen, onClose, onRecordingStarted, initialQrCo
     }, [isOpen]);
 
     const handleScanSuccess = async (code: string) => {
+        if (!code || code.length < 3) {
+            const msg = 'Code invalide';
+            setError(msg);
+            toast.error(msg);
+            return;
+        }
         console.log('✅ Direct Scan Success:', code);
         setQrCode(code);
         setValidating(true);
@@ -109,8 +115,9 @@ const DirectRecordingModal = ({ isOpen, onClose, onRecordingStarted, initialQrCo
             toast.success(`Terrain détecté: ${data.court.name}`);
         } catch (err: any) {
             console.error('❌ QR Validation Error:', err);
-            setError(t('modals.common.error'));
-            toast.error(t('modals.common.error'));
+            const msg = err.response?.data?.error || err.response?.data?.message || t('modals.common.error');
+            setError(msg);
+            toast.error(msg);
         } finally {
             setValidating(false);
         }
