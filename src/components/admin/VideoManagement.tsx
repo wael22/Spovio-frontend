@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 interface VideoData {
     id: string;
     title?: string;
+    bunny_title?: string;
     player_name: string;
     club_name?: string;
     recorded_at: string;
@@ -337,6 +338,9 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ onStatsUpdate }) => {
                                     <TableHead className="cursor-pointer select-none" onClick={() => handleSort('title')}>
                                         <div className="flex items-center">Nom {getSortIcon('title')}</div>
                                     </TableHead>
+                                    <TableHead className="cursor-pointer select-none" onClick={() => handleSort('bunny_title')}>
+                                        <div className="flex items-center">Nom Bunny {getSortIcon('bunny_title')}</div>
+                                    </TableHead>
                                     <TableHead className="cursor-pointer select-none" onClick={() => handleSort('player_name')}>
                                         <div className="flex items-center">Joueur {getSortIcon('player_name')}</div>
                                     </TableHead>
@@ -359,6 +363,11 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ onStatsUpdate }) => {
                                         </TableCell>
                                         <TableCell className="font-medium">
                                             {video.title || `Vidéo ${index + 1}`}
+                                        </TableCell>
+                                        <TableCell>
+                                            <span className="text-xs text-gray-500 font-mono truncate max-w-[200px] block" title={video.bunny_title || ''}>
+                                                {video.bunny_title || '-'}
+                                            </span>
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex items-center space-x-2">
