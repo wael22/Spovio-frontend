@@ -257,10 +257,17 @@ const DirectRecordingModal = ({ isOpen, onClose, onRecordingStarted, initialQrCo
                                             <p className="text-xs text-muted-foreground">{scannedData?.club.name}</p>
                                         </div>
                                     </div>
-                                    <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-200">
-                                        <CheckCircle className="h-3 w-3 mr-1" />
-                                        {t('modals.directRecording.connected')}
-                                    </Badge>
+                                    {scannedData?.court.is_recording ? (
+                                        <Badge variant="secondary" className="bg-red-50 text-red-700 border-red-200">
+                                            <AlertCircle className="h-3 w-3 mr-1" />
+                                            {t('modals.startRecording.courtStatus.occupied')}
+                                        </Badge>
+                                    ) : (
+                                        <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-200">
+                                            <CheckCircle className="h-3 w-3 mr-1" />
+                                            {t('modals.directRecording.connected')}
+                                        </Badge>
+                                    )}
                                 </div>
 
                                 {/* Title Input */}
@@ -307,13 +314,13 @@ const DirectRecordingModal = ({ isOpen, onClose, onRecordingStarted, initialQrCo
                                         <ArrowLeft className="h-4 w-4 mr-2" />
                                         {t('modals.directRecording.retry')}
                                     </Button>
-                                    <Button variant="neon" className="flex-[2] gap-2" disabled={starting} onClick={handleStartRecording}>
+                                    <Button variant="neon" className="flex-[2] gap-2" disabled={starting || scannedData?.court.is_recording} onClick={handleStartRecording}>
                                         {starting ? (
                                             <Loader2 className="h-4 w-4 animate-spin" />
                                         ) : (
                                             <Play className="h-4 w-4" />
                                         )}
-                                        {t('modals.directRecording.start')}
+                                        {scannedData?.court.is_recording ? t('modals.startRecording.courtStatus.occupied') : t('modals.directRecording.start')}
                                     </Button>
                                 </div>
                             </motion.div>
