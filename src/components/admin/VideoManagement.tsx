@@ -238,14 +238,14 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ onStatsUpdate }) => {
 
     const getStatusBadge = (status?: string) => {
         const statusConfig: Record<string, { label: string; className: string }> = {
-            'ready': { label: '✅ Prête', className: 'bg-green-100 text-green-800 border-green-200' },
-            'processing': { label: '⏳ Traitement', className: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
-            'uploading': { label: '📤 Upload', className: 'bg-blue-100 text-blue-800 border-blue-200' },
-            'failed': { label: '❌ Échec', className: 'bg-red-100 text-red-800 border-red-200' },
-            'pending': { label: '⏸️ En attente', className: 'bg-gray-100 text-gray-800 border-gray-200' }
+            'ready': { label: '✅ Prête', className: 'bg-green-100 text-green-800 dark:text-green-200 border-green-200' },
+            'processing': { label: '⏳ Traitement', className: 'bg-yellow-100 text-yellow-800 dark:text-yellow-200 border-yellow-200' },
+            'uploading': { label: '📤 Upload', className: 'bg-blue-100 text-blue-800 dark:text-blue-200 border-blue-200' },
+            'failed': { label: '❌ Échec', className: 'bg-red-100 text-red-800 dark:text-red-200 border-red-200' },
+            'pending': { label: '⏸️ En attente', className: 'bg-gray-100 text-gray-800 border-gray-200 dark:border-gray-700' }
         };
 
-        const config = statusConfig[status || 'pending'] || { label: status || 'Inconnu', className: 'bg-gray-100 text-gray-800 border-gray-200' };
+        const config = statusConfig[status || 'pending'] || { label: status || 'Inconnu', className: 'bg-gray-100 text-gray-800 border-gray-200 dark:border-gray-700' };
         return (
             <Badge variant="outline" className={config.className}>
                 {config.label}
@@ -299,11 +299,11 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ onStatsUpdate }) => {
                             </Button>
 
                             <div className="flex items-center gap-2">
-                                <Label className="text-sm text-gray-600">Filtrer :</Label>
+                                <Label className="text-sm text-gray-600 dark:text-gray-400">Filtrer :</Label>
                                 <select
                                     value={statusFilter}
                                     onChange={(e) => handleFilterChange(e.target.value)}
-                                    className="px-3 py-2 border rounded-md text-sm bg-white"
+                                    className="px-3 py-2 border rounded-md text-sm bg-white dark:bg-gray-800"
                                 >
                                     <option value="all">Toutes les vidéos</option>
                                     <option value="ready">✅ Prêtes</option>
@@ -326,7 +326,7 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ onStatsUpdate }) => {
                             <h3 className="text-lg font-medium mb-2">
                                 {statusFilter === 'all' ? 'Aucune vidéo enregistrée' : `Aucune vidéo ${statusFilter === 'failed' ? 'en échec' : statusFilter}`}
                             </h3>
-                            <p className="text-gray-600">
+                            <p className="text-gray-600 dark:text-gray-400">
                                 {statusFilter === 'all' ? 'Les vidéos apparaîtront ici une fois enregistrées' : 'Changez le filtre pour voir d\'autres vidéos'}
                             </p>
                         </div>
@@ -358,14 +358,14 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ onStatsUpdate }) => {
                             <TableBody>
                                 {sortedVideos.map((video, index) => (
                                     <TableRow key={video.id}>
-                                        <TableCell className="text-gray-500 font-mono text-sm">
+                                        <TableCell className="text-gray-500 dark:text-gray-400 font-mono text-sm">
                                             {index + 1}
                                         </TableCell>
                                         <TableCell className="font-medium">
                                             {video.title || `Vidéo ${index + 1}`}
                                         </TableCell>
                                         <TableCell>
-                                            <span className="text-xs text-gray-500 font-mono truncate max-w-[200px] block" title={video.bunny_title || ''}>
+                                            <span className="text-xs text-gray-500 dark:text-gray-400 font-mono truncate max-w-[200px] block" title={video.bunny_title || ''}>
                                                 {video.bunny_title || '-'}
                                             </span>
                                         </TableCell>
@@ -460,7 +460,7 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ onStatsUpdate }) => {
 
                                                     <DropdownMenuItem
                                                         onClick={() => handleDeleteVideo(video.id, video.player_name, 'local_and_cloud')}
-                                                        className="cursor-pointer text-orange-600"
+                                                        className="cursor-pointer text-orange-600 dark:text-orange-400"
                                                     >
                                                         <Trash2 className="mr-2 h-4 w-4" />
                                                         <div className="flex-1">
@@ -512,7 +512,7 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ onStatsUpdate }) => {
                                 placeholder="e660b8a0-f342-41fb-872e-3824ab90ab66"
                                 className="mt-1"
                             />
-                            <p className="text-xs text-gray-500 mt-1">
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                 Format GUID (ex: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)
                             </p>
                         </div>
@@ -526,7 +526,7 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ onStatsUpdate }) => {
                                 placeholder="https://vz-9b857324-07d.b-cdn.net/..."
                                 className="mt-1"
                             />
-                            <p className="text-xs text-gray-500 mt-1">
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                 Laissez vide pour génération automatique
                             </p>
                         </div>
@@ -582,7 +582,7 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ onStatsUpdate }) => {
                                 placeholder="e660b8a0-f342-41fb-872e-3824ab90ab66"
                                 className="mt-1"
                             />
-                            <p className="text-xs text-gray-500 mt-1">
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                 Format GUID (ex: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)
                             </p>
                         </div>
@@ -623,7 +623,7 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ onStatsUpdate }) => {
                                 placeholder="90"
                                 className="mt-1"
                             />
-                            <p className="text-xs text-gray-500 mt-1">
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                 Laissez vide pour détection automatique depuis Bunny
                             </p>
                         </div>
@@ -656,7 +656,7 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ onStatsUpdate }) => {
                                 placeholder="https://vz-9b857324-07d.b-cdn.net/..."
                                 className="mt-1"
                             />
-                            <p className="text-xs text-gray-500 mt-1">
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                 Laissez vide pour génération automatique
                             </p>
                         </div>

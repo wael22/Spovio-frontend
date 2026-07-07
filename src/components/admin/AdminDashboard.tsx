@@ -34,6 +34,7 @@ import OverviewTab from './OverviewTab';
 import SharedVideosManagement from './SharedVideosManagement';
 import ClipsManagement from './ClipsManagement';
 import { useAuth } from '@/hooks/useAuth';
+import { useTheme } from '@/hooks/useTheme';
 
 interface AdminStats {
     totalRealUsers: number;
@@ -58,7 +59,7 @@ const AdminDashboard: React.FC = () => {
     const [error, setError] = useState<string>('');
     const [showProfileModal, setShowProfileModal] = useState(false);
     const [activeTab, setActiveTab] = useState('overview');
-    const [darkMode, setDarkMode] = useState(false);
+    const { theme, toggleTheme } = useTheme();
 
     useEffect(() => {
         loadStats();
@@ -125,10 +126,10 @@ const AdminDashboard: React.FC = () => {
                             <Button
                                 variant="outline"
                                 size="icon"
-                                onClick={() => setDarkMode(!darkMode)}
+                                onClick={toggleTheme}
                                 className="rounded-full"
                             >
-                                {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                                {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
                             </Button>
 
                             {/* User menu */}

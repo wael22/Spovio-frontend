@@ -157,12 +157,12 @@ export default function CreditPackagesManager() {
                             <span className="font-bold text-lg">{pkg.credits} crédits</span>
                             {pkg.popular && <Badge className="bg-blue-500">Populaire</Badge>}
                         </div>
-                        <p className="text-sm text-gray-600">{pkg.description}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{pkg.description}</p>
                     </div>
                     <div className="text-right ml-4">
-                        <div className="font-bold text-xl text-green-600">{pkg.price_dt} DT</div>
+                        <div className="font-bold text-xl text-green-600 dark:text-green-400">{pkg.price_dt} DT</div>
                         {pkg.savings_dt && pkg.savings_dt > 0 && (
-                            <div className="text-sm text-green-500">
+                            <div className="text-sm text-green-500 dark:text-green-400">
                                 Économie: {pkg.savings_dt} DT
                             </div>
                         )}
@@ -197,7 +197,7 @@ export default function CreditPackagesManager() {
         return (
             <Card>
                 <CardContent className="p-8 text-center">
-                    <div className="text-gray-500">Chargement des packages...</div>
+                    <div className="text-gray-500 dark:text-gray-400">Chargement des packages...</div>
                 </CardContent>
             </Card>
         );
@@ -213,7 +213,7 @@ export default function CreditPackagesManager() {
             )}
 
             {success && (
-                <Alert className="bg-green-50 text-green-800 border-green-200">
+                <Alert className="bg-green-50 text-green-800 border-green-200 dark:bg-green-950 dark:text-green-400 dark:border-gray-700">
                     <Check className="h-4 w-4" />
                     <AlertDescription>{success}</AlertDescription>
                 </Alert>
@@ -244,7 +244,7 @@ export default function CreditPackagesManager() {
                             </div>
 
                             {packages.player.length === 0 ? (
-                                <div className="text-center py-8 text-gray-500">
+                                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                                     Aucun package joueur. Cliquez sur "Nouveau Package Joueur" pour en créer un.
                                 </div>
                             ) : (
@@ -265,7 +265,7 @@ export default function CreditPackagesManager() {
                             </div>
 
                             {packages.club.length === 0 ? (
-                                <div className="text-center py-8 text-gray-500">
+                                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                                     Aucun package club. Cliquez sur "Nouveau Package Club" pour en créer un.
                                 </div>
                             ) : (

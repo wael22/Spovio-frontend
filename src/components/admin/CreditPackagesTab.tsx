@@ -23,7 +23,7 @@ const CreditPackagesTab: React.FC = () => {
                 <div className="text-center py-12">
                     <Building className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                     <h3 className="text-lg font-medium mb-2">Fonctionnalité en développement</h3>
-                    <p className="text-gray-600 max-w-md mx-auto">
+                    <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
                         La gestion des packages de crédits (joueurs et clubs) sera disponible prochainement.
                         Vous pourrez créer, modifier et supprimer des packages avec différents prix et remises.
                     </p>

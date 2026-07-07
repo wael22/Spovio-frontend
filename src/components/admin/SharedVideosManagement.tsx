@@ -138,7 +138,7 @@ const SharedVideosManagement: React.FC = () => {
                         <div className="text-center py-8">
                             <Share2 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                             <h3 className="text-lg font-medium mb-2">Aucun partage actif</h3>
-                            <p className="text-gray-600">Aucune vidéo n'a été partagée pour le moment.</p>
+                            <p className="text-gray-600 dark:text-gray-400">Aucune vidéo n'a été partagée pour le moment.</p>
                         </div>
                     ) : (
                         <Table>
@@ -156,7 +156,7 @@ const SharedVideosManagement: React.FC = () => {
                             <TableBody>
                                 {sharedVideos.map((sv, index) => (
                                     <TableRow key={sv.id}>
-                                        <TableCell className="text-gray-500 font-mono text-sm">
+                                        <TableCell className="text-gray-500 dark:text-gray-400 font-mono text-sm">
                                             {index + 1}
                                         </TableCell>
                                         <TableCell className="font-medium">
@@ -176,7 +176,7 @@ const SharedVideosManagement: React.FC = () => {
                                         </TableCell>
                                         <TableCell>{formatDate(sv.shared_at)}</TableCell>
                                         <TableCell>
-                                            <span className="text-xs text-gray-500 italic max-w-[200px] truncate block">
+                                            <span className="text-xs text-gray-500 dark:text-gray-400 italic max-w-[200px] truncate block">
                                                 {sv.message || 'Aucun message'}
                                             </span>
                                         </TableCell>
@@ -210,7 +210,7 @@ const SharedVideosManagement: React.FC = () => {
                                                         <Trash2 className="mr-2 h-4 w-4" />
                                                         <div className="flex-1">
                                                             <div className="font-semibold">Supprimer le partage</div>
-                                                            <div className="text-xs text-red-500">Retirer l'accès de l'utilisateur</div>
+                                                            <div className="text-xs text-red-500 dark:text-red-400">Retirer l'accès de l'utilisateur</div>
                                                         </div>
                                                     </DropdownMenuItem>
                                                 </DropdownMenuContent>

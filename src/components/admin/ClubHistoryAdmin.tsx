@@ -110,26 +110,26 @@ const ClubHistoryAdmin: React.FC = () => {
 
         switch (normalizedType) {
             case 'follow_club':
-                return <Heart className="h-4 w-4 text-green-600" />;
+                return <Heart className="h-4 w-4 text-green-600 dark:text-green-400" />;
             case 'unfollow_club':
                 return <HeartOff className="h-4 w-4 text-red-600" />;
             case 'add_credits':
             case 'buy_credits':
-                return <ShoppingCart className="h-4 w-4 text-blue-600" />;
+                return <ShoppingCart className="h-4 w-4 text-blue-600 dark:text-blue-400" />;
             case 'update_player':
-                return <Edit className="h-4 w-4 text-blue-600" />;
+                return <Edit className="h-4 w-4 text-blue-600 dark:text-blue-400" />;
             case 'create_player':
-                return <UserPlus className="h-4 w-4 text-green-600" />;
+                return <UserPlus className="h-4 w-4 text-green-600 dark:text-green-400" />;
             case 'delete_player':
                 return <UserMinus className="h-4 w-4 text-red-600" />;
             case 'unlock_video':
                 return <Eye className="h-4 w-4 text-cyan-600" />;
             case 'video_upload':
-                return <Video className="h-4 w-4 text-green-600" />;
+                return <Video className="h-4 w-4 text-green-600 dark:text-green-400" />;
             case 'video_delete':
                 return <Trash2 className="h-4 w-4 text-red-600" />;
             default:
-                return <History className="h-4 w-4 text-gray-600" />;
+                return <History className="h-4 w-4 text-gray-600 dark:text-gray-400" />;
         }
     };
 
@@ -342,7 +342,7 @@ const ClubHistoryAdmin: React.FC = () => {
                                             <Badge variant={getActionVariant(entry.action_type)}>
                                                 {getActionLabel(entry.action_type)}
                                             </Badge>
-                                            <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                                            <Badge variant="outline" className="bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300">
                                                 <Building className="h-3 w-3 mr-1" />
                                                 {entry.club_name}
                                             </Badge>

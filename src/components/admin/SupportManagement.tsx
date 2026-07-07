@@ -92,9 +92,9 @@ const SupportManagement: React.FC = () => {
 
     const getStatusBadge = (status: string) => {
         const badges = {
-            pending: { color: 'bg-yellow-100 text-yellow-800', icon: Clock, label: 'En attente' },
-            in_progress: { color: 'bg-blue-100 text-blue-800', icon: AlertCircle, label: 'En cours' },
-            resolved: { color: 'bg-green-100 text-green-800', icon: CheckCircle, label: 'Résolu' },
+            pending: { color: 'bg-yellow-100 text-yellow-800 dark:text-yellow-200', icon: Clock, label: 'En attente' },
+            in_progress: { color: 'bg-blue-100 text-blue-800 dark:text-blue-200', icon: AlertCircle, label: 'En cours' },
+            resolved: { color: 'bg-green-100 text-green-800 dark:text-green-200', icon: CheckCircle, label: 'Résolu' },
             closed: { color: 'bg-gray-100 text-gray-800', icon: CheckCircle, label: 'Fermé' }
         };
 
@@ -111,8 +111,8 @@ const SupportManagement: React.FC = () => {
 
     const getPriorityBadge = (priority: string) => {
         const badges = {
-            low: 'bg-gray-100 text-gray-700',
-            medium: 'bg-blue-100 text-blue-700',
+            low: 'bg-gray-100 text-gray-700 dark:text-gray-300',
+            medium: 'bg-blue-100 text-blue-700 dark:text-blue-300',
             high: 'bg-red-100 text-red-700'
         };
 
@@ -126,8 +126,8 @@ const SupportManagement: React.FC = () => {
     return (
         <div className="space-y-6">
             <div>
-                <h2 className="text-2xl font-bold text-gray-900">Gestion du Support</h2>
-                <p className="text-gray-600 mt-1">Gérez les messages des utilisateurs</p>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Gestion du Support</h2>
+                <p className="text-gray-600 dark:text-gray-400 mt-1">Gérez les messages des utilisateurs</p>
             </div>
 
             {error && (
@@ -163,7 +163,7 @@ const SupportManagement: React.FC = () => {
                             <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
                         </div>
                     ) : messages.length === 0 ? (
-                        <div className="text-center py-8 text-gray-500">
+                        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                             <MessageSquare className="h-12 w-12 mx-auto mb-2 text-gray-300" />
                             <p>Aucun message</p>
                         </div>
@@ -174,13 +174,13 @@ const SupportManagement: React.FC = () => {
                                     <div className="flex items-start justify-between mb-2">
                                         <div className="flex-1">
                                             <div className="flex items-center gap-2 mb-1">
-                                                <h3 className="font-semibold text-gray-900">{msg.subject}</h3>
+                                                <h3 className="font-semibold text-gray-900 dark:text-gray-100">{msg.subject}</h3>
                                                 {getPriorityBadge(msg.priority)}
                                             </div>
-                                            <p className="text-sm text-gray-600">
+                                            <p className="text-sm text-gray-600 dark:text-gray-400">
                                                 De: {msg.user_name} ({msg.user_email})
                                             </p>
-                                            <p className="text-xs text-gray-500">
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">
                                                 {new Date(msg.created_at).toLocaleDateString('fr-FR', {
                                                     year: 'numeric', month: 'long', day: 'numeric',
                                                     hour: '2-digit', minute: '2-digit'
@@ -192,14 +192,14 @@ const SupportManagement: React.FC = () => {
                                         </div>
                                     </div>
 
-                                    <p className="text-gray-700 mb-3 whitespace-pre-wrap bg-gray-50 p-3 rounded">{msg.message}</p>
+                                    <p className="text-gray-700 dark:text-gray-300 mb-3 whitespace-pre-wrap bg-gray-50 dark:bg-gray-800/50 p-3 rounded">{msg.message}</p>
 
                                     {/* Display Images */}
                                     {msg.images && msg.images.length > 0 && (
                                         <div className="mb-3">
                                             <div className="flex items-center gap-2 mb-2">
-                                                <ImageIcon className="h-4 w-4 text-gray-500" />
-                                                <span className="text-sm font-medium text-gray-700">
+                                                <ImageIcon className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                                                     Images jointes ({msg.images.length})
                                                 </span>
                                             </div>
@@ -210,7 +210,7 @@ const SupportManagement: React.FC = () => {
                                                         href={getAssetUrl(imageUrl)}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
-                                                        className="block aspect-square rounded-lg overflow-hidden border border-gray-200 hover:border-blue-500 transition-colors"
+                                                        className="block aspect-square rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 hover:border-blue-500 transition-colors"
                                                     >
                                                         <img
                                                             src={getAssetUrl(imageUrl)}
@@ -224,12 +224,12 @@ const SupportManagement: React.FC = () => {
                                     )}
 
                                     {msg.admin_response ? (
-                                        <div className="bg-blue-50 border-l-4 border-blue-500 p-3 mb-3">
-                                            <p className="text-sm font-medium text-blue-900 mb-1">Votre réponse :</p>
-                                            <p className="text-sm text-blue-800 whitespace-pre-wrap">{msg.admin_response}</p>
+                                        <div className="bg-blue-50 dark:bg-blue-950 border-l-4 border-blue-500 p-3 mb-3">
+                                            <p className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-1">Votre réponse :</p>
+                                            <p className="text-sm text-blue-800 dark:text-blue-200 whitespace-pre-wrap">{msg.admin_response}</p>
                                         </div>
                                     ) : selectedMessage === msg.id ? (
-                                        <div className="space-y-3 mt-3 bg-blue-50 p-4 rounded">
+                                        <div className="space-y-3 mt-3 bg-blue-50 dark:bg-blue-950 p-4 rounded">
                                             <div className="flex items-center justify-between">
                                                 <h4 className="font-medium">Répondre</h4>
                                                 <button onClick={() => setSelectedMessage(null)}>

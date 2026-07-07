@@ -46,12 +46,12 @@ const SystemLogs: React.FC = () => {
 
     const getLevelColor = (level: string) => {
         const colors: Record<string, string> = {
-            'ERROR': 'text-red-600 bg-red-100',
-            'WARNING': 'text-yellow-600 bg-yellow-100',
-            'INFO': 'text-blue-600 bg-blue-100',
-            'DEBUG': 'text-gray-600 bg-gray-100'
+            'ERROR': 'text-red-600 dark:text-red-400 bg-red-100',
+            'WARNING': 'text-yellow-600 dark:text-yellow-400 bg-yellow-100',
+            'INFO': 'text-blue-600 dark:text-blue-400 bg-blue-100',
+            'DEBUG': 'text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800'
         };
-        return colors[level] || 'text-gray-600 bg-gray-100';
+        return colors[level] || 'text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800';
     };
 
     return (
@@ -90,7 +90,7 @@ const SystemLogs: React.FC = () => {
                 ) : logs.length === 0 ? (
                     <div className="text-center py-8">
                         <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-600">Aucun log disponible</p>
+                        <p className="text-gray-600 dark:text-gray-400">Aucun log disponible</p>
                     </div>
                 ) : (
                     <div className="space-y-2 max-h-96 overflow-y-auto">
@@ -100,9 +100,9 @@ const SystemLogs: React.FC = () => {
                                     <span className={`px-2 py-1 rounded text-xs font-medium ${getLevelColor(log.level)}`}>
                                         {log.level}
                                     </span>
-                                    <span className="text-gray-500 text-xs">{log.timestamp}</span>
+                                    <span className="text-gray-500 dark:text-gray-400 text-xs">{log.timestamp}</span>
                                 </div>
-                                <p className="text-gray-700">{log.message}</p>
+                                <p className="text-gray-700 dark:text-gray-300">{log.message}</p>
                             </div>
                         ))}
                     </div>

@@ -154,7 +154,7 @@ const CourtControlPanel: React.FC<CourtControlPanelProps> = ({ clubId, clubName 
                     <CardContent>
                         <div className="space-y-4">
                             {activeRecordings.map(recording => (
-                                <div key={recording.recording_id} className="flex items-center justify-between p-4 border rounded-lg bg-red-50">
+                                <div key={recording.recording_id} className="flex items-center justify-between p-4 border rounded-lg bg-red-50 dark:bg-red-950">
                                     <div className="flex items-center space-x-4">
                                         <Video className="h-5 w-5 text-red-600 animate-pulse" />
                                         <div>

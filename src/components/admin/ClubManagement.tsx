@@ -337,7 +337,7 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                         <div className="text-center py-8">
                             <Building className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                             <h3 className="text-lg font-medium mb-2">Aucun club enregistré</h3>
-                            <p className="text-gray-600 mb-4">Commencez par créer votre premier club</p>
+                            <p className="text-gray-600 dark:text-gray-300 mb-4">Commencez par créer votre premier club</p>
                             <Button onClick={() => setShowCreateModal(true)}><Plus className="h-4 w-4 mr-2" />Créer un Club</Button>
                         </div>
                     ) : (
@@ -370,12 +370,12 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                                                     <img
                                                         src={getAssetUrl(club.logo)}
                                                         alt={club.name}
-                                                        className="h-8 w-8 rounded-full object-cover border border-gray-200"
+                                                        className="h-8 w-8 rounded-full object-cover border border-gray-200 dark:border-gray-700"
                                                         onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                                                     />
                                                 ) : (
-                                                    <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                                                        <Building className="h-4 w-4 text-blue-500" />
+                                                    <div className="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center flex-shrink-0">
+                                                        <Building className="h-4 w-4 text-blue-500 dark:text-blue-400" />
                                                     </div>
                                                 )}
                                                 <span>{club.name}</span>
@@ -415,7 +415,7 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                                         <TableCell>{formatDate(club.created_at)}</TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-2">
-                                                <Video className="h-4 w-4 text-blue-500" />
+                                                <Video className="h-4 w-4 text-blue-500 dark:text-blue-400" />
                                                 <span className="font-medium">{club.video_count || 0}</span>
                                             </div>
                                         </TableCell>
@@ -444,8 +444,8 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                                                         <Plus className="mr-2 h-4 w-4" />Ajouter Terrain
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem onClick={() => handleAddCredits(club)}>
-                                                        <Plus className="mr-2 h-4 w-4 text-blue-600" />
-                                                        <span className="text-blue-600">Ajouter des Crédits</span>
+                                                        <Plus className="mr-2 h-4 w-4 text-blue-600 dark:text-blue-400" />
+                                                        <span className="text-blue-600 dark:text-blue-400">Ajouter des Crédits</span>
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem onClick={() => handleDeleteClub(club.id)} className="text-red-600">
                                                         <Trash2 className="mr-2 h-4 w-4" />Supprimer
@@ -471,7 +471,7 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                     <div className="space-y-4">
                         {logoPreview && (
                             <div className="flex justify-center">
-                                <img src={logoPreview} alt="Logo actuel" className="h-24 w-24 rounded-full object-cover border-2 border-blue-200" />
+                                <img src={logoPreview} alt="Logo actuel" className="h-24 w-24 rounded-full object-cover border-2 border-blue-200 dark:border-blue-800" />
                             </div>
                         )}
                         {!logoPreview && (
@@ -493,7 +493,7 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                             <Button variant="outline" className="w-full" onClick={() => logoInputRef.current?.click()}>
                                 <Upload className="h-4 w-4 mr-2" />Choisir une image
                             </Button>
-                            {logoFile && <p className="text-sm text-green-600">✓ {logoFile.name} sélectionné</p>}
+                            {logoFile && <p className="text-sm text-green-600 dark:text-green-400">✓ {logoFile.name} sélectionné</p>}
                         </div>
                         <div className="flex justify-between">
                             {selectedClub?.logo && (
@@ -537,8 +537,8 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                             <Label>Email</Label>
                             <Input type="email" value={clubFormData.email} onChange={(e) => setClubFormData(prev => ({ ...prev, email: e.target.value }))} />
                         </div>
-                        <div className="space-y-2 bg-yellow-50 p-3 rounded-md border border-yellow-200">
-                            <Label className="flex items-center gap-2 text-yellow-800">
+                        <div className="space-y-2 bg-yellow-50 dark:bg-yellow-950 p-3 rounded-md border border-yellow-200 dark:border-yellow-800">
+                            <Label className="flex items-center gap-2 text-yellow-800 dark:text-yellow-300">
                                 <Coins className="h-4 w-4" />
                                 Solde de Crédits
                             </Label>
@@ -548,9 +548,9 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                                 value={clubFormData.credits_balance}
                                 onChange={(e) => setClubFormData(prev => ({ ...prev, credits_balance: parseInt(e.target.value) || 0 }))}
                                 placeholder="0"
-                                className="bg-white"
+                                className="bg-white dark:bg-gray-800"
                             />
-                            <p className="text-xs text-yellow-700">
+                            <p className="text-xs text-yellow-700 dark:text-yellow-300">
                                 Modifiez directement le solde de crédits du club.
                             </p>
                         </div>
@@ -575,23 +575,23 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                     <div>
                         {clubCourts.length === 0 ? (
                             <div className="text-center py-8">
-                                <p className="text-gray-600">Aucun terrain enregistré pour ce club</p>
+                                <p className="text-gray-600 dark:text-gray-300">Aucun terrain enregistré pour ce club</p>
                             </div>
                         ) : (
                             <div className="space-y-3">
                                 {clubCourts.map((court: any) => (
-                                    <div key={court.id} className="p-4 border rounded-lg bg-gray-50 hover:bg-gray-100 transition-all">
+                                    <div key={court.id} className="p-4 border rounded-lg bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-all">
                                         <div className="flex items-start justify-between">
                                             <div className="flex-1">
                                                 <h4 className="font-semibold text-lg mb-2">{court.name}</h4>
                                                 <div className="space-y-1 text-sm">
                                                     <div className="flex items-center gap-2">
-                                                        <Video className="h-4 w-4 text-gray-500" />
-                                                        <span className="text-gray-600 font-mono text-xs">{court.camera_url}</span>
+                                                        <Video className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                                                        <span className="text-gray-600 dark:text-gray-300 font-mono text-xs">{court.camera_url}</span>
                                                     </div>
                                                     {court.qr_code && (
                                                         <div className="flex items-center gap-3 mt-3">
-                                                            <div className="p-2 bg-white rounded-md border border-gray-200">
+                                                            <div className="p-2 bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700">
                                                                 <QRCodeCanvas
                                                                     id={`qr-code-${court.id}`}
                                                                     value={`${window.location.origin}/c/${court.qr_code}`}
@@ -602,8 +602,8 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                                                             <div className="flex flex-col gap-2">
                                                                 {court.short_code && (
                                                                     <div className="flex items-center gap-2">
-                                                                        <span className="text-gray-500 font-medium text-xs">Code direct:</span>
-                                                                        <span className="text-blue-700 font-mono text-lg font-bold bg-blue-50 px-3 py-1 rounded shadow-sm tracking-widest">{court.short_code}</span>
+                                                                        <span className="text-gray-500 dark:text-gray-400 font-medium text-xs">Code direct:</span>
+                                                                        <span className="text-blue-700 dark:text-blue-300 font-mono text-lg font-bold bg-blue-50 dark:bg-blue-950 px-3 py-1 rounded shadow-sm tracking-widest">{court.short_code}</span>
                                                                     </div>
                                                                 )}
                                                                 <Button variant="outline" size="sm" onClick={() => handleDownloadQRCode(court)} className="flex items-center gap-1 h-8 w-fit">
@@ -730,20 +730,20 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                                     name="has-audio"
                                     type="checkbox"
                                     defaultChecked={true}
-                                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                    className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 dark:text-blue-400 focus:ring-blue-500"
                                 />
-                                <label htmlFor="has-audio" className="text-sm text-gray-700 cursor-pointer">
+                                <label htmlFor="has-audio" className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
                                     Activer l'enregistrement audio sur ce terrain
                                 </label>
                             </div>
                         </div>
 
-                        <div className="bg-blue-50 p-4 rounded-lg">
+                        <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg">
                             <div className="flex items-center space-x-2 mb-2">
-                                <Video className="h-5 w-5 text-blue-600" />
-                                <span className="font-medium text-blue-900">QR Code automatique</span>
+                                <Video className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                                <span className="font-medium text-blue-900 dark:text-blue-100">QR Code automatique</span>
                             </div>
-                            <p className="text-sm text-blue-700">
+                            <p className="text-sm text-blue-700 dark:text-blue-300">
                                 Un QR code unique sera automatiquement généré pour ce terrain.
                                 Les joueurs pourront le scanner pour démarrer un enregistrement.
                             </p>
@@ -816,7 +816,7 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                                 onChange={(e) => setCourtFormData(prev => ({ ...prev, qr_code: e.target.value }))}
                                 placeholder="Ex: terrain-001 ou UUID"
                             />
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
                                 Modifiez le QR code unique de ce terrain. Les joueurs devront scanner ce code pour enregistrer.
                             </p>
                         </div>
@@ -831,7 +831,7 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                                 maxLength={4}
                                 className="font-mono uppercase"
                             />
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
                                 Saisissez un code de 4 lettres/chiffres.
                             </p>
                         </div>
@@ -842,9 +842,9 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                                 type="checkbox"
                                 checked={courtFormData.has_audio}
                                 onChange={(e) => setCourtFormData(prev => ({ ...prev, has_audio: e.target.checked }))}
-                                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 dark:text-blue-400 focus:ring-blue-500"
                             />
-                            <label htmlFor="edit-has-audio" className="text-sm text-gray-700 cursor-pointer">
+                            <label htmlFor="edit-has-audio" className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
                                 Activer l'enregistrement audio sur ce terrain
                             </label>
                         </div>

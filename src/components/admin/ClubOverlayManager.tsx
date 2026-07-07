@@ -256,7 +256,7 @@ const ClubOverlayManager: React.FC<ClubOverlayManagerProps> = ({ club, isOpen, o
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="!max-w-[90vw] w-[90vw] h-[90vh] flex flex-col p-0 gap-0 sm:max-w-[90vw]">
-                <DialogHeader className="p-6 border-b shrink-0 bg-white z-10">
+                <DialogHeader className="p-6 border-b shrink-0 bg-white dark:bg-gray-800 z-10 dark:border-gray-700">
                     <DialogTitle className="text-2xl">Gestion des Overlays Vidéo - {club?.name}</DialogTitle>
                     <DialogDescription className="text-base">
                         Gérez les logos et images flottantes qui s'affichent sur les vidéos de ce club
@@ -271,7 +271,7 @@ const ClubOverlayManager: React.FC<ClubOverlayManagerProps> = ({ club, isOpen, o
 
                 <div className="flex-1 overflow-hidden flex flex-row">
                     {/* COLONNE GAUCHE: Formulaire ou Liste */}
-                    <div className="w-[500px] shrink-0 border-r bg-slate-50 flex flex-col overflow-y-auto">
+                    <div className="w-[500px] shrink-0 border-r bg-slate-50 dark:bg-slate-900 flex flex-col overflow-y-auto">
                         <div className="p-6">
                             {editingOverlay ? (
                                 <div className="space-y-4">
@@ -287,7 +287,7 @@ const ClubOverlayManager: React.FC<ClubOverlayManagerProps> = ({ club, isOpen, o
                                     {/* Image Upload */}
                                     <div className="space-y-2">
                                         <Label>Image de l'overlay</Label>
-                                        <div className="flex gap-4 items-start p-4 bg-white border rounded-lg">
+                                        <div className="flex gap-4 items-start p-4 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg">
                                             <div
                                                 className="border rounded w-20 h-20 flex items-center justify-center overflow-hidden"
                                                 style={{
@@ -313,7 +313,7 @@ const ClubOverlayManager: React.FC<ClubOverlayManagerProps> = ({ club, isOpen, o
                                                     disabled={isSubmitting}
                                                     className="text-sm"
                                                 />
-                                                <p className="text-xs text-blue-600">
+                                                <p className="text-xs text-blue-600 dark:text-blue-400">
                                                     ℹ️ PNG transparent recommandé
                                                 </p>
                                             </div>
@@ -351,12 +351,12 @@ const ClubOverlayManager: React.FC<ClubOverlayManagerProps> = ({ club, isOpen, o
                                                         }));
                                                     }}
                                                 >
-                                                    <div className={`w-2 h-2 rounded-full mr-2 ${formData.position_x === preset.x && formData.position_y === preset.y ? 'bg-white' : 'bg-blue-500'}`} />
+                                                    <div className={`w-2 h-2 rounded-full mr-2 ${formData.position_x === preset.x && formData.position_y === preset.y ? 'bg-white dark:bg-gray-800' : 'bg-blue-500'}`} />
                                                     {preset.label}
                                                 </Button>
                                             ))}
                                         </div>
-                                        <p className="text-xs text-gray-500 italic mt-1">
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 italic mt-1">
                                             La taille et l'opacité sont ajustées automatiquement pour un rendu professionnel.
                                         </p>
                                     </div>
@@ -387,7 +387,7 @@ const ClubOverlayManager: React.FC<ClubOverlayManagerProps> = ({ club, isOpen, o
                                 <div className="text-center py-12">
                                     <VideoIcon className="h-12 w-12 text-gray-400 mx-auto mb-3" />
                                     <h3 className="text-base font-medium mb-1">Aucun overlay</h3>
-                                    <p className="text-sm text-gray-600 mb-3">Ajoutez des logos</p>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Ajoutez des logos</p>
                                     <Button onClick={startCreate} size="sm">
                                         <Plus className="h-4 w-4 mr-1" />Ajouter
                                     </Button>
@@ -397,7 +397,7 @@ const ClubOverlayManager: React.FC<ClubOverlayManagerProps> = ({ club, isOpen, o
                                     <div className="flex justify-between items-center pb-3 border-b">
                                         <div>
                                             <h3 className="font-semibold">Overlays</h3>
-                                            <p className="text-xs text-gray-500">{overlays.length} élément(s)</p>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">{overlays.length} élément(s)</p>
                                         </div>
                                         <Button onClick={startCreate} size="sm">
                                             <Plus className="h-4 w-4 mr-1" />Ajouter
@@ -405,7 +405,7 @@ const ClubOverlayManager: React.FC<ClubOverlayManagerProps> = ({ club, isOpen, o
                                     </div>
 
                                     {overlays.map((ov) => (
-                                        <div key={ov.id} className="p-3 border rounded-lg bg-white hover:shadow transition-all">
+                                        <div key={ov.id} className="p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 hover:shadow transition-all">
                                             <div className="flex items-start gap-3">
                                                 {/* Thumbnail */}
                                                 <div
@@ -432,10 +432,10 @@ const ClubOverlayManager: React.FC<ClubOverlayManagerProps> = ({ club, isOpen, o
                                                             {ov.is_active ? "Actif" : "Off"}
                                                         </Badge>
                                                     </div>
-                                                    <div className="flex gap-1 text-xs text-gray-600 flex-wrap">
-                                                        <span className="bg-gray-100 px-1.5 py-0.5 rounded font-mono">X:{ov.position_x}% Y:{ov.position_y}%</span>
-                                                        <span className="bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-mono">Taille: {ov.width}%</span>
-                                                        <span className="bg-gray-100 px-1.5 py-0.5 rounded font-mono">Opacité: {ov.opacity.toFixed(2)}</span>
+                                                    <div className="flex gap-1 text-xs text-gray-600 dark:text-gray-400 flex-wrap">
+                                                        <span className="bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded font-mono">X:{ov.position_x}% Y:{ov.position_y}%</span>
+                                                        <span className="bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 px-1.5 py-0.5 rounded font-mono">Taille: {ov.width}%</span>
+                                                        <span className="bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded font-mono">Opacité: {ov.opacity.toFixed(2)}</span>
                                                     </div>
                                                     <p className="text-xs text-gray-400 mt-1 truncate" title={resolveOverlayUrl(ov.image_url)}>
                                                         🔗 {resolveOverlayUrl(ov.image_url)}
@@ -493,7 +493,7 @@ const ClubOverlayManager: React.FC<ClubOverlayManagerProps> = ({ club, isOpen, o
                                 background: 'repeating-conic-gradient(#374151 0% 25%, #1f2937 0% 50%) 0 0 / 32px 32px'
                             }}
                         >
-                            <div className="absolute inset-0 flex items-center justify-center text-gray-600 font-bold text-3xl select-none">
+                            <div className="absolute inset-0 flex items-center justify-center text-gray-600 dark:text-gray-400 font-bold text-3xl select-none">
                                 VIDEO PADEL
                             </div>
 

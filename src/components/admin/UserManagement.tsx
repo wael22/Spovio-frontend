@@ -343,11 +343,11 @@ const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate }) => {
                                                     <img
                                                         src={getAssetUrl(user.avatar)}
                                                         alt={user.name}
-                                                        className="h-8 w-8 rounded-full object-cover border border-gray-200 flex-shrink-0"
+                                                        className="h-8 w-8 rounded-full object-cover border border-gray-200 dark:border-gray-700 flex-shrink-0"
                                                         onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                                                     />
                                                 ) : (
-                                                    <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                                                    <div className="h-8 w-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
                                                         <User className="h-4 w-4 text-gray-400" />
                                                     </div>
                                                 )}
@@ -444,9 +444,9 @@ const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate }) => {
                     <div className="space-y-4">
                         <div className="flex justify-center">
                             {avatarPreview ? (
-                                <img src={avatarPreview} alt="Avatar" className="h-24 w-24 rounded-full object-cover border-2 border-blue-200" />
+                                <img src={avatarPreview} alt="Avatar" className="h-24 w-24 rounded-full object-cover border-2 border-blue-200 dark:border-blue-800" />
                             ) : (
-                                <div className="h-24 w-24 rounded-full bg-gray-100 flex items-center justify-center">
+                                <div className="h-24 w-24 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
                                     <User className="h-10 w-10 text-gray-400" />
                                 </div>
                             )}
@@ -457,7 +457,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate }) => {
                             <Button variant="outline" className="w-full" onClick={() => avatarInputRef.current?.click()}>
                                 <Upload className="h-4 w-4 mr-2" />Choisir une image
                             </Button>
-                            {avatarFile && <p className="text-sm text-green-600">✓ {avatarFile.name} sélectionné</p>}
+                            {avatarFile && <p className="text-sm text-green-600 dark:text-green-400">✓ {avatarFile.name} sélectionné</p>}
                         </div>
                         <div className="flex justify-between">
                             {selectedUser?.avatar && (

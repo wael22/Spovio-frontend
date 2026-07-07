@@ -144,10 +144,10 @@ const RecoveryManagement: React.FC = () => {
 
     const getStatusBadge = (status: string) => {
         const styles: Record<string, string> = {
-            'pending': 'bg-yellow-100 text-yellow-800 border-yellow-200',
-            'processing': 'bg-blue-100 text-blue-800 border-blue-200',
-            'completed': 'bg-green-100 text-green-800 border-green-200',
-            'failed': 'bg-red-100 text-red-800 border-red-200'
+            'pending': 'bg-yellow-100 text-yellow-800 dark:text-yellow-200 border-yellow-200 dark:border-yellow-800',
+            'processing': 'bg-blue-100 text-blue-800 dark:text-blue-200 border-blue-200 dark:border-blue-800',
+            'completed': 'bg-green-100 text-green-800 dark:text-green-200 border-green-200 dark:border-green-800',
+            'failed': 'bg-red-100 text-red-800 dark:text-red-200 border-red-200 dark:border-red-800'
         };
         const labels: Record<string, string> = {
             'pending': 'En attente',
@@ -274,7 +274,7 @@ const RecoveryManagement: React.FC = () => {
                             <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
                         </div>
                     ) : requests.length === 0 ? (
-                        <div className="text-center py-8 text-gray-500">
+                        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                             <FileVideo className="h-12 w-12 mx-auto mb-3 opacity-20" />
                             <p>Aucune demande de récupération</p>
                         </div>
@@ -299,7 +299,7 @@ const RecoveryManagement: React.FC = () => {
                                             <div className="flex flex-col gap-1">
                                                 {getStatusBadge(req.status)}
                                                 {req.error_message && (
-                                                    <span className="text-xs text-red-500 max-w-[200px] truncate" title={req.error_message}>
+                                                    <span className="text-xs text-red-500 dark:text-red-400 max-w-[200px] truncate" title={req.error_message}>
                                                         {req.error_message}
                                                     </span>
                                                 )}
@@ -310,7 +310,7 @@ const RecoveryManagement: React.FC = () => {
                                                 <span className="font-medium flex items-center gap-1">
                                                     <Building className="h-3 w-3" /> {req.court_name}
                                                 </span>
-                                                <span className="text-xs text-gray-500">{req.club_name}</span>
+                                                <span className="text-xs text-gray-500 dark:text-gray-400">{req.club_name}</span>
                                             </div>
                                         </TableCell>
                                         <TableCell>
@@ -318,7 +318,7 @@ const RecoveryManagement: React.FC = () => {
                                                 <span className="font-medium flex items-center gap-1">
                                                     <User className="h-3 w-3" /> {req.user_name}
                                                 </span>
-                                                <span className="text-xs text-gray-500">{req.user_email}</span>
+                                                <span className="text-xs text-gray-500 dark:text-gray-400">{req.user_email}</span>
                                             </div>
                                         </TableCell>
                                         <TableCell>
@@ -331,7 +331,7 @@ const RecoveryManagement: React.FC = () => {
                                                 </span>
                                             </div>
                                         </TableCell>
-                                        <TableCell className="text-xs text-gray-500">
+                                        <TableCell className="text-xs text-gray-500 dark:text-gray-400">
                                             {new Date(req.created_at).toLocaleString()}
                                         </TableCell>
                                         <TableCell>
@@ -345,7 +345,7 @@ const RecoveryManagement: React.FC = () => {
                                                         href={req.video_url}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
-                                                        className="text-xs text-blue-600 hover:underline flex items-center gap-1"
+                                                        className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
                                                     >
                                                         <FileVideo className="h-3 w-3" /> Voir la vidéo
                                                     </a>
