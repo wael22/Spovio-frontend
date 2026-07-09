@@ -13,8 +13,10 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { authService } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
+import { useTranslation } from "react-i18next";
 
 const EmailVerification = () => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const location = useLocation();
     const { toast } = useToast();
@@ -49,8 +51,8 @@ const EmailVerification = () => {
 
         if (code.length !== 6) {
             toast({
-                title: "Code invalide",
-                description: "Le code doit contenir 6 chiffres.",
+                title: t("auth.invalidCode"),
+                description: t("auth.invalidCodeDesc"),
                 variant: "destructive",
             });
             return;
@@ -65,7 +67,6 @@ const EmailVerification = () => {
                 localStorage.setItem('token', response.data.token);
             }
 
-            // Claim pending share if any
             try {
                 const pendingToken = localStorage.getItem('pending_share_token');
                 if (pendingToken) {
@@ -81,17 +82,16 @@ const EmailVerification = () => {
             }
 
             toast({
-                title: "Email vérifié !",
-                description: "Votre compte est maintenant actif. Vous pouvez vous connecter.",
+                title: t("auth.emailVerified"),
+                description: t("auth.emailVerifiedDesc"),
             });
 
-            // Backend returns user data + token - user is logged in
             navigate("/dashboard");
         } catch (error: any) {
             console.error('Verification error:', error);
             toast({
-                title: "Code incorrect",
-                description: error.response?.data?.message || "Le code de vérification est invalide ou expiré.",
+                title: t("auth.incorrectCode"),
+                description: error.response?.data?.error || error.response?.data?.message || t("auth.incorrectCodeDesc"),
                 variant: "destructive",
             });
         } finally {
@@ -106,14 +106,14 @@ const EmailVerification = () => {
             await authService.resendVerificationCode(email);
 
             toast({
-                title: "Code renvoyé",
-                description: "Un nouveau code de vérification a été envoyé à votre email.",
+                title: t("auth.codeResent"),
+                description: t("auth.codeResentDesc"),
             });
         } catch (error: any) {
             console.error('Resend error:', error);
             toast({
-                title: "Erreur",
-                description: error.response?.data?.message || "Impossible de renvoyer le code.",
+                title: t("common.error"),
+                description: error.response?.data?.error || error.response?.data?.message || t("auth.resendErrorDesc"),
                 variant: "destructive",
             });
         } finally {
@@ -160,9 +160,9 @@ const EmailVerification = () => {
                         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
                             <Mail className="h-8 w-8 text-primary" />
                         </div>
-                        <h2 className="text-2xl font-bold mb-2">Vérifiez votre email</h2>
+                        <h2 className="text-2xl font-bold mb-2">{t("auth.verifyEmail")}</h2>
                         <p className="text-sm text-muted-foreground">
-                            Nous avons envoyé un code à 6 chiffres à
+                            {t("auth.codeSentTo")}
                         </p>
                         <p className="text-sm font-medium text-foreground mt-1">
                             {email}
@@ -173,7 +173,7 @@ const EmailVerification = () => {
                         <div className="space-y-2">
                             <Label htmlFor="code" className="flex items-center gap-2">
                                 <AlertCircle className="h-4 w-4 text-muted-foreground" />
-                                Code de vérification
+                                {t("auth.verificationCode")}
                             </Label>
                             <Input
                                 id="code"
@@ -188,7 +188,7 @@ const EmailVerification = () => {
                                 required
                             />
                             <p className="text-xs text-muted-foreground">
-                                Entrez le code à 6 chiffres reçu par email
+                                {t("auth.enterCode")}
                             </p>
                         </div>
 
@@ -202,7 +202,7 @@ const EmailVerification = () => {
                                 <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                             ) : (
                                 <>
-                                    Vérifier
+                                    {t("auth.verify")}
                                     <ArrowRight className="h-4 w-4" />
                                 </>
                             )}
@@ -211,7 +211,7 @@ const EmailVerification = () => {
 
                     <div className="mt-6 text-center space-y-3">
                         <p className="text-sm text-muted-foreground">
-                            Vous n'avez pas reçu de code ?
+                            {t("auth.noCode")}
                         </p>
                         <Button
                             type="button"
@@ -223,10 +223,10 @@ const EmailVerification = () => {
                             {isResending ? (
                                 <>
                                     <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
-                                    Envoi en cours...
+                                    {t("auth.sending")}
                                 </>
                             ) : (
-                                "Renvoyer le code"
+                                t("auth.resendCode")
                             )}
                         </Button>
                     </div>
@@ -236,14 +236,14 @@ const EmailVerification = () => {
                             to="/auth"
                             className="text-sm text-primary hover:underline"
                         >
-                            Retour à la connexion
+                            {t("auth.backToLogin")}
                         </Link>
                     </div>
                 </motion.div>
 
                 {/* Footer */}
                 <p className="text-center text-sm text-muted-foreground mt-6">
-                    © 2026 Spovio. Tous droits réservés.
+                    {t("footer.copyright", { year: new Date().getFullYear() })}
                 </p>
             </motion.div>
         </div>

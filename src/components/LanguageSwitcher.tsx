@@ -4,8 +4,10 @@ import { useTranslation } from "react-i18next";
 export function LanguageSwitcher() {
     const { i18n } = useTranslation();
 
+    const currentLang = i18n.resolvedLanguage || i18n.language?.split('-')[0] || 'fr';
+
     const toggleLanguage = () => {
-        const newLang = i18n.language === 'en' ? 'fr' : 'en';
+        const newLang = currentLang === 'en' ? 'fr' : 'en';
         i18n.changeLanguage(newLang);
     };
 
@@ -16,7 +18,7 @@ export function LanguageSwitcher() {
             onClick={toggleLanguage}
             className="font-mono"
         >
-            {i18n.language === 'en' ? 'EN' : 'FR'}
+            {currentLang === 'en' ? 'EN' : 'FR'}
         </Button>
     );
 }

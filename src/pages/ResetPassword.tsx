@@ -8,8 +8,10 @@ import { Lock, ArrowRight, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { authService } from "@/lib/api";
 import { Navbar } from "@/components/Navbar";
+import { useTranslation } from "react-i18next";
 
 const ResetPassword = () => {
+    const { t } = useTranslation();
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const { toast } = useToast();
@@ -24,8 +26,8 @@ const ResetPassword = () => {
     useEffect(() => {
         if (!token) {
             toast({
-                title: "Lien invalide",
-                description: "Le lien de réinitialisation est manquant.",
+                title: t("auth.invalidLink"),
+                description: t("auth.resetLinkMissing"),
                 variant: "destructive",
             });
             navigate("/auth");
@@ -36,8 +38,8 @@ const ResetPassword = () => {
         e.preventDefault();
         if (password !== confirmPassword) {
             toast({
-                title: "Erreur",
-                description: "Les mots de passe ne correspondent pas.",
+                title: t("common.error"),
+                description: t("auth.passwordMismatchShort"),
                 variant: "destructive"
             });
             return;
@@ -49,14 +51,14 @@ const ResetPassword = () => {
             await authService.resetPassword(token!, password);
             setIsSuccess(true);
             toast({
-                title: "Succès",
-                description: "Votre mot de passe a été réinitialisé.",
+                title: t("common.success"),
+                description: t("auth.resetSuccessDesc"),
             });
         } catch (error: any) {
             console.error("Reset password error:", error);
             toast({
-                title: "Erreur",
-                description: error.response?.data?.error || "Le lien est invalide ou expiré.",
+                title: t("common.error"),
+                description: error.response?.data?.error || t("auth.resetErrorDesc"),
                 variant: "destructive",
             });
         } finally {
@@ -79,15 +81,15 @@ const ResetPassword = () => {
                     {!isSuccess ? (
                         <>
                             <div className="mb-6">
-                                <h1 className="text-2xl font-bold mb-2">Nouveau mot de passe</h1>
+                                <h1 className="text-2xl font-bold mb-2">{t("auth.newPassword")}</h1>
                                 <p className="text-muted-foreground">
-                                    Choisissez un nouveau mot de passe sécurisé.
+                                    {t("auth.newPasswordDesc")}
                                 </p>
                             </div>
 
                             <form onSubmit={handleSubmit} className="space-y-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="password">Nouveau mot de passe</Label>
+                                    <Label htmlFor="password">{t("auth.newPassword")}</Label>
                                     <div className="relative">
                                         <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                                         <Input
@@ -104,7 +106,7 @@ const ResetPassword = () => {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
+                                    <Label htmlFor="confirmPassword">{t("auth.confirmPassword")}</Label>
                                     <div className="relative">
                                         <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                                         <Input
@@ -130,7 +132,7 @@ const ResetPassword = () => {
                                         <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                     ) : (
                                         <>
-                                            Réinitialiser
+                                            {t("auth.resetButton")}
                                             <ArrowRight className="h-4 w-4" />
                                         </>
                                     )}
@@ -143,13 +145,13 @@ const ResetPassword = () => {
                                 <CheckCircle className="h-10 w-10" />
                             </div>
                             <div>
-                                <h2 className="text-2xl font-bold mb-2">Mot de passe modifié !</h2>
+                                <h2 className="text-2xl font-bold mb-2">{t("auth.passwordChanged")}</h2>
                                 <p className="text-muted-foreground">
-                                    Vous pouvez maintenant vous connecter avec votre nouveau mot de passe.
+                                    {t("auth.passwordChangedDesc")}
                                 </p>
                             </div>
                             <Button asChild className="w-full" variant="neon">
-                                <Link to="/auth">Se connecter</Link>
+                                <Link to="/auth">{t("auth.loginButton")}</Link>
                             </Button>
                         </div>
                     )}

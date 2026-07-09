@@ -8,8 +8,10 @@ import { Mail, ArrowRight, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { authService } from "@/lib/api";
 import { Navbar } from "@/components/Navbar";
+import { useTranslation, Trans } from "react-i18next";
 
 const ForgotPassword = () => {
+    const { t } = useTranslation();
     const { toast } = useToast();
     const [email, setEmail] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -24,14 +26,14 @@ const ForgotPassword = () => {
             // We always show success message for security reasons
             setIsSubmitted(true);
             toast({
-                title: "Email envoyé",
-                description: "Si un compte existe, vous recevrez un lien de réinitialisation.",
+                title: t("auth.emailSent"),
+                description: t("auth.forgotPasswordSentDesc"),
             });
         } catch (error) {
             console.error("Forgot password error:", error);
             toast({
-                title: "Erreur",
-                description: "Une erreur est survenue lors de la demande.",
+                title: t("common.error"),
+                description: t("auth.forgotPasswordErrorDesc"),
                 variant: "destructive",
             });
         } finally {
@@ -54,11 +56,11 @@ const ForgotPassword = () => {
                     <div className="mb-6">
                         <Link to="/auth" className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors mb-4">
                             <ArrowLeft className="h-4 w-4 mr-1" />
-                            Retour à la connexion
+                            {t("auth.backToLogin")}
                         </Link>
-                        <h1 className="text-2xl font-bold mb-2">Mot de passe oublié ?</h1>
+                        <h1 className="text-2xl font-bold mb-2">{t("auth.forgotPassword")}</h1>
                         <p className="text-muted-foreground">
-                            Entrez votre email pour recevoir un lien de réinitialisation.
+                            {t("auth.forgotPasswordDesc")}
                         </p>
                     </div>
 
@@ -67,12 +69,12 @@ const ForgotPassword = () => {
                             <div className="space-y-2">
                                 <Label htmlFor="email" className="flex items-center gap-2">
                                     <Mail className="h-4 w-4 text-muted-foreground" />
-                                    Email
+                                    {t("auth.email")}
                                 </Label>
                                 <Input
                                     id="email"
                                     type="email"
-                                    placeholder="votre@email.com"
+                                    placeholder={t("auth.placeholderEmail")}
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     className="bg-card/50"
@@ -90,7 +92,7 @@ const ForgotPassword = () => {
                                     <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                 ) : (
                                     <>
-                                        Envoyer le lien
+                                        {t("auth.sendLink")}
                                         <ArrowRight className="h-4 w-4" />
                                     </>
                                 )}
@@ -101,16 +103,18 @@ const ForgotPassword = () => {
                             <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto text-primary">
                                 <Mail className="h-8 w-8" />
                             </div>
-                            <p className="text-lg font-medium">Vérifiez votre boîte mail</p>
+                            <p className="text-lg font-medium">{t("auth.checkEmail")}</p>
                             <p className="text-sm text-muted-foreground">
-                                Nous avons envoyé un lien de réinitialisation à <strong>{email}</strong>
+                                <Trans i18nKey="auth.resetLinkSent" values={{ email }}>
+                                    We have sent a reset link to <strong>{email}</strong>
+                                </Trans>
                             </p>
                             <Button
                                 variant="outline"
                                 className="w-full mt-4"
                                 onClick={() => setIsSubmitted(false)}
                             >
-                                Renvoyer un email
+                                {t("auth.resendEmail")}
                             </Button>
                         </div>
                     )}
