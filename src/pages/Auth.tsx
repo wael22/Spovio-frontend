@@ -126,39 +126,27 @@ const Auth = () => {
     setIsLoading(true);
 
     try {
-      // Prepare userData for backend
       const userData = {
         name: `${registerForm.firstName} ${registerForm.lastName}`,
         email: registerForm.email,
         password: registerForm.password,
-        role: 'player', // Default role for registration
+        role: 'player',
       };
 
-      const response = await authService.register(userData);
+      const result = await register(userData);
 
-      // Debug: log the full response to see structure
-      console.log('Registration response:', response);
-      console.log('Response data:', response.data);
-      console.log('Requires verification?', response.data?.requires_verification);
-
-      // Check if verification is required
-      if (response.data?.requires_verification) {
+      if (result.success && result.data?.requires_verification) {
         toast({
           title: t("auth.emailSent"),
           description: t("auth.verificationSent"),
         });
-        // Redirect to email verification page
         navigate('/verify-email', { state: { email: userData.email } });
-      } else {
-        // Old flow - direct success (shouldn't happen normally)
-        // Claim pending share if any
+      } else if (result.success) {
         await claimPendingShare();
-
         toast({
           title: t("auth.registrationSuccess"),
           description: t("auth.registrationSuccessDesc"),
         });
-
         setRegisterForm({
           firstName: "",
           lastName: "",
@@ -169,13 +157,18 @@ const Auth = () => {
         });
         setMode("login");
         setLoginForm({ ...loginForm, email: userData.email });
+      } else {
+        toast({
+          title: t("auth.registrationError"),
+          description: result.error || t("auth.registrationErrorDesc"),
+          variant: "destructive",
+        });
       }
-
     } catch (error: any) {
       console.error('Registration error:', error);
       toast({
         title: t("auth.registrationError"),
-        description: error.response?.data?.message || t("auth.registrationErrorDesc"),
+        description: error?.message || t("auth.registrationErrorDesc"),
         variant: "destructive",
       });
     } finally {
