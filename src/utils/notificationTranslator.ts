@@ -73,10 +73,10 @@ const patterns: Record<string, PatternConfig> = {
 };
 
 const typeAliases: Record<string, string> = {
-  VIDEO: "video_ready",
-  SHARE: "video_shared",
-  CREDIT: "credit",
-  SYSTEM: "system_maintenance",
+  video: "video_ready",
+  share: "video_shared",
+  credit: "credit",
+  system: "system_maintenance",
 };
 
 export function translateNotification(

@@ -264,6 +264,7 @@ export const notificationService = {
     getMyNotifications: () => api.get('/notifications'),
     markAsRead: (id: string) => api.post(`/notifications/${id}/mark-read`),
     markAllAsRead: () => api.post('/notifications/mark-all-read'),
+    deleteNotification: (id: string) => api.delete(`/notifications/${id}`),
 };
 
 // Club Service

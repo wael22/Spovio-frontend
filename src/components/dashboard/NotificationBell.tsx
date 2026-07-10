@@ -125,14 +125,19 @@ export const NotificationBell = () => {
     }
   };
 
-  const deleteNotification = (id: number, e: React.MouseEvent) => {
+  const deleteNotification = async (id: number, e: React.MouseEvent) => {
     e.stopPropagation();
-    // For now just remove from local state
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
-    setUnreadCount((prev) => {
-      const notif = notifications.find(n => n.id === id);
-      return notif && !notif.is_read ? prev - 1 : prev;
-    });
+    try {
+      await notificationService.deleteNotification(id.toString());
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
+      setUnreadCount((prev) => {
+        const notif = notifications.find(n => n.id === id);
+        return notif && !notif.is_read ? prev - 1 : prev;
+      });
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+      toast.error(t('notifications.updateError', 'Erreur lors de la suppression'));
+    }
   };
 
   return (
@@ -194,7 +199,7 @@ export const NotificationBell = () => {
           ) : (
             <div className="divide-y divide-border/50">
               {notifications.map((notification) => {
-                const notifType = notification.notification_type || notification.type || 'SYSTEM';
+                const notifType = notification.type || 'SYSTEM';
                 const icon = getNotificationIcon(notifType);
                 const translated = translateNotification(notifType, notification.title, notification.message);
 
