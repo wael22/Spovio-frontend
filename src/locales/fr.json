@@ -605,19 +605,56 @@
   "notifications": {
     "empty": "Aucune notification",
     "markAllAsRead": "Tout marquer lu",
+    "markedAllRead": "Toutes les notifications sont marquées comme lues",
+    "updateError": "Erreur lors de la mise à jour",
     "videoReady": "🎬 Votre vidéo est prête !",
     "videoReadyMsg": "La vidéo '{{title}}' a été traitée avec succès.",
     "clipReady": "🎬 Votre clip est prêt !",
     "clipReadyMsg": "Le clip '{{title}}' est prêt.",
-    "types": {
-      "SYSTEM": {
-        "title": "Bienvenue sur Spovio ! 🎾",
-        "message": "Bonjour {{name}}, bienvenue sur Spovio ! Votre compte a été créé avec succès via {{method}}."
-      },
-      "VIDEO_SHARED": {
-        "title": "Nouvelle vidéo partagée",
-        "message": "{{sender}} a partagé une vidéo avec vous: \"{{title}}\""
-      }
+    "recordingStarted": {
+      "title": "⏺️ Enregistrement démarré",
+      "msg": "L'enregistrement a commencé sur {{courtName}}."
+    },
+    "recordingStopped": {
+      "title": "⏺️ Enregistrement arrêté",
+      "msg": "L'enregistrement s'est arrêté."
+    },
+    "creditsAdded": {
+      "title": "💰 Crédits ajoutés",
+      "msg": "{{amount}} crédits ont été ajoutés à votre compte."
+    },
+    "credit": {
+      "title": "💰 Alerte crédit",
+      "msg": "{{amount}} crédits ont été ajustés sur votre compte."
+    },
+    "paymentSuccess": {
+      "title": "💳 Paiement réussi",
+      "msg": "Le paiement de {{amount}}€ a été effectué avec succès."
+    },
+    "paymentFailed": {
+      "title": "💳 Paiement échoué",
+      "msg": "Le paiement de {{amount}}€ a échoué."
+    },
+    "support": {
+      "title": "💬 Réponse du support",
+      "msg": "Le support a répondu à votre message : '{{subject}}'"
+    },
+    "videoShared": {
+      "title": "🔗 Nouvelle vidéo partagée",
+      "msg": "{{sender}} a partagé une vidéo avec vous."
+    },
+    "systemMaintenance": {
+      "title": "⚙️ Maintenance système",
+      "msg": "Une maintenance système est prévue."
+    },
+    "welcome": {
+      "title": "🎾 Bienvenue sur Spovio !",
+      "msg": "Bonjour {{name}}, bienvenue sur Spovio !"
+    },
+    "time": {
+      "justNow": "À l'instant",
+      "minAgo": "Il y a {{min}} min",
+      "hoursAgo": "Il y a {{hours}} h"
     }
   },
   "landing": {

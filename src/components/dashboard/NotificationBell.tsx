@@ -12,11 +12,12 @@ import { notificationService } from "@/lib/api";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { translateNotification } from "@/utils/notificationTranslator";
 
 interface Notification {
   id: number;
   notification_type?: string;
-  type?: string; // PadelVar uses this
+  type?: string;
   title: string;
   message: string;
   created_at: string;
@@ -24,51 +25,34 @@ interface Notification {
   link?: string;
 }
 
-// Helper to get emoji icon for notification type (like PadelVar)
 const getNotificationIcon = (type: string) => {
-  switch (type) {
-    case 'SUPPORT':
-      return '💬';
-    case 'VIDEO':
-      return '🎥';
-    case 'CREDIT':
-      return '💰';
-    case 'SYSTEM':
-      return '⚙️';
-    case 'SHARE':
-      return '🔗';
-    default:
-      return '📢';
+  switch (type?.toLowerCase()) {
+    case 'video_ready': case 'video': return '🎥';
+    case 'credit': case 'credits_added': case 'payment_success': case 'payment_failed': return '💰';
+    case 'support': return '💬';
+    case 'video_shared': case 'share': return '🔗';
+    case 'recording_started': case 'recording_stopped': return '⏺️';
+    case 'welcome': case 'system_maintenance': case 'system': return '⚙️';
+    default: return '📢';
   }
 };
 
-// Helper to format relative time (like PadelVar)
-const formatTime = (timestamp: string) => {
-  // Fix timezone issue: Treat timestamp as UTC if no timezone is provided
+const formatTime = (timestamp: string, t: (key: string, options?: object) => string, lang: string) => {
   const timestampStr = timestamp.endsWith('Z') ? timestamp : timestamp + 'Z';
   const date = new Date(timestampStr);
   const now = new Date();
-  const diff = Math.floor((now.getTime() - date.getTime()) / 1000); // en secondes
+  const diff = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-  if (diff < 60) return "À l'instant";
-  if (diff < 3600) return `Il y a ${Math.floor(diff / 60)} min`;
-  if (diff < 86400) return `Il y a ${Math.floor(diff / 3600)} h`;
-  return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+  if (diff < 60) return t('notifications.time.justNow');
+  if (diff < 3600) return t('notifications.time.minAgo', { min: Math.floor(diff / 60) });
+  if (diff < 86400) return t('notifications.time.hoursAgo', { hours: Math.floor(diff / 3600) });
+  return date.toLocaleDateString(lang, { day: 'numeric', month: 'short' });
 };
 
 export const NotificationBell = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState<Notification[]>([]);
-
-  const translateTitle = (title: string, type: string) => {
-    if (!title) return title;
-    if (title.includes('clip est pr')) return t('notifications.clipReady', '🎬 Your clip is ready!');
-    if (title.includes('vidéo est pr')) return t('notifications.videoReady', '🎬 Your video is ready!');
-    if (title.includes('vidéo partagée')) return t('notifications.types.VIDEO_SHARED.title', 'New video shared');
-    if (title.includes('Bienvenue')) return t('notifications.types.SYSTEM.title', 'Welcome to Spovio ! 🎾');
-    return title;
-  };
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -108,10 +92,10 @@ export const NotificationBell = () => {
     try {
       await notificationService.markAllAsRead();
       await loadNotifications(); // Reload to update count
-      toast.success('Toutes les notifications sont marquées comme lues');
+      toast.success(t('notifications.markedAllRead', 'Toutes les notifications sont marquées comme lues'));
     } catch (error) {
       console.error('Failed to mark all as read:', error);
-      toast.error('Erreur lors de la mise à jour');
+      toast.error(t('notifications.updateError', 'Erreur lors de la mise à jour'));
     }
   };
 
@@ -212,6 +196,7 @@ export const NotificationBell = () => {
               {notifications.map((notification) => {
                 const notifType = notification.notification_type || notification.type || 'SYSTEM';
                 const icon = getNotificationIcon(notifType);
+                const translated = translateNotification(notifType, notification.title, notification.message);
 
                 return (
                   <motion.div
@@ -230,7 +215,7 @@ export const NotificationBell = () => {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
                           <p className="font-medium text-sm">
-                            {translateTitle(notification.title, notifType)}
+                            {translated.title}
                           </p>
                           <div className="flex items-center gap-2 flex-shrink-0">
                             {!notification.is_read && (
@@ -247,10 +232,10 @@ export const NotificationBell = () => {
                           </div>
                         </div>
                         <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                          {notification.message}
+                          {translated.message}
                         </p>
                         <p className="text-xs text-muted-foreground/70 mt-1">
-                          {formatTime(notification.created_at)}
+                          {formatTime(notification.created_at, t, i18n.language)}
                         </p>
                       </div>
                     </div>

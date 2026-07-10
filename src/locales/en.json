@@ -601,19 +601,56 @@
   "notifications": {
     "empty": "No notifications",
     "markAllAsRead": "Mark all as read",
+    "markedAllRead": "All notifications marked as read",
+    "updateError": "Error updating notifications",
     "videoReady": "🎬 Your video is ready!",
     "videoReadyMsg": "The video '{{title}}' has been successfully processed.",
     "clipReady": "🎬 Your clip is ready!",
     "clipReadyMsg": "The clip '{{title}}' is ready.",
-    "types": {
-      "SYSTEM": {
-        "title": "Welcome to Spovio ! 🎾",
-        "message": "Hello {{name}}, welcome to Spovio ! Your account was created successfully via {{method}}."
-      },
-      "VIDEO_SHARED": {
-        "title": "New video shared",
-        "message": "{{sender}} shared a video with you: \"{{title}}\""
-      }
+    "recordingStarted": {
+      "title": "⏺️ Recording started",
+      "msg": "Recording has started on {{courtName}}."
+    },
+    "recordingStopped": {
+      "title": "⏺️ Recording stopped",
+      "msg": "Recording has stopped."
+    },
+    "creditsAdded": {
+      "title": "💰 Credits added",
+      "msg": "{{amount}} credits have been added to your account."
+    },
+    "credit": {
+      "title": "💰 Credit alert",
+      "msg": "{{amount}} credits have been adjusted on your account."
+    },
+    "paymentSuccess": {
+      "title": "💳 Payment successful",
+      "msg": "Payment of {{amount}}€ was successful."
+    },
+    "paymentFailed": {
+      "title": "💳 Payment failed",
+      "msg": "Payment of {{amount}}€ has failed."
+    },
+    "support": {
+      "title": "💬 Support response",
+      "msg": "Support has responded to your message: '{{subject}}'"
+    },
+    "videoShared": {
+      "title": "🔗 New video shared",
+      "msg": "{{sender}} shared a video with you."
+    },
+    "systemMaintenance": {
+      "title": "⚙️ System maintenance",
+      "msg": "System maintenance is scheduled."
+    },
+    "welcome": {
+      "title": "🎾 Welcome to Spovio!",
+      "msg": "Hello {{name}}, welcome to Spovio!"
+    },
+    "time": {
+      "justNow": "Just now",
+      "minAgo": "{{min}} min ago",
+      "hoursAgo": "{{hours}}h ago"
     }
   },
   "landing": {
