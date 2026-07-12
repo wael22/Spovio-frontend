@@ -92,9 +92,11 @@ const Auth = () => {
       }
     } catch (error: any) {
       console.error('Login error:', error);
+      const errorCode = error?.message;
+      const errorKey = errorCode ? `auth.errors.${errorCode}` : 'auth.loginErrorDesc';
       toast({
         title: t("auth.loginError"),
-        description: error.message || t("auth.loginErrorDesc"),
+        description: t(errorKey, { defaultValue: error.message || t("auth.loginErrorDesc") }),
         variant: "destructive",
       });
     } finally {
@@ -158,17 +160,22 @@ const Auth = () => {
         setMode("login");
         setLoginForm({ ...loginForm, email: userData.email });
       } else {
+        const errorCode = result.error;
+        const errorKey = errorCode ? `auth.errors.${errorCode}` : 'auth.registrationErrorDesc';
         toast({
           title: t("auth.registrationError"),
-          description: result.error || t("auth.registrationErrorDesc"),
+          description: t(errorKey, { defaultValue: result.error || t("auth.registrationErrorDesc") }),
           variant: "destructive",
         });
       }
     } catch (error: any) {
       console.error('Registration error:', error);
+      const errorData = error?.response?.data;
+      const errorCode = errorData?.error;
+      const errorKey = errorCode ? `auth.errors.${errorCode}` : 'auth.registrationErrorDesc';
       toast({
         title: t("auth.registrationError"),
-        description: error?.message || t("auth.registrationErrorDesc"),
+        description: t(errorKey, { defaultValue: error?.message || t("auth.registrationErrorDesc") }),
         variant: "destructive",
       });
     } finally {

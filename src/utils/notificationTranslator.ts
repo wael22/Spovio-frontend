@@ -67,7 +67,7 @@ const patterns: Record<string, PatternConfig> = {
   welcome: {
     titleKey: "notifications.welcome.title",
     msgKey: "notifications.welcome.msg",
-    regex: /Bonjour\s+(\w+)/,
+    regex: /Bonjour\s+(.+?),/,
     paramNames: ["name"],
   },
 };
