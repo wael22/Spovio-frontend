@@ -210,6 +210,7 @@
       "carteBancaire": "Credit Card",
       "carteBancaireDesc": "Payment via Visa/MasterCard",
       "methodAvailable": "Available",
+      "methodNotAvailable": "Not Available",
       "methodComingSoon": "Coming Soon",
       "processing": "Processing...",
       "proceedPayment": "Proceed to Payment",
@@ -218,7 +219,11 @@
       "success": "Purchase of {{amount}} credits successful!",
       "error": "Purchase error",
       "loadError": "Unable to load data",
-      "loading": "Loading packages..."
+      "loading": "Loading packages...",
+      "clubPopupTitle": "Credit Purchase",
+      "clubPopupDescription": "For now, the only channel to purchase credits is through the club.",
+      "clubPopupContact": "You can contact your club manager to purchase credits.",
+      "clubPopupClose": "Got it"
     },
     "support": {
       "title": "Support",

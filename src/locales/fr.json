@@ -210,6 +210,7 @@
       "carteBancaire": "Carte Bancaire",
       "carteBancaireDesc": "Paiement par carte Visa/MasterCard",
       "methodAvailable": "Disponible",
+      "methodNotAvailable": "Non Disponible",
       "methodComingSoon": "Bientôt",
       "processing": "Traitement en cours...",
       "proceedPayment": "Procéder au paiement",
@@ -218,7 +219,11 @@
       "success": "Achat de {{amount}} crédits réussi !",
       "error": "Erreur lors de l'achat",
       "loadError": "Impossible de charger les données",
-      "loading": "Chargement des packages..."
+      "loading": "Chargement des packages...",
+      "clubPopupTitle": "Achat de Crédits",
+      "clubPopupDescription": "Pour le moment, le seul canal de vente des crédits est par le club.",
+      "clubPopupContact": "Vous pouvez contacter le responsable de votre club pour acquérir des crédits.",
+      "clubPopupClose": "Compris"
     },
     "support": {
       "title": "Support",

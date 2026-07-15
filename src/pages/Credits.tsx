@@ -5,6 +5,14 @@ import { videoService } from "@/lib/api";
 import { DashboardNavbar } from "@/components/dashboard/DashboardNavbar";
 import { Button } from "@/components/ui/button";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Coins,
   CreditCard,
   Smartphone,
@@ -14,6 +22,7 @@ import {
   Clock,
   Shield,
   Loader2,
+  Building2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
@@ -88,6 +97,12 @@ const Credits = () => {
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState(false);
+  const [showClubPopup, setShowClubPopup] = useState(false);
+
+  // Auto-open popup on mount
+  useEffect(() => {
+    setShowClubPopup(true);
+  }, []);
 
   // Load credit packages and payment methods from API
   useEffect(() => {
@@ -178,6 +193,31 @@ const Credits = () => {
 
   return (
     <>
+      {/* Auto-popup informing player to contact club */}
+      <Dialog open={showClubPopup} onOpenChange={setShowClubPopup}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Building2 className="h-5 w-5 text-primary" />
+              {t('pages.credits.clubPopupTitle')}
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground pt-2">
+              {t('pages.credits.clubPopupDescription')}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="bg-primary/5 border border-primary/20 rounded-xl p-4">
+            <p className="text-sm text-muted-foreground">
+              {t('pages.credits.clubPopupContact')}
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="neon" onClick={() => setShowClubPopup(false)}>
+              {t('pages.credits.clubPopupClose')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <div className="container mx-auto px-4 lg:px-8">
         {/* Header */}
         <motion.div
@@ -344,12 +384,12 @@ const Credits = () => {
                 </div>
               </div>
               <div className="text-right">
-                <span className="px-2 py-1 rounded-full text-xs bg-neon-green/10 text-neon-green">
-                  {t('pages.credits.methodAvailable') || 'Disponible'}
+                <span className="px-2 py-1 rounded-full text-xs bg-red-500/10 text-red-500">
+                  {t('pages.credits.methodNotAvailable') || 'Non Disponible'}
                 </span>
                 <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1 justify-end">
                   <Clock className="h-3 w-3" />
-                  Instantané
+                  {t('pages.credits.methodNotAvailable') || 'Non Disponible'}
                 </p>
               </div>
             </motion.button>
