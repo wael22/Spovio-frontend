@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Plus, MoreVertical, Edit, Trash2, Coins, Loader2, Search, RefreshCw, ArrowUpDown, ArrowUp, ArrowDown, User, Upload, X } from 'lucide-react';
+import { Plus, MoreVertical, Edit, Trash2, Coins, Loader2, Search, RefreshCw, ArrowUpDown, ArrowUp, ArrowDown, User, Upload, X, MailCheck, MailX } from 'lucide-react';
 
 interface User {
     id: string;
@@ -21,6 +21,7 @@ interface User {
     avatar?: string;
     credits_balance: number;
     video_count?: number;
+    email_verified?: boolean;
 }
 
 interface UserManagementProps {
@@ -193,6 +194,15 @@ const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate }) => {
         }
     };
 
+    const handleToggleEmailVerified = async (user: User) => {
+        try {
+            await adminService.toggleEmailVerified(user.id);
+            loadUsers();
+        } catch (error) {
+            setError('Erreur lors de la mise à jour de la vérification email');
+        }
+    };
+
     const handleSort = (column: keyof User) => {
         if (sortBy === column) {
             setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
@@ -331,6 +341,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate }) => {
                                     <TableHead className="cursor-pointer select-none" onClick={() => handleSort('video_count')}>
                                         <div className="flex items-center">Vidéos {getSortIcon('video_count')}</div>
                                     </TableHead>
+                                    <TableHead>Email Vérifié</TableHead>
                                     <TableHead>Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -365,12 +376,30 @@ const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate }) => {
                                         </TableCell>
                                         <TableCell><span className="font-medium">{user.video_count || 0}</span></TableCell>
                                         <TableCell>
+                                            {user.email_verified ? (
+                                                <Badge variant="default" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                                    <MailCheck className="h-3 w-3 mr-1" />Vérifié
+                                                </Badge>
+                                            ) : (
+                                                <Badge variant="secondary" className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                                                    <MailX className="h-3 w-3 mr-1" />Non vérifié
+                                                </Badge>
+                                            )}
+                                        </TableCell>
+                                        <TableCell>
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild><Button variant="ghost" size="sm"><MoreVertical className="h-4 w-4" /></Button></DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
                                                     <DropdownMenuItem onClick={() => openAvatarModal(user)}><Upload className="mr-2 h-4 w-4" />Changer Avatar</DropdownMenuItem>
                                                     <DropdownMenuItem onClick={() => openEditModal(user)}><Edit className="mr-2 h-4 w-4" />Modifier</DropdownMenuItem>
                                                     <DropdownMenuItem onClick={() => openCreditsModal(user)}><Coins className="mr-2 h-4 w-4" />Ajouter crédits</DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => handleToggleEmailVerified(user)}>
+                                                        {user.email_verified ? (
+                                                            <><MailX className="mr-2 h-4 w-4" />Désactiver email</>
+                                                        ) : (
+                                                            <><MailCheck className="mr-2 h-4 w-4" />Activer email</>
+                                                        )}
+                                                    </DropdownMenuItem>
                                                     <DropdownMenuItem onClick={() => handleDeleteUser(user.id)} className="text-red-600"><Trash2 className="mr-2 h-4 w-4" />Supprimer</DropdownMenuItem>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>

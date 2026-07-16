@@ -383,6 +383,9 @@ export const adminService = {
         court_id?: number;
     }) => api.post('/admin/videos/create-manual', data),
 
+    // Email Verification Toggle
+    toggleEmailVerified: (userId: string) => api.post(`/admin/users/${userId}/toggle-email-verified`),
+
     // Credits Management
     addCredits: (userId: string, credits: number) => api.post(`/admin/users/${userId}/credits`, { credits }),
     addCreditsToClub: (clubId: string, credits: number) => api.post(`/admin/clubs/${clubId}/credits`, { credits }),
