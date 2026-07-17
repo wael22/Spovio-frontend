@@ -22,6 +22,7 @@ interface User {
     credits_balance: number;
     video_count?: number;
     email_verified?: boolean;
+    created_at?: string;
 }
 
 interface UserManagementProps {
@@ -332,6 +333,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate }) => {
                                         <div className="flex items-center">Email {getSortIcon('email')}</div>
                                     </TableHead>
                                     <TableHead>Téléphone</TableHead>
+                                    <TableHead className="w-16">#</TableHead>
                                     <TableHead className="cursor-pointer select-none" onClick={() => handleSort('role')}>
                                         <div className="flex items-center">Rôle {getSortIcon('role')}</div>
                                     </TableHead>
@@ -342,12 +344,18 @@ const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate }) => {
                                         <div className="flex items-center">Vidéos {getSortIcon('video_count')}</div>
                                     </TableHead>
                                     <TableHead>Email Vérifié</TableHead>
+                                    <TableHead className="cursor-pointer select-none" onClick={() => handleSort('created_at')}>
+                                        <div className="flex items-center">Inscription {getSortIcon('created_at')}</div>
+                                    </TableHead>
                                     <TableHead>Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {sortedUsers.map((user) => (
                                     <TableRow key={user.id}>
+                                        <TableCell className="text-gray-500 dark:text-gray-400 font-mono text-sm">
+                                            {user.id}
+                                        </TableCell>
                                         <TableCell className="font-medium">
                                             <div className="flex items-center space-x-3">
                                                 {user.avatar ? (
@@ -385,6 +393,9 @@ const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate }) => {
                                                     <MailX className="h-3 w-3 mr-1" />Non vérifié
                                                 </Badge>
                                             )}
+                                        </TableCell>
+                                        <TableCell className="text-sm text-gray-500 dark:text-gray-400">
+                                            {user.created_at ? new Date(user.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
                                         </TableCell>
                                         <TableCell>
                                             <DropdownMenu>
