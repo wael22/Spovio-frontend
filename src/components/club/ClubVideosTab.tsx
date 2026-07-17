@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Video, User, Calendar, Clock, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Video, User, Calendar, Clock, ArrowUpDown, ArrowUp, ArrowDown, Search, X } from 'lucide-react';
 
 interface ClubVideo {
     id: string;
@@ -22,6 +23,7 @@ type SortDirection = 'asc' | 'desc' | null;
 const ClubVideosTab: React.FC<ClubVideosTabProps> = ({ videos }) => {
     const [sortField, setSortField] = useState<SortField | null>(null);
     const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+    const [searchTerm, setSearchTerm] = useState('');
 
     const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString('fr-FR', {
         day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
@@ -34,11 +36,22 @@ const ClubVideosTab: React.FC<ClubVideosTabProps> = ({ videos }) => {
         return `${mins}:${secs.toString().padStart(2, '0')}`;
     };
 
+    // Filter videos by search term
+    const filteredVideos = useMemo(() => {
+        if (!searchTerm) return videos;
+        const term = searchTerm.toLowerCase();
+        return videos.filter(v =>
+            (v.title || 'Sans titre').toLowerCase().includes(term) ||
+            v.player_name.toLowerCase().includes(term) ||
+            (v.court_name || '').toLowerCase().includes(term)
+        );
+    }, [videos, searchTerm]);
+
     // Sort videos
     const sortedVideos = useMemo(() => {
-        if (!sortField || !sortDirection) return videos;
+        if (!sortField || !sortDirection) return filteredVideos;
 
-        return [...videos].sort((a, b) => {
+        return [...filteredVideos].sort((a, b) => {
             let aValue: any;
             let bValue: any;
 
@@ -60,7 +73,7 @@ const ClubVideosTab: React.FC<ClubVideosTabProps> = ({ videos }) => {
             if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
             return 0;
         });
-    }, [videos, sortField, sortDirection]);
+    }, [filteredVideos, sortField, sortDirection]);
 
     const handleSort = (field: SortField) => {
         if (sortField === field) {
@@ -92,14 +105,40 @@ const ClubVideosTab: React.FC<ClubVideosTabProps> = ({ videos }) => {
             <CardHeader>
                 <CardTitle>Vidéos du Club</CardTitle>
                 <CardDescription>
-                    {sortedVideos.length} vidéo(s) enregistrée(s)
+                    {searchTerm
+                        ? `${sortedVideos.length} résultat(s) pour "${searchTerm}" (${videos.length} total)`
+                        : `${sortedVideos.length} vidéo(s) enregistrée(s)`
+                    }
                 </CardDescription>
             </CardHeader>
             <CardContent>
+                {videos.length > 0 && (
+                    <div className="mb-4">
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                            <Input
+                                placeholder="Rechercher par titre, joueur ou terrain..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="pl-10 pr-10"
+                            />
+                            {searchTerm && (
+                                <button
+                                    onClick={() => setSearchTerm('')}
+                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                >
+                                    <X className="h-4 w-4" />
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                )}
                 {sortedVideos.length === 0 ? (
                     <div className="text-center py-8">
                         <Video className="h-12 w-12 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
-                        <p className="text-gray-600 dark:text-gray-400">Aucune vidéo enregistrée</p>
+                        <p className="text-gray-600 dark:text-gray-400">
+                            {searchTerm ? `Aucun résultat pour "${searchTerm}"` : 'Aucune vidéo enregistrée'}
+                        </p>
                     </div>
                 ) : (
                     <Table>

@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { clubService } from '@/lib/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Coins, Calendar, Gift, Loader2, User } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Coins, Calendar, Gift, Loader2, User, Search, X } from 'lucide-react';
 
 interface HistoryEntry {
     id: number;
@@ -17,6 +18,7 @@ interface HistoryEntry {
 const ClubHistory: React.FC = () => {
     const [history, setHistory] = useState<HistoryEntry[]>([]);
     const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         loadHistory();
@@ -41,6 +43,14 @@ const ClubHistory: React.FC = () => {
             setLoading(false);
         }
     };
+
+    const filteredHistory = useMemo(() => {
+        if (!searchTerm) return history;
+        const term = searchTerm.toLowerCase();
+        return history.filter(entry =>
+            entry.player_name.toLowerCase().includes(term)
+        );
+    }, [history, searchTerm]);
 
     const formatDate = (dateString: string) => {
         const dateStr = dateString.endsWith('Z') ? dateString : dateString + 'Z';
@@ -156,7 +166,10 @@ const ClubHistory: React.FC = () => {
                     <CardTitle>Historique des Crédits</CardTitle>
                 </div>
                 <CardDescription>
-                    Historique des crédits offerts aux joueurs du club
+                    {searchTerm
+                        ? `${filteredHistory.length} résultat(s) pour "${searchTerm}" (${history.length} total)`
+                        : 'Historique des crédits offerts aux joueurs du club'
+                    }
                 </CardDescription>
             </CardHeader>
             <CardContent>
@@ -170,6 +183,32 @@ const ClubHistory: React.FC = () => {
                         <p className="text-gray-600 dark:text-gray-400">Aucun historique de crédits</p>
                     </div>
                 ) : (
+                    <div>
+                        <div className="mb-4">
+                            <div className="relative">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                <Input
+                                    placeholder="Rechercher par nom de joueur..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="pl-10 pr-10"
+                                />
+                                {searchTerm && (
+                                    <button
+                                        onClick={() => setSearchTerm('')}
+                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                    >
+                                        <X className="h-4 w-4" />
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                        {filteredHistory.length === 0 ? (
+                            <div className="text-center py-8">
+                                <Gift className="h-12 w-12 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
+                                <p className="text-gray-600 dark:text-gray-400">Aucun résultat pour "{searchTerm}"</p>
+                            </div>
+                        ) : (
                     <Table>
                         <TableHeader>
                             <TableRow>
@@ -180,7 +219,7 @@ const ClubHistory: React.FC = () => {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {history.map((entry) => {
+                            {filteredHistory.map((entry) => {
                                 const actionInfo = getActionLabel(entry.action_type, entry.action_details);
                                 return (
                                     <TableRow key={entry.id}>
@@ -211,6 +250,8 @@ const ClubHistory: React.FC = () => {
                             })}
                         </TableBody>
                     </Table>
+                        )}
+                    </div>
                 )}
             </CardContent>
         </Card>

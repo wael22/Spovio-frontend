@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { User, Coins, Plus, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { User, Coins, Plus, ArrowUpDown, ArrowUp, ArrowDown, Search, X } from 'lucide-react';
 
 interface Player {
     id: string;
@@ -37,6 +37,7 @@ const ClubPlayersTab: React.FC<ClubPlayersTabProps> = ({ players, videos, onPlay
     const [creditsToAdd, setCreditsToAdd] = useState(0);
     const [sortField, setSortField] = useState<SortField | null>(null);
     const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+    const [searchTerm, setSearchTerm] = useState('');
 
     // Calculate video count for each player
     const playersWithVideoCounts = useMemo(() => {
@@ -49,11 +50,21 @@ const ClubPlayersTab: React.FC<ClubPlayersTabProps> = ({ players, videos, onPlay
         });
     }, [players, videos]);
 
+    // Filter players by search term
+    const filteredPlayers = useMemo(() => {
+        if (!searchTerm) return playersWithVideoCounts;
+        const term = searchTerm.toLowerCase();
+        return playersWithVideoCounts.filter(p =>
+            p.name.toLowerCase().includes(term) ||
+            p.email.toLowerCase().includes(term)
+        );
+    }, [playersWithVideoCounts, searchTerm]);
+
     // Sort players
     const sortedPlayers = useMemo(() => {
-        if (!sortField || !sortDirection) return playersWithVideoCounts;
+        if (!sortField || !sortDirection) return filteredPlayers;
 
-        return [...playersWithVideoCounts].sort((a, b) => {
+        return [...filteredPlayers].sort((a, b) => {
             let aValue: any;
             let bValue: any;
 
@@ -69,7 +80,7 @@ const ClubPlayersTab: React.FC<ClubPlayersTabProps> = ({ players, videos, onPlay
             if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
             return 0;
         });
-    }, [playersWithVideoCounts, sortField, sortDirection]);
+    }, [filteredPlayers, sortField, sortDirection]);
 
     const handleSort = (field: SortField) => {
         if (sortField === field) {
@@ -122,14 +133,40 @@ const ClubPlayersTab: React.FC<ClubPlayersTabProps> = ({ players, videos, onPlay
             <CardHeader>
                 <CardTitle>Joueurs du Club</CardTitle>
                 <CardDescription>
-                    {sortedPlayers.length} joueur(s) inscrit(s)
+                    {searchTerm
+                        ? `${sortedPlayers.length} résultat(s) pour "${searchTerm}" (${players.length} joueur(s) total)`
+                        : `${sortedPlayers.length} joueur(s) inscrit(s)`
+                    }
                 </CardDescription>
             </CardHeader>
             <CardContent>
+                {players.length > 0 && (
+                    <div className="mb-4">
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                            <Input
+                                placeholder="Rechercher par nom ou email..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="pl-10 pr-10"
+                            />
+                            {searchTerm && (
+                                <button
+                                    onClick={() => setSearchTerm('')}
+                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                >
+                                    <X className="h-4 w-4" />
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                )}
                 {sortedPlayers.length === 0 ? (
                     <div className="text-center py-8">
                         <User className="h-12 w-12 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
-                        <p className="text-gray-600 dark:text-gray-400">Aucun joueur inscrit</p>
+                        <p className="text-gray-600 dark:text-gray-400">
+                            {searchTerm ? `Aucun résultat pour "${searchTerm}"` : 'Aucun joueur inscrit'}
+                        </p>
                     </div>
                 ) : (
                     <Table>
