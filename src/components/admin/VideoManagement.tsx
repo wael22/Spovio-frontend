@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Video, Loader2, Trash2, User, Building, MoreVertical, HardDrive, Cloud, AlertTriangle, ArrowUpDown, ArrowUp, ArrowDown, RefreshCw, Edit, Plus } from 'lucide-react';
+import { Video, Loader2, Trash2, User, Building, MoreVertical, HardDrive, Cloud, AlertTriangle, ArrowUpDown, ArrowUp, ArrowDown, RefreshCw, Edit, Plus, Archive } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface VideoData {
@@ -123,6 +123,19 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ onStatsUpdate }) => {
         } catch (error) {
             toast.error('Erreur lors de la suppression');
             setError('Erreur lors de la suppression');
+        }
+    };
+
+    const handleArchiveVideo = async (videoId: string) => {
+        if (!confirm('Voulez-vous archiver cette vidéo vers AWS S3 Cold Storage (Glacier) et la supprimer de Bunny CDN ?')) return;
+
+        try {
+            await adminService.archiveVideo(videoId);
+            toast.success('Vidéo archivée avec succès vers S3 Glacier');
+            loadVideos();
+            onStatsUpdate?.();
+        } catch (error) {
+            toast.error('Erreur lors de l\'archivage');
         }
     };
 
@@ -455,6 +468,19 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ onStatsUpdate }) => {
                                                             <div className="text-xs text-muted-foreground">Expire la vidéo, garde stats</div>
                                                         </div>
                                                     </DropdownMenuItem>
+
+                                                    {video.bunny_video_id && video.processing_status !== 'expired' && (
+                                                        <DropdownMenuItem
+                                                            onClick={() => handleArchiveVideo(video.id)}
+                                                            className="cursor-pointer text-amber-600 dark:text-amber-400"
+                                                        >
+                                                            <Archive className="mr-2 h-4 w-4 text-amber-600" />
+                                                            <div className="flex-1">
+                                                                <div className="font-semibold"> Archiver vers S3 Glacier</div>
+                                                                <div className="text-xs text-muted-foreground">Transfère vers S3 et supprime de Bunny</div>
+                                                            </div>
+                                                        </DropdownMenuItem>
+                                                    )}
 
                                                     <DropdownMenuSeparator />
 
