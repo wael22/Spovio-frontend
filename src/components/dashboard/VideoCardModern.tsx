@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   Play,
@@ -9,7 +9,10 @@ import {
   Clock,
   MapPin,
   Edit,
-  Download
+  Download,
+  Lock,
+  AlertTriangle,
+  Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -91,21 +94,23 @@ export function VideoCardModern({
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
         {/* Play Button */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: isHovered ? 1 : 0, scale: isHovered ? 1 : 0.8 }}
-          transition={{ duration: 0.2 }}
-          className="absolute inset-0 flex items-center justify-center"
-        >
-          <Button
-            variant="neon"
-            size="icon"
-            onClick={onPlay}
-            className="h-14 w-14 rounded-full animate-pulse-glow"
+        {!isExpired && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: isHovered ? 1 : 0, scale: isHovered ? 1 : 0.8 }}
+            transition={{ duration: 0.2 }}
+            className="absolute inset-0 flex items-center justify-center"
           >
-            <Play className="h-6 w-6 fill-current" />
-          </Button>
-        </motion.div>
+            <Button
+              variant="neon"
+              size="icon"
+              onClick={onPlay}
+              className="h-14 w-14 rounded-full animate-pulse-glow"
+            >
+              <Play className="h-6 w-6 fill-current" />
+            </Button>
+          </motion.div>
+        )}
 
         {/* Duration Badge */}
         <div className="absolute bottom-3 left-3 flex items-center gap-1.5 px-2 py-1 rounded-md bg-black/60 backdrop-blur-sm">
@@ -169,11 +174,11 @@ export function VideoCardModern({
               <Scissors className="h-4 w-4 mr-2" />
               {isExpired ? t('components.videoCard.menu.createClipUnavailable') : t('components.videoCard.menu.createClip')}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={onEdit}>
+            <DropdownMenuItem onClick={onEdit} disabled={isExpired}>
               <Edit className="h-4 w-4 mr-2" />
               {t('components.videoCard.menu.editTitle')}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={onShare}>
+            <DropdownMenuItem onClick={onShare} disabled={isExpired}>
               <Share2 className="h-4 w-4 mr-2" />
               {t('components.videoCard.menu.share')}
             </DropdownMenuItem>
