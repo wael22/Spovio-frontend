@@ -543,7 +543,7 @@
     "videoCard": {
       "badges": {
         "shared": "Shared",
-        "expired": "🔒 Expired",
+        "expired": "Expired",
         "failed": "⚠️ Failed",
         "processing": "⚙️ Processing...",
         "pending": "⏳ Pending..."

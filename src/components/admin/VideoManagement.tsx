@@ -255,7 +255,8 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ onStatsUpdate }) => {
             'processing': { label: '⏳ Traitement', className: 'bg-yellow-100 text-yellow-800 dark:text-yellow-200 border-yellow-200' },
             'uploading': { label: '📤 Upload', className: 'bg-blue-100 text-blue-800 dark:text-blue-200 border-blue-200' },
             'failed': { label: '❌ Échec', className: 'bg-red-100 text-red-800 dark:text-red-200 border-red-200' },
-            'pending': { label: '⏸️ En attente', className: 'bg-gray-100 text-gray-800 border-gray-200 dark:border-gray-700' }
+            'pending': { label: '⏸️ En attente', className: 'bg-gray-100 text-gray-800 border-gray-200 dark:border-gray-700' },
+            'expired': { label: '⚠️ Expirée', className: 'bg-amber-100 text-amber-800 dark:text-amber-200 border-amber-200' }
         };
 
         const config = statusConfig[status || 'pending'] || { label: status || 'Inconnu', className: 'bg-gray-100 text-gray-800 border-gray-200 dark:border-gray-700' };
@@ -324,6 +325,7 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ onStatsUpdate }) => {
                                     <option value="failed">❌ Échecs</option>
                                     <option value="uploading">📤 Upload</option>
                                     <option value="pending">⏸️ En attente</option>
+                                    <option value="expired">⚠️ Expirée</option>
                                 </select>
                             </div>
                         </div>
