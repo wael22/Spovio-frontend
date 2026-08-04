@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   Play,
@@ -9,7 +9,10 @@ import {
   Clock,
   MapPin,
   Edit,
-  Download
+  Download,
+  Lock,
+  AlertTriangle,
+  Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,6 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { useTranslation } from "react-i18next";
+import { cn } from "@/lib/utils";
 
 interface VideoCardModernProps {
   id: string;
@@ -73,39 +77,58 @@ export function VideoCardModern({
 
   return (
     <motion.div
-      whileHover={{ y: -8 }}
+      whileHover={{ y: isExpired ? 0 : -8 }}
       transition={{ duration: 0.3 }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="group relative rounded-2xl overflow-hidden glass border border-border/50 hover:border-primary/50 transition-all duration-300 card-glow"
+      className={cn(
+        "group relative rounded-2xl overflow-hidden glass border transition-all duration-300",
+        isExpired
+          ? "border-neutral-800 bg-neutral-950/40 opacity-75 grayscale-[20%]"
+          : "border-border/50 hover:border-primary/50 card-glow"
+      )}
     >
       {/* Thumbnail */}
       <div className="relative aspect-video overflow-hidden">
         <img
           src={thumbnail}
           alt={title}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+          className={cn(
+            "w-full h-full object-cover transition-transform duration-500",
+            isExpired ? "brightness-75 contrast-90" : "group-hover:scale-110"
+          )}
         />
 
         {/* Overlay Gradient */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
+        {/* Center Lock Overlay when Expired */}
+        {isExpired && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[1px] pointer-events-none">
+            <div className="p-3 rounded-full bg-neutral-900/80 border border-neutral-700/60 text-neutral-400 shadow-inner">
+              <Lock className="h-5 w-5" />
+            </div>
+          </div>
+        )}
+
         {/* Play Button */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: isHovered ? 1 : 0, scale: isHovered ? 1 : 0.8 }}
-          transition={{ duration: 0.2 }}
-          className="absolute inset-0 flex items-center justify-center"
-        >
-          <Button
-            variant="neon"
-            size="icon"
-            onClick={onPlay}
-            className="h-14 w-14 rounded-full animate-pulse-glow"
+        {!isExpired && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: isHovered ? 1 : 0, scale: isHovered ? 1 : 0.8 }}
+            transition={{ duration: 0.2 }}
+            className="absolute inset-0 flex items-center justify-center"
           >
-            <Play className="h-6 w-6 fill-current" />
-          </Button>
-        </motion.div>
+            <Button
+              variant="neon"
+              size="icon"
+              onClick={onPlay}
+              className="h-14 w-14 rounded-full animate-pulse-glow"
+            >
+              <Play className="h-6 w-6 fill-current" />
+            </Button>
+          </motion.div>
+        )}
 
         {/* Duration Badge */}
         <div className="absolute bottom-3 left-3 flex items-center gap-1.5 px-2 py-1 rounded-md bg-black/60 backdrop-blur-sm">
@@ -123,8 +146,9 @@ export function VideoCardModern({
 
         {/* Expired Badge */}
         {isExpired && !isFailed && !isProcessing && (
-          <Badge className="absolute top-3 left-3 bg-destructive/90 hover:bg-destructive text-destructive-foreground">
-            {t('components.videoCard.badges.expired')}
+          <Badge className="absolute top-3 left-3 bg-neutral-900/90 text-neutral-300 border border-neutral-700/60 shadow-sm font-medium tracking-wide flex items-center px-2.5 py-1 backdrop-blur-md">
+            <Lock className="h-3 w-3 mr-1.5 text-neutral-400" />
+            <span>{t('components.videoCard.badges.expired')}</span>
           </Badge>
         )}
 
@@ -169,11 +193,11 @@ export function VideoCardModern({
               <Scissors className="h-4 w-4 mr-2" />
               {isExpired ? t('components.videoCard.menu.createClipUnavailable') : t('components.videoCard.menu.createClip')}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={onEdit}>
+            <DropdownMenuItem onClick={onEdit} disabled={isExpired}>
               <Edit className="h-4 w-4 mr-2" />
               {t('components.videoCard.menu.editTitle')}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={onShare}>
+            <DropdownMenuItem onClick={onShare} disabled={isExpired}>
               <Share2 className="h-4 w-4 mr-2" />
               {t('components.videoCard.menu.share')}
             </DropdownMenuItem>
@@ -196,7 +220,7 @@ export function VideoCardModern({
 
       {/* Content */}
       <div className="p-4">
-        <h3 className="font-semibold text-foreground line-clamp-1 mb-2 group-hover:text-primary transition-colors">
+        <h3 className={cn("font-semibold text-foreground line-clamp-1 mb-2 transition-colors", !isExpired && "group-hover:text-primary")}>
           {title}
         </h3>
 

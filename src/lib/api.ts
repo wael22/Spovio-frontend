@@ -368,6 +368,8 @@ export const adminService = {
         api.patch(`/admin/clips/${clipId}`, data),
     deleteVideo: (videoId: string, mode: 'local_only' | 'cloud_only' | 'local_and_cloud' = 'local_and_cloud') =>
         api.delete(`/admin/videos/${videoId}`, { data: { mode } }),
+    archiveVideo: (videoId: number | string) =>
+        api.post(`/admin/videos/${videoId}/archive`),
 
     // Video Upload Recovery
     retryBunnyUpload: (videoId: string) =>
