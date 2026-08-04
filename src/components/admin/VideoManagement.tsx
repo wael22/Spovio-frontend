@@ -256,15 +256,15 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ onStatsUpdate }) => {
             return (
                 <Badge variant="outline" className="bg-amber-100 text-amber-900 dark:text-amber-200 border-amber-300 dark:border-amber-700 font-semibold flex items-center gap-1 w-fit">
                     <Archive className="h-3 w-3 text-amber-600 dark:text-amber-400" />
-                    <span>Archivée (S3)</span>
+                    <span>⚠️ Expirée (S3)</span>
                 </Badge>
             );
         }
 
         if (video.processing_status === 'expired' || video.deletion_mode === 'cloud_only' || video.deletion_mode === 'local_and_cloud' || video.cloud_deleted_at) {
             return (
-                <Badge variant="outline" className="bg-slate-100 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700 flex items-center gap-1 w-fit">
-                    🔒 Expirée
+                <Badge variant="outline" className="bg-amber-100 text-amber-800 dark:text-amber-200 border-amber-200 flex items-center gap-1 w-fit">
+                    <span>⚠️ Expirée</span>
                 </Badge>
             );
         }
