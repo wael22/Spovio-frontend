@@ -23,6 +23,8 @@ interface VideoData {
     deletion_mode?: string;
     processing_status?: string;
     bunny_video_id?: string;
+    file_url?: string;
+    cloud_deleted_at?: string;
     has_local_file?: boolean;
 }
 
@@ -249,17 +251,33 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ onStatsUpdate }) => {
             <ArrowDown className="h-4 w-4 ml-1" />;
     };
 
-    const getStatusBadge = (status?: string) => {
+    const getStatusBadge = (video: VideoData) => {
+        if (video.deletion_mode === 'archived_glacier' || (video.file_url && video.file_url.startsWith('s3://'))) {
+            return (
+                <Badge variant="outline" className="bg-amber-100 text-amber-900 dark:text-amber-200 border-amber-300 dark:border-amber-700 font-semibold flex items-center gap-1 w-fit">
+                    <Archive className="h-3 w-3 text-amber-600 dark:text-amber-400" />
+                    <span>Archivée (S3)</span>
+                </Badge>
+            );
+        }
+
+        if (video.processing_status === 'expired' || video.deletion_mode === 'cloud_only' || video.deletion_mode === 'local_and_cloud' || video.cloud_deleted_at) {
+            return (
+                <Badge variant="outline" className="bg-slate-100 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700 flex items-center gap-1 w-fit">
+                    🔒 Expirée
+                </Badge>
+            );
+        }
+
         const statusConfig: Record<string, { label: string; className: string }> = {
             'ready': { label: '✅ Prête', className: 'bg-green-100 text-green-800 dark:text-green-200 border-green-200' },
             'processing': { label: '⏳ Traitement', className: 'bg-yellow-100 text-yellow-800 dark:text-yellow-200 border-yellow-200' },
             'uploading': { label: '📤 Upload', className: 'bg-blue-100 text-blue-800 dark:text-blue-200 border-blue-200' },
             'failed': { label: '❌ Échec', className: 'bg-red-100 text-red-800 dark:text-red-200 border-red-200' },
-            'pending': { label: '⏸️ En attente', className: 'bg-gray-100 text-gray-800 border-gray-200 dark:border-gray-700' },
-            'expired': { label: '⚠️ Expirée', className: 'bg-amber-100 text-amber-800 dark:text-amber-200 border-amber-200' }
+            'pending': { label: '⏸️ En attente', className: 'bg-gray-100 text-gray-800 border-gray-200 dark:border-gray-700' }
         };
 
-        const config = statusConfig[status || 'pending'] || { label: status || 'Inconnu', className: 'bg-gray-100 text-gray-800 border-gray-200 dark:border-gray-700' };
+        const config = statusConfig[video.processing_status || 'pending'] || { label: video.processing_status || 'Inconnu', className: 'bg-gray-100 text-gray-800 border-gray-200 dark:border-gray-700' };
         return (
             <Badge variant="outline" className={config.className}>
                 {config.label}
@@ -401,7 +419,7 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ onStatsUpdate }) => {
                                         <TableCell>{formatDate(video.recorded_at)}</TableCell>
                                         <TableCell>{formatDuration(video.duration)}</TableCell>
                                         <TableCell>
-                                            {getStatusBadge(video.processing_status)}
+                                            {getStatusBadge(video)}
                                         </TableCell>
                                         <TableCell>
                                             <DropdownMenu>
