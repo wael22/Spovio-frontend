@@ -448,29 +448,6 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ onStatsUpdate }) => {
 
                                                     <DropdownMenuSeparator />
 
-                                                    {/* Standard deletion options */}
-                                                    <DropdownMenuItem
-                                                        onClick={() => handleDeleteVideo(video.id, video.player_name, 'local_only')}
-                                                        className="cursor-pointer"
-                                                    >
-                                                        <HardDrive className="mr-2 h-4 w-4" />
-                                                        <div className="flex-1">
-                                                            <div>Supprimer fichier local</div>
-                                                            <div className="text-xs text-muted-foreground">Libère espace serveur</div>
-                                                        </div>
-                                                    </DropdownMenuItem>
-
-                                                    <DropdownMenuItem
-                                                        onClick={() => handleDeleteVideo(video.id, video.player_name, 'cloud_only')}
-                                                        className="cursor-pointer"
-                                                    >
-                                                        <Cloud className="mr-2 h-4 w-4" />
-                                                        <div className="flex-1">
-                                                            <div>Supprimer du cloud</div>
-                                                            <div className="text-xs text-muted-foreground">Expire la vidéo, garde stats</div>
-                                                        </div>
-                                                    </DropdownMenuItem>
-
                                                     {video.bunny_video_id && video.processing_status !== 'expired' && (
                                                         <DropdownMenuItem
                                                             onClick={() => handleArchiveVideo(video.id)}
@@ -478,7 +455,7 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ onStatsUpdate }) => {
                                                         >
                                                             <Archive className="mr-2 h-4 w-4 text-amber-600" />
                                                             <div className="flex-1">
-                                                                <div className="font-semibold"> Archiver vers S3 Glacier</div>
+                                                                <div className="font-semibold">Archiver vers S3 Glacier</div>
                                                                 <div className="text-xs text-muted-foreground">Transfère vers S3 et supprime de Bunny</div>
                                                             </div>
                                                         </DropdownMenuItem>
