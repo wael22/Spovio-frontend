@@ -326,6 +326,9 @@ const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate }) => {
                         <Table>
                             <TableHeader>
                                 <TableRow>
+                                    <TableHead className="w-16 cursor-pointer select-none" onClick={() => handleSort('id')}>
+                                        <div className="flex items-center"># {getSortIcon('id')}</div>
+                                    </TableHead>
                                     <TableHead className="cursor-pointer select-none" onClick={() => handleSort('name')}>
                                         <div className="flex items-center">Nom {getSortIcon('name')}</div>
                                     </TableHead>
@@ -333,7 +336,6 @@ const UserManagement: React.FC<UserManagementProps> = ({ onStatsUpdate }) => {
                                         <div className="flex items-center">Email {getSortIcon('email')}</div>
                                     </TableHead>
                                     <TableHead>Téléphone</TableHead>
-                                    <TableHead className="w-16">#</TableHead>
                                     <TableHead className="cursor-pointer select-none" onClick={() => handleSort('role')}>
                                         <div className="flex items-center">Rôle {getSortIcon('role')}</div>
                                     </TableHead>
