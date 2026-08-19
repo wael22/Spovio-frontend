@@ -59,7 +59,7 @@ export default function MatchAnalytics() {
   const [videoData, setVideoData] = useState<any | null>(null);
   const [matchAnalyticsData, setMatchAnalyticsData] = useState<any | null>(null);
   const [selectedPlayerId, setSelectedPlayerId] = useState<number>(1);
-  const [activeTab, setActiveTab] = useState<TabType>('shots');
+  const [activeTab, setActiveTab] = useState<TabType>('position');
 
   useEffect(() => {
     if (matchId) {
