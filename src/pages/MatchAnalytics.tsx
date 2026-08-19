@@ -58,8 +58,8 @@ export default function MatchAnalytics() {
   const { matchId } = useParams<{ matchId?: string }>();
   const [videoData, setVideoData] = useState<any | null>(null);
   const [matchAnalyticsData, setMatchAnalyticsData] = useState<any | null>(null);
-  const [selectedPlayer, setSelectedPlayer] = useState<AnalyticsPlayer>(mockPlayers[0]); // Default to JOUEUR 1 (Current User)
-  const [activeTab, setActiveTab] = useState<TabType>('position');
+  const [selectedPlayerId, setSelectedPlayerId] = useState<number>(1);
+  const [activeTab, setActiveTab] = useState<TabType>('shots');
 
   useEffect(() => {
     if (matchId) {
@@ -126,6 +126,11 @@ export default function MatchAnalytics() {
     return mockPlayers;
   }, [videoData, matchAnalyticsData]);
 
+  // Always bind activePlayer to the live playersList
+  const activePlayer = useMemo(() => {
+    return playersList.find(p => p.id === selectedPlayerId) || playersList[0] || mockPlayers[0];
+  }, [playersList, selectedPlayerId]);
+
   // Derived Header Fields
   const matchTitle = videoData?.title || (matchId ? `MATCH #${matchId}` : "MATCH #1234");
   const courtName = videoData?.court_name || videoData?.court?.name || "Court A3";
@@ -151,7 +156,7 @@ export default function MatchAnalytics() {
         matchTitle={matchTitle} 
         location={locationStr}
         duration={formattedDuration}
-        intensityScore={78}
+        intensityScore={activePlayer.performanceScore || 78}
         activeTab={activeTab}
         onTabChange={setActiveTab}
       />
@@ -160,25 +165,25 @@ export default function MatchAnalytics() {
         {/* 4 Players Horizontal Grid */}
         <PlayerSelector
           players={playersList}
-          selectedPlayer={selectedPlayer}
-          onSelectPlayer={setSelectedPlayer}
+          selectedPlayer={activePlayer}
+          onSelectPlayer={(p) => setSelectedPlayerId(p.id)}
         />
 
         {/* Active Metric Tab Content */}
         <AnimatePresence mode="wait">
           <motion.div
-            key={activeTab}
+            key={`${activeTab}-${activePlayer.id}-${matchId}`}
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -15 }}
             transition={{ duration: 0.25 }}
             className="w-full"
           >
-            {activeTab === 'position' && <PositionTab player={selectedPlayer} />}
-            {activeTab === 'intensity' && <IntensityTab player={selectedPlayer} />}
-            {activeTab === 'shots' && <ShotsTab player={selectedPlayer} />}
-            {activeTab === 'team' && <TeamTab player={selectedPlayer} />}
-            {activeTab === 'summary' && <SummaryTab player={selectedPlayer} />}
+            {activeTab === 'position' && <PositionTab player={activePlayer} />}
+            {activeTab === 'intensity' && <IntensityTab player={activePlayer} />}
+            {activeTab === 'shots' && <ShotsTab player={activePlayer} />}
+            {activeTab === 'team' && <TeamTab player={activePlayer} />}
+            {activeTab === 'summary' && <SummaryTab player={activePlayer} />}
           </motion.div>
         </AnimatePresence>
       </main>
