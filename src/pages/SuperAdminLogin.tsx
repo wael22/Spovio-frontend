@@ -12,13 +12,14 @@ import { QRCodeCanvas } from 'qrcode.react';
 
 const SuperAdminLogin: React.FC = () => {
     const navigate = useNavigate();
-    const { fetchUser } = useAuth();
+    const { fetchUser, setUser } = useAuth();
     const [formData, setFormData] = useState({ email: '', password: '', code: '' });
     const [step, setStep] = useState<'login' | '2fa' | 'setup_2fa'>('login');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [qrCode, setQrCode] = useState('');
     const [secret, setSecret] = useState('');
+    const [tempUserId, setTempUserId] = useState<number | string | null>(null);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -29,27 +30,24 @@ const SuperAdminLogin: React.FC = () => {
 
             console.log('Login response:', response.data);
 
+            if (response.data.user_id) {
+                setTempUserId(response.data.user_id);
+            }
+
             if (response.data.requires_2fa_setup) {
                 setStep('setup_2fa');
-                setQrCode(response.data.totp_uri); // Backend returns uri to generate QR or we might need to fetch QR endpoint
-                // Actually backend returns 'totp_uri' string, we might need to display it or generate QR locally.
-                // Re-reading backend code: it returns totp_uri. The backend has a separate /qr-code endpoint usually?
-                // The backend code shows: 'totp_uri': totp_uri in login response.
-                // We'll use a library or just text for now?
-                // Wait, the backend has /qr-code endpoint but login response also sends data.
-
-                // Let's assume we need to call QR endpoint or just display secret if no QR lib.
-                // For better UX, let's just show the secret key if we don't have QR generation here.
+                setQrCode(response.data.totp_uri);
                 setSecret(response.data.secret);
-
-                // If we want the QR image, we should probably fetch it or generate it.
-                // Let's rely on the user entering the code manually or scanning if we can render it.
-                // The previous backend code had a /qr-code endpoint that returned base64 image.
-                // But login response returns 'totp_uri'.
             } else if (response.data.requires_2fa) {
                 setStep('2fa');
             } else {
-                // Should not happen for super admin usually, but if 2FA disabled...
+                if (response.data.token) {
+                    localStorage.setItem('token', response.data.token);
+                }
+                if (response.data.user) {
+                    setUser(response.data.user);
+                    localStorage.setItem('user', JSON.stringify(response.data.user));
+                }
                 navigate('/admin');
             }
         } catch (error: any) {
@@ -65,12 +63,28 @@ const SuperAdminLogin: React.FC = () => {
         setLoading(true);
         setError('');
         try {
-            if (step === 'setup_2fa') {
-                await authService.superAdminSetup2FA({ code: formData.code });
-            } else {
-                await authService.superAdminVerify2FA({ code: formData.code });
+            const payload: any = { code: formData.code };
+            if (tempUserId) {
+                payload.user_id = tempUserId;
             }
-            // Success! Sync auth context with backend
+            if (secret && step === 'setup_2fa') {
+                payload.secret = secret;
+            }
+
+            const response = step === 'setup_2fa'
+                ? await authService.superAdminSetup2FA(payload)
+                : await authService.superAdminVerify2FA(payload);
+
+            // Store JWT token for subsequent requests
+            if (response.data?.token) {
+                localStorage.setItem('token', response.data.token);
+            }
+            if (response.data?.user) {
+                setUser(response.data.user);
+                localStorage.setItem('user', JSON.stringify(response.data.user));
+            }
+
+            // Sync auth context with backend
             await fetchUser();
             navigate('/admin');
         } catch (error: any) {
