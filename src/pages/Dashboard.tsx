@@ -106,7 +106,7 @@ const Dashboard = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Fetch user videos
+  // Fetch user videos (once on mount)
   useEffect(() => {
     const fetchVideos = async () => {
       try {
@@ -123,7 +123,7 @@ const Dashboard = () => {
     };
 
     fetchVideos();
-  }, [t]);
+  }, []);
 
   // Fetch clips count
   useEffect(() => {
@@ -155,10 +155,10 @@ const Dashboard = () => {
     }
   };
 
-  // Poll active recording status
+  // Check active recording status once on mount, then periodic check every 15s
   useEffect(() => {
     fetchActiveRecording();
-    const interval = setInterval(fetchActiveRecording, 5000); // Check every 5s (faster sync)
+    const interval = setInterval(fetchActiveRecording, 15000);
     return () => clearInterval(interval);
   }, []);
 
