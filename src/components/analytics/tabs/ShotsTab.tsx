@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Fragment } from 'react';
+import React, { useState, useEffect, useRef, Fragment } from 'react';
 import { motion } from 'framer-motion';
 import { Target, Clock, Play, Flame, Zap, Wind, Activity, Trophy, Sparkles, RotateCw } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
@@ -668,6 +668,211 @@ const CATEGORY_MAP: Record<string, CategoryMeta> = {
   },
 };
 
+interface PadelCourtCanvasProps {
+  isHorizontal: boolean;
+  trajectories: ShotTrajectory[];
+}
+
+function PadelCourtCanvas({ isHorizontal, trajectories }: PadelCourtCanvasProps) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d', { alpha: false });
+    if (!ctx) return;
+
+    const dpr = Math.min(window.devicePixelRatio || 2, 3);
+    const baseW = isHorizontal ? 476 : 250;
+    const baseH = isHorizontal ? 250 : 476;
+
+    canvas.width = Math.round(baseW * dpr);
+    canvas.height = Math.round(baseH * dpr);
+
+    ctx.save();
+    ctx.scale(dpr, dpr);
+
+    // 1. Fill entire canvas background with court blue
+    const bgGrad = ctx.createLinearGradient(0, 0, 0, baseH);
+    bgGrad.addColorStop(0, '#0284C7');
+    bgGrad.addColorStop(1, '#0369A1');
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, baseW, baseH);
+
+    // 2. If horizontal, apply rotation around center
+    if (isHorizontal) {
+      ctx.translate(238, 125);
+      ctx.rotate(-Math.PI / 2);
+      ctx.translate(-125, -238);
+    }
+
+    // 3. Court turf surface
+    const turfGrad = ctx.createLinearGradient(0, 18, 0, 458);
+    turfGrad.addColorStop(0, '#0284C7');
+    turfGrad.addColorStop(1, '#0369A1');
+    ctx.fillStyle = turfGrad;
+    ctx.fillRect(18, 18, 214, 440);
+
+    // 4. Subtle grid pattern
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+    ctx.lineWidth = 0.5;
+    for (let x = 18; x <= 232; x += 21.4) {
+      ctx.beginPath();
+      ctx.moveTo(x, 18);
+      ctx.lineTo(x, 458);
+      ctx.stroke();
+    }
+    for (let y = 18; y <= 458; y += 22) {
+      ctx.beginPath();
+      ctx.moveTo(18, y);
+      ctx.lineTo(232, y);
+      ctx.stroke();
+    }
+
+    // 5. Glass wall border
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.5)';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(16, 16, 218, 444);
+
+    // 6. Court Lines (Perimeter, Service, Divider)
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+    ctx.lineWidth = 2.0;
+    ctx.strokeRect(18, 18, 214, 440);
+
+    // Top Service Line (Opponent)
+    ctx.beginPath();
+    ctx.moveTo(18, 85);
+    ctx.lineTo(232, 85);
+    ctx.stroke();
+
+    // Top Center Divider
+    ctx.beginPath();
+    ctx.moveTo(125, 85);
+    ctx.lineTo(125, 238);
+    ctx.stroke();
+
+    // Net
+    ctx.fillStyle = '#E2E8F0';
+    ctx.fillRect(14, 236, 222, 4);
+    ctx.strokeStyle = '#0284C7';
+    ctx.lineWidth = 1.0;
+    ctx.setLineDash([3, 2]);
+    ctx.beginPath();
+    ctx.moveTo(14, 238);
+    ctx.lineTo(236, 238);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Bottom Service Line (Player)
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+    ctx.lineWidth = 2.0;
+    ctx.beginPath();
+    ctx.moveTo(18, 391);
+    ctx.lineTo(232, 391);
+    ctx.stroke();
+
+    // Bottom Center Divider
+    ctx.beginPath();
+    ctx.moveTo(125, 238);
+    ctx.lineTo(125, 391);
+    ctx.stroke();
+
+    // 7. Trajectories (Clipped inside court)
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(18, 18, 214, 440);
+    ctx.clip();
+
+    const isDense = trajectories.length > 30;
+
+    for (let i = 0; i < trajectories.length; i++) {
+      const traj = trajectories[i];
+      const midX = (traj.startX + traj.endX) / 2 + (traj.curveOffset || 0);
+      const midY = (traj.startY + traj.endY) / 2;
+
+      // Halo for filtered views
+      if (!isDense) {
+        ctx.beginPath();
+        ctx.moveTo(traj.startX, traj.startY);
+        ctx.quadraticCurveTo(midX, midY, traj.endX, traj.endY);
+        ctx.strokeStyle = traj.color;
+        ctx.lineWidth = 3.5;
+        ctx.globalAlpha = 0.22;
+        ctx.stroke();
+        ctx.globalAlpha = 1.0;
+      }
+
+      // Main Vector
+      ctx.beginPath();
+      ctx.moveTo(traj.startX, traj.startY);
+      ctx.quadraticCurveTo(midX, midY, traj.endX, traj.endY);
+      ctx.strokeStyle = traj.color;
+      ctx.lineWidth = isDense ? 1.25 : 1.65;
+      ctx.globalAlpha = isDense ? 0.90 : 0.96;
+      if (traj.isDashed) {
+        ctx.setLineDash([3, 2]);
+      } else {
+        ctx.setLineDash([]);
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 1.0;
+
+      // Direction Arrow Head
+      const dx = traj.endX - midX;
+      const dy = traj.endY - midY;
+      const angle = Math.atan2(dy, dx);
+      const arrowLen = isDense ? 4.8 : 5.8;
+
+      ctx.save();
+      ctx.translate(traj.endX, traj.endY);
+      ctx.rotate(angle);
+      ctx.fillStyle = traj.color;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(-arrowLen, -arrowLen * 0.55);
+      ctx.lineTo(-arrowLen, arrowLen * 0.55);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+
+      // Start strike dot
+      ctx.beginPath();
+      ctx.arc(traj.startX, traj.startY, isDense ? 1.8 : 2.2, 0, Math.PI * 2);
+      ctx.fillStyle = traj.color;
+      ctx.fill();
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.lineWidth = 0.6;
+      ctx.stroke();
+
+      // End landing dot
+      ctx.beginPath();
+      ctx.arc(traj.endX, traj.endY, isDense ? 2.0 : 2.6, 0, Math.PI * 2);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fill();
+      ctx.strokeStyle = traj.color;
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+    }
+
+    ctx.restore(); // restore clip
+    ctx.restore(); // restore scale & rotation
+  }, [isHorizontal, trajectories]);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className={
+        isHorizontal
+          ? "w-full max-w-[620px] md:max-w-[700px] lg:max-w-[760px] h-auto rounded-xl select-none shadow-md"
+          : "w-full max-w-[320px] xs:max-w-[360px] sm:max-w-[420px] h-auto max-h-[540px] rounded-xl select-none shadow-md"
+      }
+      style={{ aspectRatio: isHorizontal ? '476 / 250' : '250 / 476' }}
+    />
+  );
+}
+
 interface ShotsTabProps {
   player: AnalyticsPlayer;
 }
@@ -832,166 +1037,9 @@ export function ShotsTab({ player }: ShotsTabProps) {
           })}
         </div>
 
-        {/* Padel Court Directional Trajectory Map SVG */}
+        {/* Padel Court Directional Trajectory Map Canvas */}
         <div className="relative w-full rounded-2xl overflow-hidden bg-gradient-to-b from-card to-muted/20 border border-border/70 p-2.5 sm:p-4 flex flex-col items-center justify-center shadow-xl">
-          <svg
-            viewBox={isHorizontal ? "0 0 476 250" : "0 0 250 476"}
-            preserveAspectRatio="xMidYMid meet"
-            className={
-              isHorizontal
-                ? "w-full max-w-[620px] md:max-w-[700px] lg:max-w-[760px] h-auto select-none"
-                : "w-full max-w-[320px] xs:max-w-[360px] sm:max-w-[420px] h-auto max-h-[540px] select-none"
-            }
-            style={{ willChange: 'transform', transform: 'translateZ(0)' }}
-            aria-label="Padel Court Trajectory and Directional Target Map"
-          >
-            <defs>
-              {/* Shared lightweight arrowheads (1 per color instead of 138 individual markers) */}
-              {['#0066FF', '#8B5CF6', '#00D98B', '#00F2FE', '#FBBF24', '#EF4444', '#F59E0B', '#38BDF8'].map((c) => (
-                <marker
-                  key={`arrow-${c}`}
-                  id={`arrow-${c.replace('#', '')}`}
-                  viewBox="0 0 8 8"
-                  refX="5"
-                  refY="4"
-                  markerWidth="4.5"
-                  markerHeight="4.5"
-                  orient="auto-start-reverse"
-                >
-                  <path d="M 0 1.5 L 6 4 L 0 6.5 z" fill={c} />
-                </marker>
-              ))}
-
-              {/* Blue turf gradient */}
-              <linearGradient id="trajTurf" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#0284C7" />
-                <stop offset="100%" stopColor="#0369A1" />
-              </linearGradient>
-
-              {/* Court grid pattern */}
-              <pattern id="trajGrid" x="18" y="18" width="21.4" height="22" patternUnits="userSpaceOnUse">
-                <path d="M 21.4 0 L 0 0 0 22" fill="none" stroke="#FFFFFF" strokeWidth="0.3" strokeOpacity="0.15" />
-              </pattern>
-
-              {/* Court boundary clip */}
-              <clipPath id="trajCourtClip">
-                <rect x="18" y="18" width="214" height="440" rx="4" />
-              </clipPath>
-
-              {/* Vignette */}
-              <radialGradient id="trajVig" cx="50%" cy="50%" r="65%">
-                <stop offset="60%" stopColor="#000000" stopOpacity="0" />
-                <stop offset="100%" stopColor="#000000" stopOpacity="0.4" />
-              </radialGradient>
-            </defs>
-
-            {/* Transformation for horizontal mode */}
-            <g transform={isHorizontal ? "translate(238, 125) rotate(-90) translate(-125, -238)" : undefined}>
-              {/* Court Surface */}
-              <rect x="18" y="18" width="214" height="440" fill="url(#trajTurf)" rx="4" />
-              <rect x="18" y="18" width="214" height="440" fill="url(#trajGrid)" rx="4" />
-
-              {/* Glass Wall Border */}
-              <rect
-                x="16"
-                y="16"
-                width="218"
-                height="444"
-                fill="none"
-                stroke="#38BDF8"
-                strokeWidth="1.5"
-                strokeOpacity="0.5"
-                rx="6"
-              />
-
-              {/* ── Court Lines ─────────────────────────────────────── */}
-              {/* Perimeter */}
-              <rect x="18" y="18" width="214" height="440" fill="none" stroke="#FFFFFF" strokeWidth="2" strokeOpacity="0.85" rx="3" />
-
-              {/* Top Service Line (Opponent) */}
-              <line x1="18" y1="85" x2="232" y2="85" stroke="#FFFFFF" strokeWidth="2" strokeOpacity="0.85" />
-
-              {/* Top Center Service Divider */}
-              <line x1="125" y1="85" x2="125" y2="238" stroke="#FFFFFF" strokeWidth="2" strokeOpacity="0.85" />
-
-              {/* Net Band */}
-              <rect x="14" y="236" width="222" height="4" fill="#E2E8F0" rx="1.5" />
-              <line x1="14" y1="238" x2="236" y2="238" stroke="#0284C7" strokeWidth="1" strokeDasharray="3 2" />
-
-              {/* Bottom Service Line (Player) */}
-              <line x1="18" y1="391" x2="232" y2="391" stroke="#FFFFFF" strokeWidth="2" strokeOpacity="0.85" />
-
-              {/* Bottom Center Service Divider */}
-              <line x1="125" y1="238" x2="125" y2="391" stroke="#FFFFFF" strokeWidth="2" strokeOpacity="0.85" />
-
-              {/* ── Trajectory Vectors & Impact Target Rings with Clean Lightweight Vector Nodes ──────────────── */}
-              <g clipPath="url(#trajCourtClip)">
-                {activeTrajectories.map((traj) => {
-                  const midX = (traj.startX + traj.endX) / 2 + (traj.curveOffset || 0);
-                  const midY = (traj.startY + traj.endY) / 2;
-                  const isDense = activeTrajectories.length > 30;
-                  const colorKey = traj.color.replace('#', '');
-
-                  if (isDense) {
-                    // Optimized single-pass rendering for full 138-shot view
-                    return (
-                      <g key={traj.id}>
-                        <path
-                          d={`M ${traj.startX} ${traj.startY} Q ${midX} ${midY} ${traj.endX} ${traj.endY}`}
-                          fill="none"
-                          stroke={traj.color}
-                          strokeWidth={1.2}
-                          strokeDasharray={traj.isDashed ? '3 2' : 'none'}
-                          markerEnd={`url(#arrow-${colorKey})`}
-                          opacity={0.88}
-                        />
-                        <circle cx={traj.startX} cy={traj.startY} r={1.8} fill={traj.color} stroke="#FFFFFF" strokeWidth="0.5" />
-                        <circle cx={traj.endX} cy={traj.endY} r={2.0} fill="#FFFFFF" stroke={traj.color} strokeWidth="0.8" />
-                      </g>
-                    );
-                  }
-
-                  // Rich multi-halo rendering for filtered categories (<= 38 shots)
-                  return (
-                    <g key={traj.id} className="transition-all duration-300">
-                      {/* Delicate Halo Trail */}
-                      <path
-                        d={`M ${traj.startX} ${traj.startY} Q ${midX} ${midY} ${traj.endX} ${traj.endY}`}
-                        fill="none"
-                        stroke={traj.color}
-                        strokeWidth={3.8}
-                        strokeLinecap="round"
-                        opacity={0.25}
-                      />
-
-                      {/* Foreground Vector */}
-                      <path
-                        d={`M ${traj.startX} ${traj.startY} Q ${midX} ${midY} ${traj.endX} ${traj.endY}`}
-                        fill="none"
-                        stroke={traj.color}
-                        strokeWidth={1.65}
-                        strokeDasharray={traj.isDashed ? '3 2' : 'none'}
-                        markerEnd={`url(#arrow-${colorKey})`}
-                        opacity={0.95}
-                      />
-
-                      {/* Origin Strike Point */}
-                      <circle cx={traj.startX} cy={traj.startY} r={4.5} fill={traj.color} fillOpacity="0.22" />
-                      <circle cx={traj.startX} cy={traj.startY} r={2.2} fill={traj.color} stroke="#FFFFFF" strokeWidth="0.7" />
-
-                      {/* Target Landing Impact Ring */}
-                      <circle cx={traj.endX} cy={traj.endY} r={5.2} fill={traj.color} fillOpacity="0.18" />
-                      <circle cx={traj.endX} cy={traj.endY} r={3.4} fill="none" stroke={traj.color} strokeWidth="0.9" strokeDasharray="1.5 1" />
-                      <circle cx={traj.endX} cy={traj.endY} r={1.6} fill="#FFFFFF" />
-                    </g>
-                  );
-                })}
-              </g>
-
-              {/* Vignette */}
-              <rect x="18" y="18" width="214" height="440" fill="url(#trajVig)" rx="4" />
-            </g>
-          </svg>
+          <PadelCourtCanvas isHorizontal={isHorizontal} trajectories={activeTrajectories} />
 
           {/* Active Trajectories Legend List (Grouped cleanly) */}
           <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mt-3 pt-3 border-t border-border/50 w-full">
