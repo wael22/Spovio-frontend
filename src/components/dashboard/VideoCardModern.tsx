@@ -124,10 +124,14 @@ export function VideoCardModern({
       )}
     >
       {/* Thumbnail */}
-      <div className="relative aspect-video overflow-hidden">
+      <div className="relative aspect-video overflow-hidden bg-neutral-900">
         <img
-          src={thumbnail}
+          src={thumbnail || 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=600&auto=format&fit=crop&q=80'}
           alt={title}
+          loading="lazy"
+          onError={(e) => {
+            e.currentTarget.src = 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=600&auto=format&fit=crop&q=80';
+          }}
           className={cn(
             "w-full h-full object-cover transition-transform duration-500",
             isExpired ? "brightness-75 contrast-90" : "group-hover:scale-110"
