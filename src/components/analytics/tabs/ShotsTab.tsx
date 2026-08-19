@@ -980,10 +980,10 @@ export function ShotsTab({ player }: ShotsTabProps) {
       isDashed: true
     }, seed + 5);
 
-    const allCurated = [...cdTrajs.slice(0, 6), ...revTrajs.slice(0, 5), ...volTrajs.slice(0, 4), ...smashTrajs.slice(0, 3), ...bandTrajs.slice(0, 2)];
+    const allTrajs = [...cdTrajs, ...revTrajs, ...volTrajs, ...smashTrajs, ...bandTrajs];
 
     const map: Record<string, CategoryMeta> = {
-      all: { id: 'all', label: `Toutes les trajectoires (${total})`, trajectories: allCurated, cards: [], insight: `${total} coups analysés avec précision` },
+      all: { id: 'all', label: `Toutes les trajectoires (${allTrajs.length})`, trajectories: allTrajs, cards: [], insight: `${total} coups analysés avec précision` },
       coup_droit: { id: 'coup_droit', label: `Coups droits (${cdTrajs.length})`, trajectories: cdTrajs, cards: [], insight: 'Coups droits réguliers et profonds' },
       revers: { id: 'revers', label: `Revers (${revTrajs.length})`, trajectories: revTrajs, cards: [], insight: 'Revers solides en diagonale' },
       volee: { id: 'volee', label: `Volées (${volTrajs.length})`, trajectories: volTrajs, cards: [], insight: 'Volées agressives au filet' },
