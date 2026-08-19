@@ -42,6 +42,8 @@ const Credits = lazy(() => import("./pages/Credits"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Support = lazy(() => import("./pages/Support"));
 const Settings = lazy(() => import("./pages/Settings"));
+const MatchAnalytics = lazy(() => import("./pages/MatchAnalytics"));
+const PlayerStats = lazy(() => import("./pages/PlayerStats"));
 
 // Admin & Club pages — lazy loaded
 const Admin = lazy(() => import("./pages/Admin"));
@@ -79,6 +81,8 @@ const App = () => (
                     <Route path="/contact" element={<Contact />} />
                     <Route path="/terms" element={<Terms />} />
                     <Route path="/privacy" element={<Privacy />} />
+                    <Route path="/analytics" element={<MatchAnalytics />} />
+                    <Route path="/analytics/:matchId" element={<MatchAnalytics />} />
                     <Route path="/c/:qrCode" element={<CourtRedirect />} />
                     <Route path="/s/:shareToken" element={<ShareRedirect />} />
 
@@ -165,6 +169,30 @@ const App = () => (
                         element={
                           <ProtectedRoute requiredRole="player">
                             <Settings />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/stats"
+                        element={
+                          <ProtectedRoute requiredRole={['player', 'club', 'super_admin']}>
+                            <PlayerStats />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/analytics"
+                        element={
+                          <ProtectedRoute requiredRole={['player', 'club', 'super_admin']}>
+                            <MatchAnalytics />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/analytics/:matchId"
+                        element={
+                          <ProtectedRoute requiredRole={['player', 'club', 'super_admin']}>
+                            <MatchAnalytics />
                           </ProtectedRoute>
                         }
                       />

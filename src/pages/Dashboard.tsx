@@ -16,6 +16,7 @@ import { VideoClipEditor } from "@/components/dashboard/VideoClipEditor";
 import { VideoPlayerModal } from "@/components/dashboard/VideoPlayerModal";
 import { EditVideoTitleModal } from "@/components/dashboard/EditVideoTitleModal";
 import { ReportIssueModal } from "@/components/dashboard/ReportIssueModal";
+import { PlayerMatchSetupModal } from "@/components/dashboard/PlayerMatchSetupModal";
 import { toast } from "sonner"; // Assuming toast is from sonner
 import {
   Video,
@@ -73,6 +74,8 @@ const Dashboard = () => {
   const [clipsCount, setClipsCount] = useState(0);
   const [isClipEditorOpen, setIsClipEditorOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [isPlayersModalOpen, setIsPlayersModalOpen] = useState(false);
+  const [selectedVideoForPlayers, setSelectedVideoForPlayers] = useState<any | null>(null);
   const [initialQrCode, setInitialQrCode] = useState<string | undefined>(undefined);
 
   useEffect(() => {
@@ -376,6 +379,11 @@ const Dashboard = () => {
     setIsClipEditorOpen(true);
   };
 
+  const handleSetupMatchPlayers = (video: any) => {
+    setSelectedVideoForPlayers(video);
+    setIsPlayersModalOpen(true);
+  };
+
   // Calculate stats
   const ownedVideos = videos.filter(v => !v.is_shared);  // Mes vidéos possédées
   const sharedVideos = videos.filter(v => v.is_shared);   // Vidéos reçues/partagées avec moi
@@ -541,12 +549,16 @@ const Dashboard = () => {
                   court={video.court_name || 'Court'}
                   isExpired={video.is_expired || false}
                   processingStatus={video.processing_status}
+                  aiStatus={video.ai_status}
+                  aiAnalyticsCompleted={video.ai_analytics_completed}
+                  matchPlayers={video.match_players}
                   onPlay={() => handlePlayVideo(video)}
                   onShare={() => handleShareVideo(video)}
                   onEdit={() => handleEditVideo(video)}
                   onDelete={() => handleDeleteVideo(video)}
                   onDownload={() => handleDownloadVideo(video)}
                   onCreateClip={() => handleCreateClip(video)}
+                  onSetupMatchPlayers={() => handleSetupMatchPlayers(video)}
                 />
               </motion.div>
             ))}
@@ -671,6 +683,19 @@ const Dashboard = () => {
       <ReportIssueModal
         isOpen={isReportModalOpen}
         onClose={() => setIsReportModalOpen(false)}
+      />
+
+      <PlayerMatchSetupModal
+        isOpen={isPlayersModalOpen}
+        onClose={() => {
+          setIsPlayersModalOpen(false);
+          setSelectedVideoForPlayers(null);
+        }}
+        video={selectedVideoForPlayers}
+        onSuccess={async () => {
+          const response = await videoService.getMyVideos();
+          setVideos(response.data.videos || []);
+        }}
       />
     </>
   );

@@ -1,5 +1,5 @@
-﻿import { useState } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { NotificationBell } from "./NotificationBell";
@@ -13,7 +13,8 @@ import {
   Scissors,
   Building2,
   MessageSquare,
-  Coins
+  Coins,
+  TrendingUp
 } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -29,21 +30,45 @@ export function DashboardNavbar({ credits }: DashboardNavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
   const { user } = useAuth();
+  const navRef = useRef<HTMLElement>(null);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [location.pathname]);
+
+  // Close mobile menu on click/touch outside
+  useEffect(() => {
+    if (!isMenuOpen) return;
+
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      if (navRef.current && !navRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [isMenuOpen]);
 
   const navLinks = [
     { href: "/dashboard", label: t('nav.myVideos'), icon: Video },
     { href: "/my-clips", label: t('nav.myClips'), icon: Scissors },
+    { href: "/stats", label: t('nav.stats'), icon: TrendingUp },
     { href: "/clubs", label: t('nav.clubs'), icon: Building2 },
     { href: "/support", label: t('nav.support'), icon: MessageSquare },
     { href: "/credits", label: t('nav.credits'), icon: Coins },
   ];
 
   return (
-    <motion.nav
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="fixed top-0 left-0 right-0 z-50 glass border-b border-border/50"
+    <nav
+      ref={navRef}
+      className="fixed top-0 left-0 right-0 z-50 glass border-b border-border/50 transition-colors"
     >
       <div className="container mx-auto px-4 lg:px-8">
         <div className="flex items-center justify-between h-16">
@@ -142,7 +167,7 @@ export function DashboardNavbar({ credits }: DashboardNavbarProps) {
           </motion.div>
         )}
       </div>
-    </motion.nav>
+    </nav>
   );
 }
 

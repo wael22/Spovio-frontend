@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import {
   Dialog,
@@ -24,12 +24,14 @@ import {
   AlertCircle,
   CheckCircle,
   User,
-  Camera
+  Camera,
+  Sparkles
 } from "lucide-react";
 import { playerService, recordingService, videoService } from "@/lib/api";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from "react-i18next";
+import { Switch } from "@/components/ui/switch";
 import QRScannerModal from "./QRScannerModal";
 
 interface StartRecordingModalProps {
@@ -58,6 +60,7 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted, in
   const [selectedClub, setSelectedClub] = useState("");
   const [selectedCourt, setSelectedCourt] = useState("");
   const [qrCode, setQrCode] = useState("");
+  const [aiAnalyticsRequested, setAiAnalyticsRequested] = useState(false);
 
   // UI state
   const [clubs, setClubs] = useState<any[]>([]);
@@ -330,6 +333,7 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted, in
         qr_code: qrCode,
         title: title || undefined,
         description: description || undefined,
+        ai_analytics_requested: aiAnalyticsRequested,
       });
 
       toast.success("Enregistrement démarré avec succès !");
@@ -347,6 +351,7 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted, in
       setSelectedClub("");
       setSelectedCourt("");
       setQrCode("");
+      setAiAnalyticsRequested(false);
     } catch (error: any) {
       console.error('Failed to start recording:', error);
       const errorMessage = error.response?.data?.error || 'Erreur lors du démarrage de l\'enregistrement';
@@ -583,6 +588,26 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted, in
                 </Button>
               </div>
             </div>
+
+            {/* EC2 AI Service Toggle */}
+            {courts.find(c => c.id.toString() === selectedCourt)?.has_ai === true && (
+              <div className="flex items-center justify-between p-3.5 rounded-xl border border-border/50 bg-background/50 hover:border-primary/40 transition-all">
+                <div className="space-y-0.5">
+                  <Label htmlFor="start-ai-toggle" className="text-xs font-bold flex items-center gap-1.5 text-foreground cursor-pointer">
+                    <Sparkles className="h-3.5 w-3.5 text-primary" />
+                    Activer l'Analyse IA
+                  </Label>
+                  <p className="text-[11px] text-muted-foreground">
+                    Détection des temps forts et statistiques avancées
+                  </p>
+                </div>
+                <Switch
+                  id="start-ai-toggle"
+                  checked={aiAnalyticsRequested}
+                  onCheckedChange={setAiAnalyticsRequested}
+                />
+              </div>
+            )}
           </div>
 
           {/* Actions */}

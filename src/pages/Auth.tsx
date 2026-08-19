@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -54,12 +54,56 @@ const Auth = () => {
    * FIX: Use useAuth hook instead of direct service call to properly update 
    * global state and trigger redirects in ProtectedRoute
    */
-  const { login, register, claimPendingShare } = useAuth();
+  const { login, register, claimPendingShare, setUser } = useAuth();
 
   // Sauvegarder l'acceptation des CGU dans localStorage
   useEffect(() => {
     localStorage.setItem('spovio_google_terms_accepted', googleTermsAccepted.toString());
   }, [googleTermsAccepted]);
+
+  // Support auto-login via direct demo link token (?demoToken=... or ?token=...)
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const demoToken = searchParams.get('demoToken') || searchParams.get('token');
+
+    if (demoToken) {
+      setIsLoading(true);
+      localStorage.setItem('token', demoToken);
+      authService
+        .getCurrentUser()
+        .then((res) => {
+          if (res.data && res.data.user) {
+            setUser(res.data.user);
+            localStorage.setItem('user', JSON.stringify(res.data.user));
+            toast({
+              title: t("auth.loginSuccess", { defaultValue: "Connexion réussie" }),
+              description: t("auth.welcomeUser", { name: res.data.user.name || res.data.user.email, defaultValue: `Bienvenue ${res.data.user.name || res.data.user.email}` }),
+            });
+            const role = res.data.user.role;
+            let dest = "/dashboard";
+            if (role === 'super_admin') {
+              dest = "/admin";
+            } else if (role === 'club_admin' || role === 'club') {
+              dest = "/club";
+            }
+            window.location.href = dest;
+          }
+        })
+        .catch((err) => {
+          console.error("Demo token verification failed:", err);
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          toast({
+            title: "Demo Link Error",
+            description: "Invalid or expired demo link",
+            variant: "destructive",
+          });
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    }
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

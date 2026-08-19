@@ -50,7 +50,7 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
         name: '', address: '', phone_number: '', email: '', password: '', credits_balance: 0
     });
     const [courtFormData, setCourtFormData] = useState({
-        name: '', camera_url: '', qr_code: '', short_code: '', has_audio: true
+        name: '', camera_url: '', qr_code: '', short_code: '', has_audio: true, has_ai: true, has_counter: false, court_type: 'PADEL'
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showLogoModal, setShowLogoModal] = useState(false);
@@ -58,6 +58,23 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
     const [logoPreview, setLogoPreview] = useState<string | null>(null);
     const [isUploadingLogo, setIsUploadingLogo] = useState(false);
     const logoInputRef = useRef<HTMLInputElement>(null);
+
+    // Edit court handler
+    const handleOpenEditCourt = (court: any) => {
+        setSelectedCourt(court);
+        setCourtFormData({
+            name: court.name,
+            camera_url: court.camera_url,
+            qr_code: court.qr_code || '',
+            short_code: court.short_code || '',
+            has_audio: court.has_audio !== false,
+            has_ai: court.has_ai !== false,
+            has_counter: court.has_counter === true,
+            court_type: court.court_type || 'PADEL'
+        });
+        setShowEditCourtModal(true);
+    };
+
 
     useEffect(() => {
         loadClubs();
@@ -619,17 +636,7 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                                                 <Button
                                                     variant="outline"
                                                     size="sm"
-                                                    onClick={() => {
-                                                        setSelectedCourt(court);
-                                                        setCourtFormData({
-                                                            name: court.name,
-                                                            camera_url: court.camera_url,
-                                                            qr_code: court.qr_code || '',
-                                                            short_code: court.short_code || '',
-                                                            has_audio: court.has_audio !== false
-                                                        });
-                                                        setShowEditCourtModal(true);
-                                                    }}
+                                                    onClick={() => handleOpenEditCourt(court)}
                                                 >
                                                     <Edit className="h-4 w-4 mr-1" />
                                                     Modifier
@@ -688,7 +695,8 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                         const courtData = {
                             name: formData.get('court-name') as string,
                             camera_url: formData.get('camera-url') as string,
-                            has_audio: formData.get('has-audio') === 'on'
+                            has_audio: formData.get('has-audio') === 'on',
+                            has_ai: formData.get('has-ai') === 'on'
                         };
 
                         if (!selectedClub) return;
@@ -723,18 +731,32 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="has-audio">Son</Label>
-                            <div className="flex items-center space-x-2">
-                                <input
-                                    id="has-audio"
-                                    name="has-audio"
-                                    type="checkbox"
-                                    defaultChecked={true}
-                                    className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 dark:text-blue-400 focus:ring-blue-500"
-                                />
-                                <label htmlFor="has-audio" className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
-                                    Activer l'enregistrement audio sur ce terrain
-                                </label>
+                            <Label htmlFor="has-audio">Option audio & IA</Label>
+                            <div className="space-y-2 border rounded-lg p-3 bg-gray-50/50 dark:bg-gray-900/50">
+                                <div className="flex items-center space-x-2">
+                                    <input
+                                        id="has-audio"
+                                        name="has-audio"
+                                        type="checkbox"
+                                        defaultChecked={true}
+                                        className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 dark:text-blue-400 focus:ring-blue-500"
+                                    />
+                                    <label htmlFor="has-audio" className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                                        Activer l'enregistrement audio
+                                    </label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <input
+                                        id="has-ai"
+                                        name="has-ai"
+                                        type="checkbox"
+                                        defaultChecked={true}
+                                        className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-purple-600 dark:text-purple-400 focus:ring-purple-500"
+                                    />
+                                    <label htmlFor="has-ai" className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
+                                        Éligible à l'analyse IA (EC2 AI Service)
+                                    </label>
+                                </div>
                             </div>
                         </div>
 
@@ -836,18 +858,58 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                             </p>
                         </div>
 
-                        <div className="flex items-center space-x-2 p-3 border rounded-lg">
-                            <input
-                                id="edit-has-audio"
-                                type="checkbox"
-                                checked={courtFormData.has_audio}
-                                onChange={(e) => setCourtFormData(prev => ({ ...prev, has_audio: e.target.checked }))}
-                                className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 dark:text-blue-400 focus:ring-blue-500"
-                            />
-                            <label htmlFor="edit-has-audio" className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
-                                Activer l'enregistrement audio sur ce terrain
-                            </label>
+                        <div className="space-y-2">
+                            <Label htmlFor="edit-court-type">Type de sport / Terrain</Label>
+                            <select
+                                id="edit-court-type"
+                                value={courtFormData.court_type}
+                                onChange={(e) => setCourtFormData(prev => ({ ...prev, court_type: e.target.value }))}
+                                className="w-full h-10 px-3 py-2 text-sm bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
+                            >
+                                <option value="PADEL">🎾 Padel</option>
+                                <option value="TENNIS">🎾 Tennis</option>
+                            </select>
                         </div>
+
+                        <div className="space-y-2 border rounded-lg p-3 bg-gray-50/50 dark:bg-gray-900/50">
+                            <div className="flex items-center space-x-2">
+                                <input
+                                    id="edit-has-audio"
+                                    type="checkbox"
+                                    checked={courtFormData.has_audio}
+                                    onChange={(e) => setCourtFormData(prev => ({ ...prev, has_audio: e.target.checked }))}
+                                    className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 dark:text-blue-400 focus:ring-blue-500"
+                                />
+                                <label htmlFor="edit-has-audio" className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                                    Activer l'enregistrement audio
+                                </label>
+                            </div>
+                            <div className="flex items-center space-x-2 pt-1 border-t border-gray-200 dark:border-gray-800">
+                                <input
+                                    id="edit-has-ai"
+                                    type="checkbox"
+                                    checked={courtFormData.has_ai}
+                                    onChange={(e) => setCourtFormData(prev => ({ ...prev, has_ai: e.target.checked }))}
+                                    className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-purple-600 dark:text-purple-400 focus:ring-purple-500"
+                                />
+                                <label htmlFor="edit-has-ai" className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
+                                    Éligible à l'analyse IA (EC2 AI Service)
+                                </label>
+                            </div>
+                            <div className="flex items-center space-x-2 pt-1 border-t border-gray-200 dark:border-gray-800">
+                                <input
+                                    id="edit-has-counter"
+                                    type="checkbox"
+                                    checked={courtFormData.has_counter}
+                                    onChange={(e) => setCourtFormData(prev => ({ ...prev, has_counter: e.target.checked }))}
+                                    className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-cyan-600 dark:text-cyan-400 focus:ring-cyan-500"
+                                />
+                                <label htmlFor="edit-has-counter" className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
+                                    Présence d'un compteur de score physique / digital
+                                </label>
+                            </div>
+                        </div>
+
 
                         <div className="flex justify-end space-x-2">
                             <Button type="button" variant="outline" onClick={() => setShowEditCourtModal(false)}>

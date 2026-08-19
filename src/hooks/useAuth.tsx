@@ -66,13 +66,21 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
                 }
             }
 
+            // Safety timeout guard to prevent infinite loading screen if backend is slow/restarting
+            const timeoutId = setTimeout(() => {
+                setLoading(false);
+                setIsInitialized(true);
+            }, 5000);
+
             try {
                 // Verify with backend
                 const response = await authService.getCurrentUser();
+                clearTimeout(timeoutId);
                 setUser(response.data.user);
                 // Update storage with fresh data
                 localStorage.setItem('user', JSON.stringify(response.data.user));
             } catch (error: any) {
+                clearTimeout(timeoutId);
                 // 401 is expected if not authenticated
                 if (error.response?.status === 401) {
                     setUser(null);
@@ -80,11 +88,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
                     localStorage.removeItem('token'); // 🔥 CRITICAL: Clear JWT token on expiration
                 } else {
                     console.error("Error checking authentication status:", error);
-                    // Don't clear user here if it's a network error, keep offline state if possible
-                    // But for now, safe default:
-                    // setUser(null); 
+                    // Safe fallback if network error
+                    if (!storedUser) setUser(null);
                 }
             } finally {
+                clearTimeout(timeoutId);
                 setLoading(false);
                 setIsInitialized(true);
             }

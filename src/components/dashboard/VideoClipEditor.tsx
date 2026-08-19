@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Video Clip Editor Component
  * Allows users to create clips from videos using FFmpeg.wasm client-side processing
  */

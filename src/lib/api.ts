@@ -225,6 +225,8 @@ export const videoService = {
     getShareLink: (videoId: string) => api.post(`/videos/${videoId}/share-link`),
     claimShare: (videoId: string) => api.post(`/videos/${videoId}/claim-share`),
     resolveShareLink: (token: string) => api.get(`/videos/public/share-link/${token}`),
+    getMatchPlayers: (videoId: string) => api.get(`/videos/${videoId}/match-players`),
+    updateMatchPlayers: (videoId: string, data: any) => api.post(`/videos/${videoId}/match-players`, data),
 };
 
 // Recording Service

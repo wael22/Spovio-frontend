@@ -23,7 +23,7 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ user, credits, onBuyCredits
 
     // Fermer en cliquant à l'extérieur
     useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
+        const handleClickOutside = (event: MouseEvent | TouchEvent) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
                 setIsOpen(false);
             }
@@ -31,10 +31,12 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ user, credits, onBuyCredits
 
         if (isOpen) {
             document.addEventListener('mousedown', handleClickOutside);
+            document.addEventListener('touchstart', handleClickOutside);
         }
 
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('touchstart', handleClickOutside);
         };
     }, [isOpen]);
 

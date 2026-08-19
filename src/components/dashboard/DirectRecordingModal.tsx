@@ -22,12 +22,14 @@ import {
     AlertCircle,
     Camera,
     ArrowLeft,
-    CheckCircle
+    CheckCircle,
+    Sparkles
 } from "lucide-react";
 import { recordingService, videoService } from "@/lib/api";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from "react-i18next";
+import { Switch } from "@/components/ui/switch";
 import QRScanner from "./QRScanner";
 
 interface DirectRecordingModalProps {
@@ -59,6 +61,7 @@ const DirectRecordingModal = ({ isOpen, onClose, onRecordingStarted, initialQrCo
     const [qrCode, setQrCode] = useState("");
     const [scannedData, setScannedData] = useState<{ club: any; court: any } | null>(null);
     const [manualCode, setManualCode] = useState("");
+    const [aiAnalyticsRequested, setAiAnalyticsRequested] = useState(false);
 
     useEffect(() => {
         if (isOpen && initialQrCode) {
@@ -83,6 +86,7 @@ const DirectRecordingModal = ({ isOpen, onClose, onRecordingStarted, initialQrCo
                 setError("");
                 setStarting(false);
                 setValidating(false);
+                setAiAnalyticsRequested(false);
             }, 300);
         }
     }, [isOpen]);
@@ -140,6 +144,7 @@ const DirectRecordingModal = ({ isOpen, onClose, onRecordingStarted, initialQrCo
                 qr_code: qrCode,
                 title: title || undefined,
                 description: description || undefined,
+                ai_analytics_requested: aiAnalyticsRequested,
             });
 
             toast.success(t('modals.common.success'));
@@ -315,7 +320,25 @@ const DirectRecordingModal = ({ isOpen, onClose, onRecordingStarted, initialQrCo
                                     </div>
                                 </div>
 
-                                {/* Submit Actions */}
+                                {/* EC2 AI Service Toggle */}
+                                {scannedData?.court?.has_ai === true && (
+                                    <div className="flex items-center justify-between p-3.5 rounded-xl border border-border/50 bg-background/50 hover:border-primary/40 transition-all">
+                                        <div className="space-y-0.5">
+                                            <Label htmlFor="direct-ai-toggle" className="text-xs font-bold flex items-center gap-1.5 text-foreground cursor-pointer">
+                                                <Sparkles className="h-3.5 w-3.5 text-primary" />
+                                                Activer l'Analyse IA
+                                            </Label>
+                                            <p className="text-[11px] text-muted-foreground">
+                                                Détection des temps forts et statistiques avancées
+                                            </p>
+                                        </div>
+                                        <Switch
+                                            id="direct-ai-toggle"
+                                            checked={aiAnalyticsRequested}
+                                            onCheckedChange={setAiAnalyticsRequested}
+                                        />
+                                    </div>
+                                )}
                                 <div className="flex gap-2 pt-2">
                                     <Button variant="outline" className="flex-1" onClick={() => setStep("scanning")}>
                                         <ArrowLeft className="h-4 w-4 mr-2" />

@@ -1,0 +1,49 @@
+{
+  "name": "Spovio - Smart Sports Video",
+  "short_name": "Spovio",
+  "description": "Enregistrez, analysez et revivez vos matchs de padel avec Spovio.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "window-controls-overlay", "fullscreen"],
+  "background_color": "#090d16",
+  "theme_color": "#0ea5e9",
+  "orientation": "portrait-primary",
+  "categories": ["sports", "fitness", "video", "analytics"],
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Match Analytics",
+      "short_name": "Analytics",
+      "description": "Statistiques et analyses de vos matchs",
+      "url": "/analytics",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Mes Clips",
+      "short_name": "Clips",
+      "description": "Replays et meilleurs moments",
+      "url": "/dashboard/my-clips",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    }
+  ]
+}

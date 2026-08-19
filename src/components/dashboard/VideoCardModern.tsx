@@ -12,8 +12,13 @@ import {
   Download,
   Lock,
   AlertTriangle,
-  Loader2
+  Loader2,
+  Sparkles,
+  Users,
+  UserCheck,
+  BarChart3
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -36,12 +41,18 @@ interface VideoCardModernProps {
   court?: string;
   isExpired?: boolean;
   processingStatus?: string;
+  aiStatus?: string;
+  aiAnalyticsCompleted?: boolean;
+  matchPlayers?: any;
+  fileUrl?: string;
+  aiDetectedFrames?: string[];
   onPlay?: () => void;
   onShare?: () => void;
   onDelete?: () => void;
   onCreateClip?: () => void;
   onEdit?: () => void;
   onDownload?: () => void;
+  onSetupMatchPlayers?: () => void;
 }
 
 export function VideoCardModern({
@@ -54,15 +65,23 @@ export function VideoCardModern({
   court,
   isExpired = false,
   processingStatus,
+  aiStatus,
+  aiAnalyticsCompleted,
+  matchPlayers,
+  fileUrl,
+  aiDetectedFrames,
   onPlay,
   onShare,
   onDelete,
   onCreateClip,
   onEdit,
   onDownload,
+  onSetupMatchPlayers,
 }: VideoCardModernProps) {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
   const [isHovered, setIsHovered] = useState(false);
+  const [isSetupOpen, setIsSetupOpen] = useState(false);
 
   const formatDate = (dateString: string) => {
     const dateStr = dateString.endsWith('Z') ? dateString : dateString + 'Z';
@@ -74,6 +93,22 @@ export function VideoCardModern({
 
   const isFailed = processingStatus === 'failed';
   const isProcessing = processingStatus === 'processing' || processingStatus === 'uploading';
+  const isAiCompleted = aiAnalyticsCompleted || aiStatus === 'completed' || processingStatus === 'ready' || (!processingStatus && !isExpired);
+
+  const isRosterConfigured = (() => {
+    if (!matchPlayers) return false;
+    try {
+      const parsed = typeof matchPlayers === 'string' ? JSON.parse(matchPlayers) : matchPlayers;
+      if (parsed.players && Array.isArray(parsed.players)) {
+        return parsed.players.some((p: any) =>
+          p.is_claimed || p.isClaimed || (p.player_name && !p.player_name.startsWith('Player ') && p.player_name !== 'Partner') || p.user_id || p.userId
+        );
+      }
+    } catch (e) {
+      return false;
+    }
+    return false;
+  })();
 
   return (
     <motion.div
@@ -136,44 +171,58 @@ export function VideoCardModern({
           <span className="text-xs font-medium text-white">{duration}</span>
         </div>
 
-        {/* Shared Badge */}
-        {shared && !isExpired && (
-          <Badge className="absolute top-3 left-3 bg-accent/80 hover:bg-accent text-accent-foreground">
-            <Share2 className="h-3 w-3 mr-1" />
-            {t('components.videoCard.badges.shared')}
-          </Badge>
-        )}
+        {/* Top-Left Badges Container */}
+        <div className="absolute top-3 left-3 right-12 flex flex-wrap items-center gap-1.5 z-10 pointer-events-none">
+          {/* Status Badges */}
+          {isExpired && !isFailed && !isProcessing && (
+            <Badge className="bg-neutral-900/90 text-neutral-300 border border-neutral-700/60 shadow-sm font-medium tracking-wide flex items-center px-2.5 py-1 backdrop-blur-md pointer-events-auto">
+              <Lock className="h-3 w-3 mr-1.5 text-neutral-400" />
+              <span>{t('components.videoCard.badges.expired')}</span>
+            </Badge>
+          )}
 
-        {/* Expired Badge */}
-        {isExpired && !isFailed && !isProcessing && (
-          <Badge className="absolute top-3 left-3 bg-neutral-900/90 text-neutral-300 border border-neutral-700/60 shadow-sm font-medium tracking-wide flex items-center px-2.5 py-1 backdrop-blur-md">
-            <Lock className="h-3 w-3 mr-1.5 text-neutral-400" />
-            <span>{t('components.videoCard.badges.expired')}</span>
-          </Badge>
-        )}
+          {isFailed && (
+            <Badge className="bg-red-600 hover:bg-red-700 text-white border-red-800 pointer-events-auto">
+              {t('components.videoCard.badges.failed')}
+            </Badge>
+          )}
 
-        {/* Failed Badge */}
-        {isFailed && (
-          <Badge className="absolute top-3 left-3 bg-red-600 hover:bg-red-700 text-white border-red-800">
-            {t('components.videoCard.badges.failed')}
-          </Badge>
-        )}
+          {isProcessing && (
+            <Badge className="bg-blue-500/90 hover:bg-blue-600 text-white animate-pulse pointer-events-auto">
+              {t('components.videoCard.badges.processing')}
+            </Badge>
+          )}
 
-        {/* Processing Badge */}
-        {isProcessing && (
-          <Badge className="absolute top-3 left-3 bg-blue-500/90 hover:bg-blue-600 text-white animate-pulse">
-            {t('components.videoCard.badges.processing')}
-          </Badge>
-        )}
+          {processingStatus === 'pending' && !isProcessing && (
+            <Badge className="bg-yellow-500/90 hover:bg-yellow-600 text-white pointer-events-auto">
+              {t('components.videoCard.badges.pending')}
+            </Badge>
+          )}
 
-        {/* Pending Badge */}
-        {processingStatus === 'pending' && (
-          <Badge className="absolute top-3 left-3 bg-yellow-500/90 hover:bg-yellow-600 text-white">
-            {t('components.videoCard.badges.pending')}
-          </Badge>
-        )}
+          {/* Shared Badge */}
+          {shared && !isExpired && (
+            <Badge className="bg-accent/80 hover:bg-accent text-accent-foreground pointer-events-auto">
+              <Share2 className="h-3 w-3 mr-1" />
+              {t('components.videoCard.badges.shared')}
+            </Badge>
+          )}
 
-        {/* Actions Menu */}
+          {/* AI Analytics Completed Badge */}
+          {isAiCompleted && !isExpired && (
+            <Badge className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md border border-emerald-400/30 flex items-center gap-1 text-[11px] font-semibold pointer-events-auto">
+              <Sparkles className="h-3 w-3 animate-pulse" />
+              <span>{t('components.videoCard.badges.aiReady', 'AI Ready')}</span>
+            </Badge>
+          )}
+        </div>
+
+        {/* Duration Badge */}
+        <div className="absolute bottom-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-white text-xs font-medium">
+          <Clock className="h-3 w-3 text-primary" />
+          <span>{duration}</span>
+        </div>
+
+        {/* Dropdown Menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -184,11 +233,24 @@ export function VideoCardModern({
               <MoreVertical className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuContent align="end" className="w-52">
             <DropdownMenuItem onClick={onPlay} disabled={isExpired}>
               <Play className="h-4 w-4 mr-2" />
               {isExpired ? t('components.videoCard.menu.playExpired') : t('components.videoCard.menu.play')}
             </DropdownMenuItem>
+
+            <DropdownMenuItem onClick={() => navigate(`/analytics/${id}`)} disabled={isExpired || !isRosterConfigured} className="text-cyan-600 dark:text-cyan-400 font-medium">
+              <BarChart3 className="h-4 w-4 mr-2 text-cyan-600 dark:text-cyan-400" />
+              {t('components.videoCard.menu.viewAnalytics', 'View AI Match Analytics')}
+            </DropdownMenuItem>
+
+            {isAiCompleted && (
+              <DropdownMenuItem onClick={onSetupMatchPlayers} disabled={isExpired} className="text-emerald-400 font-medium">
+                <UserCheck className="h-4 w-4 mr-2 text-emerald-400" />
+                {t('components.videoCard.menu.setupMatchPlayers', 'Player Roster & Setup')}
+              </DropdownMenuItem>
+            )}
+
             <DropdownMenuItem onClick={onCreateClip} disabled={isExpired}>
               <Scissors className="h-4 w-4 mr-2" />
               {isExpired ? t('components.videoCard.menu.createClipUnavailable') : t('components.videoCard.menu.createClip')}
@@ -233,6 +295,37 @@ export function VideoCardModern({
             </div>
           )}
         </div>
+
+        {/* Dynamic Action Button: View Match Analytics if Roster is Configured, else Player Roster & Setup */}
+        {isAiCompleted && !isExpired && (
+          isRosterConfigured ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/analytics/${id}`);
+              }}
+              className="w-full mt-3 gap-2 bg-gradient-to-r from-cyan-500/15 via-blue-500/15 to-indigo-500/15 hover:from-cyan-500/25 hover:via-blue-500/25 hover:to-indigo-500/25 border-cyan-500/40 text-cyan-600 dark:text-cyan-400 font-semibold text-xs rounded-xl shadow-sm transition-all duration-200 hover:scale-[1.01]"
+            >
+              <BarChart3 className="h-3.5 w-3.5 text-cyan-500 animate-pulse" />
+              <span>{t('components.videoCard.menu.viewAnalytics', 'View AI Match Analytics')}</span>
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                onSetupMatchPlayers?.();
+              }}
+              className="w-full mt-3 gap-2 bg-gradient-to-r from-emerald-500/15 via-teal-500/15 to-cyan-500/15 hover:from-emerald-500/25 hover:via-teal-500/25 hover:to-cyan-500/25 border-emerald-500/40 text-emerald-600 dark:text-emerald-400 font-semibold text-xs rounded-xl shadow-sm transition-all duration-200 hover:scale-[1.01]"
+            >
+              <Sparkles className="h-3.5 w-3.5 text-emerald-500 animate-pulse" />
+              <span>{t('components.videoCard.menu.setupMatchPlayers', 'Player Roster & Setup')}</span>
+            </Button>
+          )
+        )}
       </div>
     </motion.div>
   );
