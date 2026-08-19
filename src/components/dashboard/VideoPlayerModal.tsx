@@ -53,7 +53,10 @@ export function VideoPlayerModal({ isOpen, onClose, video }: VideoPlayerModalPro
             return;
         }
 
-        const videoUrl = video.file_url || '';
+        let videoUrl = video.file_url || '';
+        if ((!videoUrl || videoUrl.startsWith('/static/')) && video.bunny_video_id) {
+            videoUrl = `https://vz-9b857324-07d.b-cdn.net/${video.bunny_video_id}/play_720p.mp4`;
+        }
         if (!videoUrl) {
             console.log('[VideoPlayer] No video URL found');
             return;
