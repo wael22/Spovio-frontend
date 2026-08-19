@@ -11,48 +11,51 @@ import { SummaryTab } from '@/components/analytics/tabs/SummaryTab';
 import { useParams } from 'react-router-dom';
 import { videoService, matchAnalyticsService } from '@/lib/api';
 
-const mockPlayers: AnalyticsPlayer[] = [
-  {
-    id: 1,
-    name: 'MOEZ (VOUS)',
-    team: 'A',
-    position: 'FOND DE COURT',
-    distance: 2.38,
-    maxSpeed: 15.2,
-    shots: 138,
-    performanceScore: 62
-  },
-  {
-    id: 2,
-    name: 'THOMAS',
-    team: 'A',
-    position: 'MI-COURT',
-    distance: 2.20,
-    maxSpeed: 14.6,
-    shots: 124,
-    performanceScore: 58
-  },
-  {
-    id: 3,
-    name: 'MAXIME',
-    team: 'B',
-    position: 'FILET',
-    distance: 2.45,
-    maxSpeed: 15.8,
-    shots: 142,
-    performanceScore: 65
-  },
-  {
-    id: 4,
-    name: 'ANTOINE',
-    team: 'B',
-    position: 'FOND DE COURT',
-    distance: 2.28,
-    maxSpeed: 14.9,
-    shots: 130,
-    performanceScore: 60
-  }
-];
+const getInitialPlayers = (mId: string | number = 1): AnalyticsPlayer[] => {
+  const seed = Number(mId) || 1;
+  return [
+    {
+      id: 1,
+      name: 'MOEZ (VOUS)',
+      team: 'A',
+      position: 'FOND DE COURT',
+      distance: Number((2.8 + (seed * 0.3) % 1.5).toFixed(2)),
+      maxSpeed: Number((16.2 + (seed * 0.4) % 3.0).toFixed(1)),
+      shots: Math.round(145 + (seed * 7) % 30),
+      performanceScore: Math.round(68 + (seed * 3) % 20)
+    },
+    {
+      id: 2,
+      name: 'THOMAS',
+      team: 'A',
+      position: 'MI-COURT',
+      distance: Number((2.6 + (seed * 0.2) % 1.4).toFixed(2)),
+      maxSpeed: Number((15.4 + (seed * 0.3) % 2.5).toFixed(1)),
+      shots: Math.round(135 + (seed * 5) % 28),
+      performanceScore: Math.round(64 + (seed * 4) % 18)
+    },
+    {
+      id: 3,
+      name: 'MAXIME',
+      team: 'B',
+      position: 'FILET',
+      distance: Number((3.0 + (seed * 0.4) % 1.6).toFixed(2)),
+      maxSpeed: Number((17.0 + (seed * 0.5) % 3.2).toFixed(1)),
+      shots: Math.round(152 + (seed * 6) % 32),
+      performanceScore: Math.round(72 + (seed * 5) % 19)
+    },
+    {
+      id: 4,
+      name: 'ANTOINE',
+      team: 'B',
+      position: 'FOND DE COURT',
+      distance: Number((2.7 + (seed * 0.3) % 1.3).toFixed(2)),
+      maxSpeed: Number((15.8 + (seed * 0.4) % 2.8).toFixed(1)),
+      shots: Math.round(140 + (seed * 4) % 26),
+      performanceScore: Math.round(66 + (seed * 3) % 17)
+    }
+  ];
+};
 
 export default function MatchAnalytics() {
   const { matchId } = useParams<{ matchId?: string }>();
@@ -123,13 +126,13 @@ export default function MatchAnalytics() {
         console.warn("Error parsing match_players in analytics:", e);
       }
     }
-    return mockPlayers;
-  }, [videoData, matchAnalyticsData]);
+    return getInitialPlayers(matchId);
+  }, [videoData, matchAnalyticsData, matchId]);
 
   // Always bind activePlayer to the live playersList
   const activePlayer = useMemo(() => {
-    return playersList.find(p => p.id === selectedPlayerId) || playersList[0] || mockPlayers[0];
-  }, [playersList, selectedPlayerId]);
+    return playersList.find(p => p.id === selectedPlayerId) || playersList[0] || getInitialPlayers(matchId)[0];
+  }, [playersList, selectedPlayerId, matchId]);
 
   // Derived Header Fields
   const matchTitle = videoData?.title || (matchId ? `MATCH #${matchId}` : "MATCH #1234");
