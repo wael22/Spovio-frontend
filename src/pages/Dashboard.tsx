@@ -395,16 +395,7 @@ const Dashboard = () => {
     { icon: Share2, label: t('dashboard.stats.shared'), value: sharedVideos.length.toString(), color: "purple" as const },
   ];
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary mb-4" />
-          <p className="text-muted-foreground">{t('common.loading')}</p>
-        </div>
-      </div>
-    );
-  }
+
 
   return (
     <>
@@ -527,44 +518,58 @@ const Dashboard = () => {
           </div>
 
           {/* Videos Grid */}
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-          >
-            {filteredVideos.map((video, index) => (
-              <motion.div
-                key={video.id}
-                variants={itemVariants}
-                custom={index}
-              >
-                <VideoCardModern
-                  id={video.id}
-                  title={video.title || 'Sans titre'}
-                  thumbnail={getVideoThumbnailUrl(video)}
-                  duration={formatDuration(video.duration || 0)}
-                  date={video.created_at || new Date().toISOString()}
-                  shared={video.is_shared || false}
-                  court={video.court_name || 'Court'}
-                  isExpired={video.is_expired || false}
-                  processingStatus={video.processing_status}
-                  aiStatus={video.ai_status}
-                  aiAnalyticsCompleted={video.ai_analytics_completed}
-                  matchPlayers={video.match_players}
-                  onPlay={() => handlePlayVideo(video)}
-                  onShare={() => handleShareVideo(video)}
-                  onEdit={() => handleEditVideo(video)}
-                  onDelete={() => handleDeleteVideo(video)}
-                  onDownload={() => handleDownloadVideo(video)}
-                  onCreateClip={() => handleCreateClip(video)}
-                  onSetupMatchPlayers={() => handleSetupMatchPlayers(video)}
-                />
-              </motion.div>
-            ))}
-          </motion.div>
+          {loading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {[1, 2, 3, 4].map((n) => (
+                <div key={n} className="rounded-2xl overflow-hidden glass border border-border/50 p-0 animate-pulse">
+                  <div className="aspect-video bg-neutral-800/50" />
+                  <div className="p-4 space-y-3">
+                    <div className="h-4 bg-neutral-800/80 rounded w-3/4" />
+                    <div className="h-3 bg-neutral-800/40 rounded w-1/2" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+            >
+              {filteredVideos.map((video, index) => (
+                <motion.div
+                  key={video.id}
+                  variants={itemVariants}
+                  custom={index}
+                >
+                  <VideoCardModern
+                    id={video.id}
+                    title={video.title || 'Sans titre'}
+                    thumbnail={getVideoThumbnailUrl(video)}
+                    duration={formatDuration(video.duration || 0)}
+                    date={video.created_at || new Date().toISOString()}
+                    shared={video.is_shared || false}
+                    court={video.court_name || 'Court'}
+                    isExpired={video.is_expired || false}
+                    processingStatus={video.processing_status}
+                    aiStatus={video.ai_status}
+                    aiAnalyticsCompleted={video.ai_analytics_completed}
+                    matchPlayers={video.match_players}
+                    onPlay={() => handlePlayVideo(video)}
+                    onShare={() => handleShareVideo(video)}
+                    onEdit={() => handleEditVideo(video)}
+                    onDelete={() => handleDeleteVideo(video)}
+                    onDownload={() => handleDownloadVideo(video)}
+                    onCreateClip={() => handleCreateClip(video)}
+                    onSetupMatchPlayers={() => handleSetupMatchPlayers(video)}
+                  />
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
 
-          {filteredVideos.length === 0 && (
+          {!loading && filteredVideos.length === 0 && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
