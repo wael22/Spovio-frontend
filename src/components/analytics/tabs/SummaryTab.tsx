@@ -1,26 +1,36 @@
+import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Trophy, TrendingUp, Lightbulb, Calendar, Award, Medal, CheckCircle2, Target, ArrowRight, Bot } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import type { AnalyticsPlayer } from '../PlayerSelector';
-
-const evolutionData = [
-  { match: 'M1', score: 38 },
-  { match: 'M2', score: 42 },
-  { match: 'M3', score: 45 },
-  { match: 'M4', score: 48 },
-  { match: 'M5', score: 50 },
-  { match: 'M6', score: 52 },
-  { match: 'M7', score: 54 },
-  { match: 'M8', score: 55 },
-  { match: 'M9', score: 56 },
-  { match: 'M10', score: 58 },
-];
 
 interface SummaryTabProps {
   player: AnalyticsPlayer;
 }
 
 export function SummaryTab({ player }: SummaryTabProps) {
+  const { evoData, smashMaxSpeed, distStr, srvRegPct } = useMemo(() => {
+    const pId = player.id || 1;
+    const base = player.performanceScore || 70;
+    const data = [
+      { match: 'M1', score: Math.max(30, base - 24) },
+      { match: 'M2', score: Math.max(35, base - 20) },
+      { match: 'M3', score: Math.max(40, base - 16) },
+      { match: 'M4', score: Math.max(45, base - 13) },
+      { match: 'M5', score: Math.max(50, base - 10) },
+      { match: 'M6', score: Math.max(55, base - 8) },
+      { match: 'M7', score: Math.max(60, base - 5) },
+      { match: 'M8', score: Math.max(62, base - 3) },
+      { match: 'M9', score: Math.max(64, base - 1) },
+      { match: 'M10', score: base },
+    ];
+    return {
+      evoData: data,
+      smashMaxSpeed: `${player.maxSpeed || 15.2} km/h`,
+      distStr: `${player.distance || 2.38} km`,
+      srvRegPct: `${Math.round(65 + ((pId * 5) % 18))}%`
+    };
+  }, [player]);
   return (
     <div className="space-y-6">
       {/* Top 3 Performances */}
@@ -49,12 +59,12 @@ export function SummaryTab({ player }: SummaryTabProps) {
                 <Trophy className="w-6 h-6 text-primary" />
               </div>
               <div className="flex-1">
-                <div className="font-bold mb-1">Régularité au Service : 72% de premières balles</div>
+                <div className="font-bold mb-1">Régularité au Service : {srvRegPct} de premières balles</div>
                 <div className="flex items-center gap-2">
                   <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
-                      animate={{ width: '72%' }}
+                      animate={{ width: srvRegPct }}
                       transition={{ duration: 1, delay: 0.3 }}
                       className="h-full bg-gradient-to-r from-primary to-cyan-400 rounded-full"
                     />
@@ -78,19 +88,19 @@ export function SummaryTab({ player }: SummaryTabProps) {
                 <Award className="w-6 h-6 text-cyan-500" />
               </div>
               <div className="flex-1">
-                <div className="font-bold mb-1">Vitesse Max Frappe : 74 km/h</div>
+                <div className="font-bold mb-1">Vitesse Max : {smashMaxSpeed}</div>
                 <div className="flex items-center gap-2">
                   <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
-                      animate={{ width: '65%' }}
+                      animate={{ width: '75%' }}
                       transition={{ duration: 1, delay: 0.4 }}
                       className="h-full bg-gradient-to-r from-cyan-500 to-teal-400 rounded-full"
                     />
                   </div>
                   <span className="text-sm font-bold text-cyan-500">Contrôlé</span>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">Priorité au placement</p>
+                <p className="text-xs text-muted-foreground mt-1">Vitesse maximale atteinte</p>
               </div>
             </div>
           </motion.div>
@@ -107,7 +117,7 @@ export function SummaryTab({ player }: SummaryTabProps) {
                 <Medal className="w-6 h-6 text-emerald-500" />
               </div>
               <div className="flex-1">
-                <div className="font-bold mb-1">Patience Fond de Court : 68% de balles remises</div>
+                <div className="font-bold mb-1">Volume de Jeu : {distStr} parcourus</div>
                 <div className="flex items-center gap-2">
                   <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                     <motion.div
@@ -117,9 +127,9 @@ export function SummaryTab({ player }: SummaryTabProps) {
                       className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full"
                     />
                   </div>
-                  <span className="text-sm font-bold text-emerald-500">Régularité</span>
+                  <span className="text-sm font-bold text-emerald-500">Actif</span>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">Très peu de fautes directes en fond</p>
+                <p className="text-xs text-muted-foreground mt-1">Excellente mobilité générale</p>
               </div>
             </div>
           </motion.div>
@@ -138,7 +148,7 @@ export function SummaryTab({ player }: SummaryTabProps) {
         </h3>
         
         <ResponsiveContainer width="100%" height={250}>
-          <LineChart data={evolutionData}>
+          <LineChart data={evoData}>
             <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
             <XAxis dataKey="match" style={{ fontSize: '12px' }} />
             <YAxis domain={[0, 100]} style={{ fontSize: '12px' }} />

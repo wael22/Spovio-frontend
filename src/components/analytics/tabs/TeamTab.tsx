@@ -1,23 +1,39 @@
+import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Users, Ruler, BarChart2, Sparkles, User, CheckCircle2 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import type { AnalyticsPlayer } from '../PlayerSelector';
-
-const distanceData = [
-  { time: "0'", distance: 6.5 },
-  { time: "15'", distance: 5.8 },
-  { time: "30'", distance: 8.2 },
-  { time: "45'", distance: 5.5 },
-  { time: "60'", distance: 6.8 },
-  { time: "75'", distance: 5.2 },
-];
 
 interface TeamTabProps {
   player: AnalyticsPlayer;
 }
 
 export function TeamTab({ player }: TeamTabProps) {
-  const syncScore = 58;
+  const { syncScore, avgDistance, defPct, offPct, dData } = useMemo(() => {
+    const pId = player.id || 1;
+    const baseScore = player.performanceScore || 70;
+    const sScore = Math.min(96, Math.max(52, Math.round(baseScore * 0.95 + ((pId * 3) % 7))));
+    const aDist = (5.8 + ((pId * 4) % 9) * 0.15).toFixed(1);
+    const def = Math.round(55 + ((pId * 7) % 20));
+    const off = 100 - def;
+
+    const distTimeline = [
+      { time: "0'", distance: Number((6.0 + (pId * 0.3) % 1.2).toFixed(1)) },
+      { time: "15'", distance: Number((5.5 + (pId * 0.4) % 1.4).toFixed(1)) },
+      { time: "30'", distance: Number((7.2 + (pId * 0.5) % 1.8).toFixed(1)) },
+      { time: "45'", distance: Number((5.2 + (pId * 0.3) % 1.3).toFixed(1)) },
+      { time: "60'", distance: Number((6.4 + (pId * 0.4) % 1.5).toFixed(1)) },
+      { time: "75'", distance: Number((5.0 + (pId * 0.3) % 1.1).toFixed(1)) },
+    ];
+
+    return {
+      syncScore: sScore,
+      avgDistance: `${aDist} m`,
+      defPct: def,
+      offPct: off,
+      dData: distTimeline
+    };
+  }, [player]);
 
   return (
     <div className="space-y-6">
@@ -80,7 +96,7 @@ export function TeamTab({ player }: TeamTabProps) {
               <span>Distance moyenne :</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="font-bold">6.4 m</span>
+              <span className="font-bold">{avgDistance}</span>
               <span className="text-xs px-2 py-0.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-full font-medium border border-amber-500/20 flex items-center gap-1">
                 <CheckCircle2 className="w-3 h-3" /> En progression
               </span>
@@ -91,14 +107,14 @@ export function TeamTab({ player }: TeamTabProps) {
               <BarChart2 className="w-4 h-4 text-primary" />
               <span>Temps formation défensive (fond) :</span>
             </div>
-            <span className="font-bold">74%</span>
+            <span className="font-bold">{defPct}%</span>
           </div>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
               <BarChart2 className="w-4 h-4 text-cyan-500" />
               <span>Temps formation offensive (filet) :</span>
             </div>
-            <span className="font-bold">26%</span>
+            <span className="font-bold">{offPct}%</span>
           </div>
         </div>
 
@@ -120,7 +136,7 @@ export function TeamTab({ player }: TeamTabProps) {
         </h3>
         
         <ResponsiveContainer width="100%" height={220}>
-          <LineChart data={distanceData}>
+          <LineChart data={dData}>
             <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
             <XAxis dataKey="time" style={{ fontSize: '12px' }} />
             <YAxis domain={[0, 10]} style={{ fontSize: '12px' }} label={{ value: 'm', position: 'insideLeft' }} />

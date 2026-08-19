@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, Fragment } from 'react';
+import React, { useState, useEffect, useRef, useMemo, Fragment } from 'react';
 import { motion } from 'framer-motion';
 import { Target, Clock, Play, Flame, Zap, Wind, Activity, Trophy, Sparkles, RotateCw } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
