@@ -68,9 +68,23 @@ const Dashboard = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDirectRecordingModalOpen, setIsDirectRecordingModalOpen] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState<any | null>(null);
-  const [videos, setVideos] = useState<any[]>([]);
+  const [videos, setVideos] = useState<any[]>(() => {
+    try {
+      const cached = localStorage.getItem('spovio_cached_videos');
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
   const [activeRecording, setActiveRecording] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(() => {
+    try {
+      const cached = localStorage.getItem('spovio_cached_videos');
+      return !(cached && JSON.parse(cached).length > 0);
+    } catch {
+      return true;
+    }
+  });
   const [clipsCount, setClipsCount] = useState(0);
   const [isClipEditorOpen, setIsClipEditorOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
@@ -111,7 +125,13 @@ const Dashboard = () => {
     const fetchVideos = async () => {
       try {
         const response = await videoService.getMyVideos();
-        setVideos(response.data.videos || []);
+        const freshVideos = response.data.videos || [];
+        setVideos(freshVideos);
+        try {
+          localStorage.setItem('spovio_cached_videos', JSON.stringify(freshVideos));
+        } catch {
+          // LocalStorage quota safety
+        }
       } catch (error: any) {
         console.error('Failed to fetch videos:', error);
         if (error.response?.status !== 401) {
