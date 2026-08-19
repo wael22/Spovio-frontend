@@ -919,6 +919,7 @@ export function ShotsTab({ player }: ShotsTabProps) {
       { name: 'Bandeja & Lob', value: band, color: '#FBBF24' },
     ];
 
+    // CD (Coup droit) - Frappé depuis le centre / bas-droit vers la diagonale adverse
     const cdTrajs = generateDiverseShots('cd-croise', cd, {
       name: 'Coup droit',
       category: 'coup_droit',
@@ -926,11 +927,12 @@ export function ShotsTab({ player }: ShotsTabProps) {
       minSpeed: 55,
       maxSpeed: 75,
       target: 'Zone adverse',
-      sXMin: 140, sXMax: 220, sYMin: 390, sYMax: 450,
+      sXMin: 50, sXMax: 140, sYMin: 390, sYMax: 450,
       eXMin: 30, eXMax: 220, eYMin: 30, eYMax: 200,
-      cMin: -25, cMax: 25
+      cMin: -20, cMax: 20
     }, seed + 1);
 
+    // Revers - Frappé depuis le coin supérieur droit (près de la vitre latérale droite) vers le camp adverse
     const revTrajs = generateDiverseShots('rev', rev, {
       name: 'Revers',
       category: 'revers',
@@ -938,7 +940,7 @@ export function ShotsTab({ player }: ShotsTabProps) {
       minSpeed: 52,
       maxSpeed: 70,
       target: 'Zone adverse',
-      sXMin: 30, sXMax: 110, sYMin: 390, sYMax: 450,
+      sXMin: 145, sXMax: 222, sYMin: 390, sYMax: 450,
       eXMin: 30, eXMax: 220, eYMin: 30, eYMax: 200,
       cMin: -25, cMax: 25
     }, seed + 2);
