@@ -31,7 +31,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
-import { videoService, getAssetUrl, getVideoThumbnailUrl } from '@/lib/api';
+import { videoService, matchAnalyticsService, getAssetUrl, getVideoThumbnailUrl } from '@/lib/api';
 import { VideoPlayerModal } from '@/components/dashboard/VideoPlayerModal';
 import heroCourtImg from '@/assets/hero-padel-court.jpg';
 
@@ -175,7 +175,21 @@ export default function PlayerStats() {
   const [matchesList, setMatchesList] = useState<MatchItem[]>(DEMO_MATCHES);
   const [selectedMatch, setSelectedMatch] = useState<MatchItem>(DEMO_MATCHES[0]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [evolutionData, setEvolutionData] = useState<any[]>(EVOLUTION_DATA);
   const searchRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Fetch dynamic evolution data
+    matchAnalyticsService.getPlayerEvolution()
+      .then((res) => {
+        if (res.data?.evolution && Array.isArray(res.data.evolution) && res.data.evolution.length > 0) {
+          setEvolutionData(res.data.evolution);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load player evolution:", err);
+      });
+  }, []);
 
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
@@ -555,7 +569,7 @@ export default function PlayerStats() {
 
         <div className="w-full h-60 sm:h-64">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={EVOLUTION_DATA} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+            <LineChart data={evolutionData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
               <XAxis dataKey="match" style={{ fontSize: '12px' }} />
               <YAxis

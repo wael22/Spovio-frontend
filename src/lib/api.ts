@@ -448,6 +448,13 @@ export const settingsService = {
     updateSettings: (settings: any) => api.put('/settings', settings),
 };
 
+// Match & Player Dynamic Analytics Service
+export const matchAnalyticsService = {
+    getMatchAnalytics: (videoId: string | number) => api.get(`/analytics/match/${videoId}`),
+    getPlayerEvolution: () => api.get('/analytics/player/evolution'),
+};
+
+
 // Recovery Service
 export const recoveryService = {
     reportIssue: (data: { court_id: number; match_start: string; match_end: string; description?: string }) =>

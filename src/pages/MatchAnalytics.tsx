@@ -9,7 +9,7 @@ import { ShotsTab } from '@/components/analytics/tabs/ShotsTab';
 import { TeamTab } from '@/components/analytics/tabs/TeamTab';
 import { SummaryTab } from '@/components/analytics/tabs/SummaryTab';
 import { useParams } from 'react-router-dom';
-import { videoService } from '@/lib/api';
+import { videoService, matchAnalyticsService } from '@/lib/api';
 
 const mockPlayers: AnalyticsPlayer[] = [
   {
@@ -57,9 +57,9 @@ const mockPlayers: AnalyticsPlayer[] = [
 export default function MatchAnalytics() {
   const { matchId } = useParams<{ matchId?: string }>();
   const [videoData, setVideoData] = useState<any | null>(null);
+  const [matchAnalyticsData, setMatchAnalyticsData] = useState<any | null>(null);
   const [selectedPlayer, setSelectedPlayer] = useState<AnalyticsPlayer>(mockPlayers[0]); // Default to JOUEUR 1 (Current User)
   const [activeTab, setActiveTab] = useState<TabType>('position');
-
 
   useEffect(() => {
     if (matchId) {
@@ -72,10 +72,39 @@ export default function MatchAnalytics() {
         .catch((err) => {
           console.warn("Could not fetch video details for analytics:", err);
         });
+
+      matchAnalyticsService.getMatchAnalytics(matchId)
+        .then((res) => {
+          if (res.data?.analytics) {
+            setMatchAnalyticsData(res.data);
+          }
+        })
+        .catch((err) => {
+          console.warn("Could not fetch dynamic match analytics:", err);
+        });
     }
   }, [matchId]);
 
   const playersList = useMemo(() => {
+    // If we have dynamic player stats from DB
+    if (matchAnalyticsData?.players && Array.isArray(matchAnalyticsData.players) && matchAnalyticsData.players.length >= 4) {
+      return matchAnalyticsData.players.map((p: any, idx: number) => {
+        const mov = p.movement_data || {};
+        const shots = p.shots_data || {};
+        const pos = p.position_data || {};
+        return {
+          id: p.player_slot || idx + 1,
+          name: (p.player_name || `Joueur ${idx + 1}`).toUpperCase(),
+          team: idx < 2 ? 'A' : 'B',
+          position: pos.net_presence_pct > 50 ? 'FILET' : 'FOND DE COURT',
+          distance: mov.distance_km || 2.35,
+          maxSpeed: mov.max_speed_kmh || 15.4,
+          shots: shots.total_shots || 135,
+          performanceScore: p.overall_score || 75
+        } as AnalyticsPlayer;
+      });
+    }
+
     if (videoData?.match_players) {
       try {
         const parsed = typeof videoData.match_players === "string"
@@ -95,7 +124,7 @@ export default function MatchAnalytics() {
       }
     }
     return mockPlayers;
-  }, [videoData]);
+  }, [videoData, matchAnalyticsData]);
 
   // Derived Header Fields
   const matchTitle = videoData?.title || (matchId ? `MATCH #${matchId}` : "MATCH #1234");
