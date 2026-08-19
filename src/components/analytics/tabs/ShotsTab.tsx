@@ -842,28 +842,24 @@ export function ShotsTab({ player }: ShotsTabProps) {
                 ? "w-full max-w-[620px] md:max-w-[700px] lg:max-w-[760px] h-auto drop-shadow-2xl select-none"
                 : "w-full max-w-[320px] xs:max-w-[360px] sm:max-w-[420px] h-auto max-h-[540px] drop-shadow-2xl select-none"
             }
+            style={{ willChange: 'transform', transform: 'translateZ(0)' }}
             aria-label="Padel Court Trajectory and Directional Target Map"
           >
             <defs>
-              {/* Arrowheads and Colored Glow Shadow Filters for Trajectories */}
-              {activeTrajectories.map((traj) => (
-                <Fragment key={`defs-${traj.id}`}>
-                  <marker
-                    id={`arrow-${traj.id}`}
-                    viewBox="0 0 8 8"
-                    refX="5"
-                    refY="4"
-                    markerWidth="4.5"
-                    markerHeight="4.5"
-                    orient="auto-start-reverse"
-                  >
-                    <path d="M 0 1.5 L 6 4 L 0 6.5 z" fill={traj.color} />
-                  </marker>
-
-                  <filter id={`glow-${traj.id}`} x="-60%" y="-60%" width="220%" height="220%">
-                    <feDropShadow dx="0" dy="0" stdDeviation="2" floodColor={traj.color} floodOpacity="0.75" />
-                  </filter>
-                </Fragment>
+              {/* Shared lightweight arrowheads (1 per color instead of 138 individual markers) */}
+              {['#0066FF', '#8B5CF6', '#00D98B', '#00F2FE', '#FBBF24', '#EF4444', '#F59E0B', '#38BDF8'].map((c) => (
+                <marker
+                  key={`arrow-${c}`}
+                  id={`arrow-${c.replace('#', '')}`}
+                  viewBox="0 0 8 8"
+                  refX="5"
+                  refY="4"
+                  markerWidth="4.5"
+                  markerHeight="4.5"
+                  orient="auto-start-reverse"
+                >
+                  <path d="M 0 1.5 L 6 4 L 0 6.5 z" fill={c} />
+                </marker>
               ))}
 
               {/* Blue turf gradient */}
@@ -928,13 +924,34 @@ export function ShotsTab({ player }: ShotsTabProps) {
               {/* Bottom Center Service Divider */}
               <line x1="125" y1="238" x2="125" y2="391" stroke="#FFFFFF" strokeWidth="2" strokeOpacity="0.85" />
 
-              {/* ── Trajectory Vectors & Impact Target Rings with Sleek Thin Lines ──────────────── */}
+              {/* ── Trajectory Vectors & Impact Target Rings with Clean Lightweight Vector Nodes ──────────────── */}
               <g clipPath="url(#trajCourtClip)">
                 {activeTrajectories.map((traj) => {
                   const midX = (traj.startX + traj.endX) / 2 + (traj.curveOffset || 0);
                   const midY = (traj.startY + traj.endY) / 2;
                   const isDense = activeTrajectories.length > 30;
+                  const colorKey = traj.color.replace('#', '');
 
+                  if (isDense) {
+                    // Optimized single-pass rendering for full 138-shot view
+                    return (
+                      <g key={traj.id}>
+                        <path
+                          d={`M ${traj.startX} ${traj.startY} Q ${midX} ${midY} ${traj.endX} ${traj.endY}`}
+                          fill="none"
+                          stroke={traj.color}
+                          strokeWidth={1.2}
+                          strokeDasharray={traj.isDashed ? '3 2' : 'none'}
+                          markerEnd={`url(#arrow-${colorKey})`}
+                          opacity={0.88}
+                        />
+                        <circle cx={traj.startX} cy={traj.startY} r={1.8} fill={traj.color} stroke="#FFFFFF" strokeWidth="0.5" />
+                        <circle cx={traj.endX} cy={traj.endY} r={2.0} fill="#FFFFFF" stroke={traj.color} strokeWidth="0.8" />
+                      </g>
+                    );
+                  }
+
+                  // Rich multi-halo rendering for filtered categories (<= 38 shots)
                   return (
                     <g key={traj.id} className="transition-all duration-300">
                       {/* Delicate Halo Trail */}
@@ -942,30 +959,30 @@ export function ShotsTab({ player }: ShotsTabProps) {
                         d={`M ${traj.startX} ${traj.startY} Q ${midX} ${midY} ${traj.endX} ${traj.endY}`}
                         fill="none"
                         stroke={traj.color}
-                        strokeWidth={isDense ? 2.6 : 3.8}
+                        strokeWidth={3.8}
                         strokeLinecap="round"
-                        opacity={isDense ? 0.18 : 0.25}
+                        opacity={0.25}
                       />
 
-                      {/* Thin Laser-Sharp Foreground Vector */}
+                      {/* Foreground Vector */}
                       <path
                         d={`M ${traj.startX} ${traj.startY} Q ${midX} ${midY} ${traj.endX} ${traj.endY}`}
                         fill="none"
                         stroke={traj.color}
-                        strokeWidth={isDense ? 1.15 : 1.65}
+                        strokeWidth={1.65}
                         strokeDasharray={traj.isDashed ? '3 2' : 'none'}
-                        markerEnd={`url(#arrow-${traj.id})`}
-                        opacity={isDense ? 0.85 : 0.95}
+                        markerEnd={`url(#arrow-${colorKey})`}
+                        opacity={0.95}
                       />
 
                       {/* Origin Strike Point */}
-                      <circle cx={traj.startX} cy={traj.startY} r={isDense ? 3.5 : 4.5} fill={traj.color} fillOpacity="0.22" />
-                      <circle cx={traj.startX} cy={traj.startY} r={isDense ? 1.6 : 2.2} fill={traj.color} stroke="#FFFFFF" strokeWidth="0.7" />
+                      <circle cx={traj.startX} cy={traj.startY} r={4.5} fill={traj.color} fillOpacity="0.22" />
+                      <circle cx={traj.startX} cy={traj.startY} r={2.2} fill={traj.color} stroke="#FFFFFF" strokeWidth="0.7" />
 
                       {/* Target Landing Impact Ring */}
-                      <circle cx={traj.endX} cy={traj.endY} r={isDense ? 4 : 5.2} fill={traj.color} fillOpacity="0.18" />
-                      <circle cx={traj.endX} cy={traj.endY} r={isDense ? 2.5 : 3.4} fill="none" stroke={traj.color} strokeWidth="0.9" strokeDasharray="1.5 1" />
-                      <circle cx={traj.endX} cy={traj.endY} r={isDense ? 1.2 : 1.6} fill="#FFFFFF" />
+                      <circle cx={traj.endX} cy={traj.endY} r={5.2} fill={traj.color} fillOpacity="0.18" />
+                      <circle cx={traj.endX} cy={traj.endY} r={3.4} fill="none" stroke={traj.color} strokeWidth="0.9" strokeDasharray="1.5 1" />
+                      <circle cx={traj.endX} cy={traj.endY} r={1.6} fill="#FFFFFF" />
                     </g>
                   );
                 })}
