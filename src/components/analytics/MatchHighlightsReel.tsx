@@ -27,10 +27,10 @@ import {
 import type { AnalyticsPlayer } from './PlayerSelector';
 
 const BUNNY_VIDEO_ID = '3daf69bf-9395-4ed3-a3b9-5d2dceb74809';
-// Use /bunny-stream proxy to bypass COEP/CORP restrictions in development
-const VIDEO_MP4_URL = `/bunny-stream/${BUNNY_VIDEO_ID}/play_720p.mp4`;
-const THUMBNAIL_URL = `/bunny-stream/${BUNNY_VIDEO_ID}/thumbnail.jpg`;
-const PREVIEW_WEBP_URL = `/bunny-stream/${BUNNY_VIDEO_ID}/preview.webp`;
+const BUNNY_CDN_HOST = 'https://vz-9b857324-07d.b-cdn.net';
+const VIDEO_MP4_URL = `${BUNNY_CDN_HOST}/${BUNNY_VIDEO_ID}/play_720p.mp4`;
+const THUMBNAIL_URL = `${BUNNY_CDN_HOST}/${BUNNY_VIDEO_ID}/thumbnail.jpg`;
+const PREVIEW_WEBP_URL = `${BUNNY_CDN_HOST}/${BUNNY_VIDEO_ID}/preview.webp`;
 
 export interface HighlightShot {
   id: number;
@@ -155,15 +155,18 @@ interface MatchHighlightsReelProps {
 function VideoMomentThumbnail({
   videoUrl,
   timestamp,
+  fallbackThumbnail = THUMBNAIL_URL,
   alt,
   className,
 }: {
   videoUrl: string;
   timestamp: number;
+  fallbackThumbnail?: string;
   alt: string;
   className?: string;
 }) {
   const [frameDataUrl, setFrameDataUrl] = useState<string | null>(null);
+  const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -172,7 +175,7 @@ function VideoMomentThumbnail({
     video.crossOrigin = 'anonymous';
     video.muted = true;
     video.playsInline = true;
-    video.preload = 'auto';
+    video.preload = 'metadata';
 
     const handleLoadedMetadata = () => {
       video.currentTime = timestamp;
@@ -187,21 +190,27 @@ function VideoMomentThumbnail({
         const ctx = canvas.getContext('2d');
         if (ctx) {
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
           setFrameDataUrl(dataUrl);
         }
       } catch (e) {
-        // Cross-origin restriction or canvas error, will fallback to video element
+        setHasError(true);
       }
+    };
+
+    const handleError = () => {
+      if (isMounted) setHasError(true);
     };
 
     video.addEventListener('loadedmetadata', handleLoadedMetadata);
     video.addEventListener('seeked', handleSeeked);
+    video.addEventListener('error', handleError);
 
     return () => {
       isMounted = false;
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
       video.removeEventListener('seeked', handleSeeked);
+      video.removeEventListener('error', handleError);
       video.removeAttribute('src');
       video.load();
     };
@@ -211,10 +220,15 @@ function VideoMomentThumbnail({
     return <img src={frameDataUrl} alt={alt} className={className} />;
   }
 
+  if (hasError || !videoUrl) {
+    return <img src={fallbackThumbnail} alt={alt} className={className} />;
+  }
+
   return (
     <video
       src={`${videoUrl}#t=${timestamp}`}
-      preload="auto"
+      preload="metadata"
+      poster={fallbackThumbnail}
       playsInline
       muted
       crossOrigin="anonymous"
@@ -223,6 +237,7 @@ function VideoMomentThumbnail({
           e.currentTarget.currentTime = timestamp;
         } catch (err) {}
       }}
+      onError={() => setHasError(true)}
       className={className}
     />
   );
