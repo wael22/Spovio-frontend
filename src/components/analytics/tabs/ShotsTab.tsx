@@ -833,14 +833,14 @@ export function ShotsTab({ player }: ShotsTabProps) {
         </div>
 
         {/* Padel Court Directional Trajectory Map SVG */}
-        <div className="relative w-full rounded-2xl overflow-hidden bg-gradient-to-b from-card to-muted/20 border border-border/70 p-2.5 sm:p-4 flex flex-col items-center justify-center">
+        <div className="relative w-full rounded-2xl overflow-hidden bg-gradient-to-b from-card to-muted/20 border border-border/70 p-2.5 sm:p-4 flex flex-col items-center justify-center shadow-xl">
           <svg
             viewBox={isHorizontal ? "0 0 476 250" : "0 0 250 476"}
             preserveAspectRatio="xMidYMid meet"
             className={
               isHorizontal
-                ? "w-full max-w-[620px] md:max-w-[700px] lg:max-w-[760px] h-auto drop-shadow-2xl select-none"
-                : "w-full max-w-[320px] xs:max-w-[360px] sm:max-w-[420px] h-auto max-h-[540px] drop-shadow-2xl select-none"
+                ? "w-full max-w-[620px] md:max-w-[700px] lg:max-w-[760px] h-auto select-none"
+                : "w-full max-w-[320px] xs:max-w-[360px] sm:max-w-[420px] h-auto max-h-[540px] select-none"
             }
             style={{ willChange: 'transform', transform: 'translateZ(0)' }}
             aria-label="Padel Court Trajectory and Directional Target Map"
