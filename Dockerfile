@@ -10,8 +10,8 @@ RUN npm ci
 # Copier le code source
 COPY . .
 
-# Définir l'URL de l'API (peut être overridé lors du build)
-ARG VITE_API_URL=http://213.32.23.209:5000/api
+# Définir l'URL de l'API passée par Railway
+ARG VITE_API_URL
 ENV VITE_API_URL=$VITE_API_URL
 
 # Construire l'application pour la production
