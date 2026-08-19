@@ -900,7 +900,109 @@ export function ShotsTab({ player }: ShotsTabProps) {
   const isHorizontal = orientation === 'horizontal';
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
-  const currentCategoryMeta = CATEGORY_MAP[selectedCategory] || CATEGORY_MAP.all;
+  const { dynamicShotData, dynamicCategoryMap, maxSmashStr, avgSpeedStr } = useMemo(() => {
+    const total = player.shots || 130;
+    const pId = player.id || 1;
+    const seed = pId * 1337 + total;
+
+    const cd = Math.round(total * 0.42);
+    const rev = Math.round(total * 0.28);
+    const vol = Math.round(total * 0.16);
+    const smash = Math.round(total * 0.09);
+    const band = Math.max(1, total - (cd + rev + vol + smash));
+
+    const sData = [
+      { name: 'Coup droit', value: cd, color: '#0066FF' },
+      { name: 'Revers', value: rev, color: '#8B5CF6' },
+      { name: 'Volée', value: vol, color: '#00D98B' },
+      { name: 'Smash', value: smash, color: '#00F2FE' },
+      { name: 'Bandeja & Lob', value: band, color: '#FBBF24' },
+    ];
+
+    const cdTrajs = generateDiverseShots('cd-croise', cd, {
+      name: 'Coup droit',
+      category: 'coup_droit',
+      color: '#0066FF',
+      minSpeed: 55,
+      maxSpeed: 75,
+      target: 'Zone adverse',
+      sXMin: 140, sXMax: 220, sYMin: 390, sYMax: 450,
+      eXMin: 30, eXMax: 220, eYMin: 30, eYMax: 200,
+      cMin: -25, cMax: 25
+    }, seed + 1);
+
+    const revTrajs = generateDiverseShots('rev', rev, {
+      name: 'Revers',
+      category: 'revers',
+      color: '#8B5CF6',
+      minSpeed: 52,
+      maxSpeed: 70,
+      target: 'Zone adverse',
+      sXMin: 30, sXMax: 110, sYMin: 390, sYMax: 450,
+      eXMin: 30, eXMax: 220, eYMin: 30, eYMax: 200,
+      cMin: -25, cMax: 25
+    }, seed + 2);
+
+    const volTrajs = generateDiverseShots('vol', vol, {
+      name: 'Volée',
+      category: 'volee',
+      color: '#00D98B',
+      minSpeed: 60,
+      maxSpeed: 85,
+      target: 'Fond / Grille',
+      sXMin: 50, sXMax: 200, sYMin: 250, sYMax: 330,
+      eXMin: 30, eXMax: 220, eYMin: 30, eYMax: 180,
+      cMin: -15, cMax: 15
+    }, seed + 3);
+
+    const smashTrajs = generateDiverseShots('smash', smash, {
+      name: 'Smash',
+      category: 'smash',
+      color: '#00F2FE',
+      minSpeed: 85,
+      maxSpeed: 128,
+      target: 'Grille / Par 4',
+      sXMin: 60, sXMax: 190, sYMin: 270, sYMax: 350,
+      eXMin: 20, eXMax: 230, eYMin: 25, eYMax: 120,
+      cMin: -10, cMax: 10
+    }, seed + 4);
+
+    const bandTrajs = generateDiverseShots('band', band, {
+      name: 'Bandeja & Lob',
+      category: 'bandeja',
+      color: '#FBBF24',
+      minSpeed: 48,
+      maxSpeed: 68,
+      target: 'Fond de court T',
+      sXMin: 70, sXMax: 180, sYMin: 310, sYMax: 380,
+      eXMin: 30, eXMax: 220, eYMin: 40, eYMax: 130,
+      cMin: -30, cMax: 30,
+      isDashed: true
+    }, seed + 5);
+
+    const allTrajs = [...cdTrajs, ...revTrajs, ...volTrajs, ...smashTrajs, ...bandTrajs];
+
+    const map: Record<string, CategoryMeta> = {
+      all: { id: 'all', label: `Toutes les trajectoires (${allTrajs.length})`, trajectories: allTrajs, cards: [], insight: `${total} coups analysés avec précision` },
+      coup_droit: { id: 'coup_droit', label: `Coups droits (${cdTrajs.length})`, trajectories: cdTrajs, cards: [], insight: 'Coups droits réguliers et profonds' },
+      revers: { id: 'revers', label: `Revers (${revTrajs.length})`, trajectories: revTrajs, cards: [], insight: 'Revers solides en diagonale' },
+      volee: { id: 'volee', label: `Volées (${volTrajs.length})`, trajectories: volTrajs, cards: [], insight: 'Volées agressives au filet' },
+      smash: { id: 'smash', label: `Smashes (${smashTrajs.length})`, trajectories: smashTrajs, cards: [], insight: 'Smashes puissants et décisifs' },
+      bandeja: { id: 'bandeja', label: `Bandejas & Lobs (${bandTrajs.length})`, trajectories: bandTrajs, cards: [], insight: 'Bandejas placées dans les coins' }
+    };
+
+    const maxSmash = Math.round(112 + (pId * 5.2) % 20);
+    const avgSpd = Math.round(78 + (pId * 3.8) % 15);
+
+    return {
+      dynamicShotData: sData,
+      dynamicCategoryMap: map,
+      maxSmashStr: `${maxSmash} km/h`,
+      avgSpeedStr: `${avgSpd} km/h`
+    };
+  }, [player]);
+
+  const currentCategoryMeta = dynamicCategoryMap[selectedCategory] || dynamicCategoryMap.all;
   const activeTrajectories = currentCategoryMeta.trajectories;
 
   return (
@@ -918,7 +1020,7 @@ export function ShotsTab({ player }: ShotsTabProps) {
         <ResponsiveContainer width="100%" height={250}>
           <PieChart>
             <Pie
-              data={shotData}
+              data={dynamicShotData}
               cx="50%"
               cy="50%"
               innerRadius={60}
@@ -926,7 +1028,7 @@ export function ShotsTab({ player }: ShotsTabProps) {
               paddingAngle={2}
               dataKey="value"
             >
-              {shotData.map((entry, index) => (
+              {dynamicShotData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.color} />
               ))}
             </Pie>
@@ -935,7 +1037,7 @@ export function ShotsTab({ player }: ShotsTabProps) {
         </ResponsiveContainer>
 
         <div className="space-y-2 mt-4">
-          {shotData.map((shot, index) => (
+          {dynamicShotData.map((shot, index) => (
             <div key={index} className="flex items-center justify-between text-xs sm:text-sm">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: shot.color }} />
@@ -965,9 +1067,9 @@ export function ShotsTab({ player }: ShotsTabProps) {
         <MetricCard
           icon={<Target className="w-5 h-5 text-primary" />}
           label="Vitesse"
-          value="92 km/h"
+          value={avgSpeedStr}
           subValue="Moyenne"
-          badge={{ text: '125 km/h', label: 'Max (Smash)' }}
+          badge={{ text: maxSmashStr, label: 'Max (Smash)' }}
           color="cyan"
         />
         <MetricCard
