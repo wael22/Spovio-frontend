@@ -980,10 +980,10 @@ export function ShotsTab({ player }: ShotsTabProps) {
       isDashed: true
     }, seed + 5);
 
-    const allTrajs = [...cdTrajs, ...revTrajs, ...volTrajs, ...smashTrajs, ...bandTrajs];
+    const allCurated = [...cdTrajs.slice(0, 6), ...revTrajs.slice(0, 5), ...volTrajs.slice(0, 4), ...smashTrajs.slice(0, 3), ...bandTrajs.slice(0, 2)];
 
     const map: Record<string, CategoryMeta> = {
-      all: { id: 'all', label: `Toutes les trajectoires (${allTrajs.length})`, trajectories: allTrajs, cards: [], insight: `${total} coups analysés avec précision` },
+      all: { id: 'all', label: `Toutes les trajectoires (${total})`, trajectories: allCurated, cards: [], insight: `${total} coups analysés avec précision` },
       coup_droit: { id: 'coup_droit', label: `Coups droits (${cdTrajs.length})`, trajectories: cdTrajs, cards: [], insight: 'Coups droits réguliers et profonds' },
       revers: { id: 'revers', label: `Revers (${revTrajs.length})`, trajectories: revTrajs, cards: [], insight: 'Revers solides en diagonale' },
       volee: { id: 'volee', label: `Volées (${volTrajs.length})`, trajectories: volTrajs, cards: [], insight: 'Volées agressives au filet' },
@@ -1115,12 +1115,12 @@ export function ShotsTab({ player }: ShotsTabProps) {
         {/* Category Filter Tabs */}
         <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pb-1">
           {[
-            { id: 'all', label: 'Toutes les trajectoires' },
-            { id: 'coup_droit', label: 'Coups Droits (58)' },
-            { id: 'revers', label: 'Revers (38)' },
-            { id: 'volley', label: 'Volées (22)' },
-            { id: 'smash', label: 'Smashes (12)' },
-            { id: 'bandeja', label: 'Bandejas & Lobs (8)' },
+            { id: 'all', label: `Toutes les trajectoires (${player.shots})` },
+            { id: 'coup_droit', label: `Coups Droits (${dynamicCategoryMap.coup_droit?.trajectories.length || 0})` },
+            { id: 'revers', label: `Revers (${dynamicCategoryMap.revers?.trajectories.length || 0})` },
+            { id: 'volee', label: `Volées (${dynamicCategoryMap.volee?.trajectories.length || 0})` },
+            { id: 'smash', label: `Smashes (${dynamicCategoryMap.smash?.trajectories.length || 0})` },
+            { id: 'bandeja', label: `Bandejas & Lobs (${dynamicCategoryMap.bandeja?.trajectories.length || 0})` },
           ].map((tab) => {
             const isActive = selectedCategory === tab.id;
             return (
@@ -1146,17 +1146,10 @@ export function ShotsTab({ player }: ShotsTabProps) {
           {/* Active Trajectories Legend List (Grouped cleanly) */}
           <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mt-3 pt-3 border-t border-border/50 w-full">
             {selectedCategory === 'all' ? (
-              [
-                { name: 'Coups Droits (58)', count: '58 tirs', color: '#0066FF', speed: '62 km/h' },
-                { name: 'Revers (38)', count: '38 tirs', color: '#8B5CF6', speed: '54 km/h' },
-                { name: 'Volées (22)', count: '22 tirs', color: '#00D98B', speed: '52 km/h' },
-                { name: 'Smashes (12)', count: '12 tirs', color: '#00F2FE', speed: '74 km/h' },
-                { name: 'Bandejas & Lobs (8)', count: '8 tirs', color: '#FBBF24', speed: '58 km/h' },
-              ].map((item, idx) => (
+              dynamicShotData.map((item, idx) => (
                 <div key={idx} className="flex items-center gap-1.5 text-xs font-mono bg-muted/40 px-2.5 py-1 rounded-lg border border-border/40 shadow-2xs">
                   <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
-                  <span className="font-semibold text-foreground">{item.name}</span>
-                  <span className="text-[10px] text-muted-foreground">({item.speed} moy.)</span>
+                  <span className="font-semibold text-foreground">{item.name} ({item.value})</span>
                 </div>
               ))
             ) : (
