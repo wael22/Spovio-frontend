@@ -1235,8 +1235,7 @@ export function ShotsTab({ player }: ShotsTabProps) {
                 return (
                   <div key={idx} className="flex items-center gap-1.5 text-xs font-mono bg-muted/40 px-2.5 py-1 rounded-lg border border-border/40 shadow-2xs">
                     <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: sample.color }} />
-                    <span className="font-semibold text-foreground">{uniqueName}</span>
-                    <span className="text-[10px] text-muted-foreground">({sample.speed})</span>
+                    <span className="font-semibold text-foreground">{uniqueName} ({matching.length})</span>
                   </div>
                 );
               })
