@@ -670,7 +670,7 @@ const CATEGORY_MAP: Record<string, CategoryMeta> = {
 
 interface PadelCourtCanvasProps {
   isHorizontal: boolean;
-  trajectories: ShotTrajectory[];
+  trajectories: TrajectoryItem[];
 }
 
 function PadelCourtCanvas({ isHorizontal, trajectories }: PadelCourtCanvasProps) {
