@@ -1001,26 +1001,39 @@ export function ShotsTab({ player }: ShotsTabProps) {
       return [...filetShots, ...vitreShots, ...directShots, ...rebondShots];
     };
 
-    // Coups Droits (Frappes depuis le fond droit / centre)
+    const posUpper = (player.position || 'DROITE').toUpperCase();
+    const isLeftPlayer = posUpper.includes('GAUCHE') || posUpper.includes('LEFT');
+
+    // Right-side player (Joueur de droite): plays on the right half (top half in horizontal view, matching heatmap hotspot)
+    // Their Coup Droit (Forehand) is struck from their right side (X in [135, 225]), Revers from center T (X in [75, 155])
+    // Left-side player (Joueur de gauche): plays on the left half (bottom half in horizontal view)
+    const cdStartXMin = isLeftPlayer ? 85 : 135;
+    const cdStartXMax = isLeftPlayer ? 165 : 225;
+    const revStartXMin = isLeftPlayer ? 25 : 75;
+    const revStartXMax = isLeftPlayer ? 115 : 155;
+    const netStartXMin = isLeftPlayer ? 45 : 125;
+    const netStartXMax = isLeftPlayer ? 135 : 215;
+
+    // Coups Droits (Frappes depuis la zone de coup droit du joueur - aligné avec le hotspot de la Heatmap)
     const cdTrajs = generateCategoryWithZones(
       'cd', cd, 'coup_droit', '#0066FF',
-      50, 140, 390, 450,
+      cdStartXMin, cdStartXMax, 385, 450,
       55, 75,
       seed + 1
     );
 
-    // Revers (Frappes depuis le fond gauche / vitre)
+    // Revers (Frappes depuis le côté revers vers le centre T)
     const revTrajs = generateCategoryWithZones(
       'rev', rev, 'revers', '#8B5CF6',
-      145, 222, 390, 450,
+      revStartXMin, revStartXMax, 385, 450,
       52, 70,
       seed + 2
     );
 
-    // Volées (Attaques au filet)
+    // Volées (Attaques au filet dans la moitié du joueur)
     const volTrajs = generateCategoryWithZones(
       'vol', vol, 'volee', '#00D98B',
-      50, 200, 250, 330,
+      netStartXMin, netStartXMax, 250, 320,
       60, 85,
       seed + 3
     );
@@ -1028,7 +1041,7 @@ export function ShotsTab({ player }: ShotsTabProps) {
     // Smashes (Accélérations puissantes)
     const smashTrajs = generateCategoryWithZones(
       'smash', smash, 'smash', '#00F2FE',
-      60, 190, 270, 350,
+      netStartXMin - 15, netStartXMax + 5, 270, 350,
       85, 128,
       seed + 4
     );
@@ -1036,7 +1049,7 @@ export function ShotsTab({ player }: ShotsTabProps) {
     // Bandejas & Lobs (Trajectoires hautes en cloche)
     const bandTrajs = generateCategoryWithZones(
       'band', band, 'bandeja', '#FBBF24',
-      70, 180, 310, 380,
+      cdStartXMin - 10, cdStartXMax, 310, 385,
       48, 68,
       seed + 5,
       true
