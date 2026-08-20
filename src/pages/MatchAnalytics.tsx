@@ -26,7 +26,7 @@ const getInitialPlayers = (mId: string | number = 1): AnalyticsPlayer[] => {
     },
     {
       id: 2,
-      name: 'THOMAS',
+      name: 'PLAYER 2',
       team: 'A',
       position: 'MI-COURT',
       distance: Number((2.6 + (seed * 0.2) % 1.4).toFixed(2)),
@@ -36,7 +36,7 @@ const getInitialPlayers = (mId: string | number = 1): AnalyticsPlayer[] => {
     },
     {
       id: 3,
-      name: 'MAXIME',
+      name: 'PLAYER 3',
       team: 'B',
       position: 'FILET',
       distance: Number((3.0 + (seed * 0.4) % 1.6).toFixed(2)),
@@ -46,7 +46,7 @@ const getInitialPlayers = (mId: string | number = 1): AnalyticsPlayer[] => {
     },
     {
       id: 4,
-      name: 'ANTOINE',
+      name: 'PLAYER 4',
       team: 'B',
       position: 'FOND DE COURT',
       distance: Number((2.7 + (seed * 0.3) % 1.3).toFixed(2)),
@@ -89,15 +89,21 @@ export default function MatchAnalytics() {
   }, [matchId]);
 
   const playersList = useMemo(() => {
+    const initial = getInitialPlayers(matchId);
     // If we have dynamic player stats from DB
     if (matchAnalyticsData?.players && Array.isArray(matchAnalyticsData.players) && matchAnalyticsData.players.length >= 4) {
       return matchAnalyticsData.players.map((p: any, idx: number) => {
         const mov = p.movement_data || {};
         const shots = p.shots_data || {};
         const pos = p.position_data || {};
+        const slot = p.player_slot || idx + 1;
+        let rawName = p.player_name || `Player ${slot}`;
+        if (slot > 1 && ['LUCAS', 'THOMAS', 'JULIEN', 'MAXIME', 'ANTOINE'].includes(String(rawName).toUpperCase().trim())) {
+          rawName = `Player ${slot}`;
+        }
         return {
-          id: p.player_slot || idx + 1,
-          name: (p.player_name || `Joueur ${idx + 1}`).toUpperCase(),
+          id: slot,
+          name: String(rawName).toUpperCase(),
           team: idx < 2 ? 'A' : 'B',
           position: pos.net_presence_pct > 50 ? 'FILET' : 'FOND DE COURT',
           distance: mov.distance_km || 2.35,
@@ -114,11 +120,11 @@ export default function MatchAnalytics() {
           ? JSON.parse(videoData.match_players)
           : videoData.match_players;
         if (parsed.players && Array.isArray(parsed.players)) {
-          return mockPlayers.map((p, idx) => {
+          return initial.map((p, idx) => {
             const matchP = parsed.players[idx];
             return {
               ...p,
-              name: (matchP?.player_name || matchP?.name || p.name).toUpperCase()
+              name: (matchP?.player_name || matchP?.name || (idx === 0 ? p.name : `PLAYER ${idx + 1}`)).toUpperCase()
             };
           });
         }
@@ -126,7 +132,7 @@ export default function MatchAnalytics() {
         console.warn("Error parsing match_players in analytics:", e);
       }
     }
-    return getInitialPlayers(matchId);
+    return initial;
   }, [videoData, matchAnalyticsData, matchId]);
 
   // Always bind activePlayer to the live playersList
