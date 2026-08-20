@@ -20,6 +20,7 @@ export default {
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
         display: ['Orbitron', 'Inter', 'sans-serif'],
+        orbitron: ['Orbitron', 'Inter', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
