@@ -919,68 +919,128 @@ export function ShotsTab({ player }: ShotsTabProps) {
       { name: 'Bandeja & Lob', value: band, color: '#FBBF24' },
     ];
 
-    // CD (Coup droit) - Frappé depuis le centre / bas-droit vers la diagonale adverse
-    const cdTrajs = generateDiverseShots('cd-croise', cd, {
-      name: 'Coup droit',
-      category: 'coup_droit',
-      color: '#0066FF',
-      minSpeed: 55,
-      maxSpeed: 75,
-      target: 'Zone adverse',
-      sXMin: 50, sXMax: 140, sYMin: 390, sYMax: 450,
-      eXMin: 30, eXMax: 220, eYMin: 30, eYMax: 200,
-      cMin: -20, cMax: 20
-    }, seed + 1);
+    // Helper to generate realistic shots with 4 distinct landing zones perfectly mirroring the Heatmap:
+    // 1. Filet (~10%): stops precisely on the Net line (eY: 236-238)
+    // 2. Directe vitre (~6%): reaches directly to the back glass (eY: 18-24)
+    // 3. Retour direct (~35%): mid-court / transition area (eY: 128-215)
+    // 4. Rebond au sol (~49%): service boxes & deep court (eY: 25-128)
+    const generateCategoryWithZones = (
+      prefix: string,
+      count: number,
+      category: string,
+      color: string,
+      sXMin: number, sXMax: number,
+      sYMin: number, sYMax: number,
+      speedMin: number, speedMax: number,
+      baseSeed: number,
+      isDashed = false
+    ): TrajectoryItem[] => {
+      if (count <= 0) return [];
+      
+      const countFilet = Math.max(count >= 7 ? 1 : 0, Math.round(count * 0.10));
+      const countVitre = Math.max(count >= 10 ? 1 : 0, Math.round(count * 0.06));
+      const countDirect = Math.round(count * 0.35);
+      const countRebond = Math.max(1, count - (countFilet + countVitre + countDirect));
 
-    // Revers - Frappé depuis le coin supérieur droit (près de la vitre latérale droite) vers le camp adverse
-    const revTrajs = generateDiverseShots('rev', rev, {
-      name: 'Revers',
-      category: 'revers',
-      color: '#8B5CF6',
-      minSpeed: 52,
-      maxSpeed: 70,
-      target: 'Zone adverse',
-      sXMin: 145, sXMax: 222, sYMin: 390, sYMax: 450,
-      eXMin: 30, eXMax: 220, eYMin: 30, eYMax: 200,
-      cMin: -25, cMax: 25
-    }, seed + 2);
+      // 1. Balle au filet
+      const filetShots = generateDiverseShots(`${prefix}-filet`, countFilet, {
+        name: `${prefix === 'cd' ? 'Coup droit' : prefix === 'rev' ? 'Revers' : prefix === 'vol' ? 'Volée' : prefix === 'smash' ? 'Smash' : 'Bandeja'} filet`,
+        category,
+        color,
+        minSpeed: Math.round(speedMin * 0.85),
+        maxSpeed: Math.round(speedMax * 0.95),
+        target: 'Balle au filet',
+        sXMin, sXMax, sYMin, sYMax,
+        eXMin: 28, eXMax: 222, eYMin: 236, eYMax: 238,
+        cMin: -8, cMax: 8,
+        isDashed
+      }, baseSeed + 10);
 
-    const volTrajs = generateDiverseShots('vol', vol, {
-      name: 'Volée',
-      category: 'volee',
-      color: '#00D98B',
-      minSpeed: 60,
-      maxSpeed: 85,
-      target: 'Fond / Grille',
-      sXMin: 50, sXMax: 200, sYMin: 250, sYMax: 330,
-      eXMin: 30, eXMax: 220, eYMin: 30, eYMax: 180,
-      cMin: -15, cMax: 15
-    }, seed + 3);
+      // 2. Directe vitre
+      const vitreShots = generateDiverseShots(`${prefix}-vitre`, countVitre, {
+        name: `${prefix === 'cd' ? 'Coup droit' : prefix === 'rev' ? 'Revers' : prefix === 'vol' ? 'Volée' : prefix === 'smash' ? 'Smash' : 'Bandeja'} vitre`,
+        category,
+        color,
+        minSpeed: speedMin,
+        maxSpeed: speedMax,
+        target: 'Directe vitre',
+        sXMin, sXMax, sYMin, sYMax,
+        eXMin: 20, eXMax: 230, eYMin: 18, eYMax: 24,
+        cMin: -24, cMax: 24,
+        isDashed
+      }, baseSeed + 20);
 
-    const smashTrajs = generateDiverseShots('smash', smash, {
-      name: 'Smash',
-      category: 'smash',
-      color: '#00F2FE',
-      minSpeed: 85,
-      maxSpeed: 128,
-      target: 'Grille / Par 4',
-      sXMin: 60, sXMax: 190, sYMin: 270, sYMax: 350,
-      eXMin: 20, eXMax: 230, eYMin: 25, eYMax: 120,
-      cMin: -10, cMax: 10
-    }, seed + 4);
+      // 3. Retour direct (transition & mi-court)
+      const directShots = generateDiverseShots(`${prefix}-direct`, countDirect, {
+        name: `${prefix === 'cd' ? 'Coup droit' : prefix === 'rev' ? 'Revers' : prefix === 'vol' ? 'Volée' : prefix === 'smash' ? 'Smash' : 'Bandeja'} direct`,
+        category,
+        color,
+        minSpeed: speedMin,
+        maxSpeed: speedMax,
+        target: 'Retour direct',
+        sXMin, sXMax, sYMin, sYMax,
+        eXMin: 32, eXMax: 218, eYMin: 128, eYMax: 215,
+        cMin: -20, cMax: 20,
+        isDashed
+      }, baseSeed + 30);
 
-    const bandTrajs = generateDiverseShots('band', band, {
-      name: 'Bandeja & Lob',
-      category: 'bandeja',
-      color: '#FBBF24',
-      minSpeed: 48,
-      maxSpeed: 68,
-      target: 'Fond de court T',
-      sXMin: 70, sXMax: 180, sYMin: 310, sYMax: 380,
-      eXMin: 30, eXMax: 220, eYMin: 40, eYMax: 130,
-      cMin: -30, cMax: 30,
-      isDashed: true
-    }, seed + 5);
+      // 4. Rebond au sol (carrés de service & fond de court)
+      const rebondShots = generateDiverseShots(`${prefix}-rebond`, countRebond, {
+        name: `${prefix === 'cd' ? 'Coup droit' : prefix === 'rev' ? 'Revers' : prefix === 'vol' ? 'Volée' : prefix === 'smash' ? 'Smash' : 'Bandeja'} fond`,
+        category,
+        color,
+        minSpeed: speedMin,
+        maxSpeed: speedMax,
+        target: 'Rebond au sol',
+        sXMin, sXMax, sYMin, sYMax,
+        eXMin: 25, eXMax: 225, eYMin: 25, eYMax: 128,
+        cMin: -25, cMax: 25,
+        isDashed
+      }, baseSeed + 40);
+
+      return [...filetShots, ...vitreShots, ...directShots, ...rebondShots];
+    };
+
+    // Coups Droits (Frappes depuis le fond droit / centre)
+    const cdTrajs = generateCategoryWithZones(
+      'cd', cd, 'coup_droit', '#0066FF',
+      50, 140, 390, 450,
+      55, 75,
+      seed + 1
+    );
+
+    // Revers (Frappes depuis le fond gauche / vitre)
+    const revTrajs = generateCategoryWithZones(
+      'rev', rev, 'revers', '#8B5CF6',
+      145, 222, 390, 450,
+      52, 70,
+      seed + 2
+    );
+
+    // Volées (Attaques au filet)
+    const volTrajs = generateCategoryWithZones(
+      'vol', vol, 'volee', '#00D98B',
+      50, 200, 250, 330,
+      60, 85,
+      seed + 3
+    );
+
+    // Smashes (Accélérations puissantes)
+    const smashTrajs = generateCategoryWithZones(
+      'smash', smash, 'smash', '#00F2FE',
+      60, 190, 270, 350,
+      85, 128,
+      seed + 4
+    );
+
+    // Bandejas & Lobs (Trajectoires hautes en cloche)
+    const bandTrajs = generateCategoryWithZones(
+      'band', band, 'bandeja', '#FBBF24',
+      70, 180, 310, 380,
+      48, 68,
+      seed + 5,
+      true
+    );
 
     const allTrajs = [...cdTrajs, ...revTrajs, ...volTrajs, ...smashTrajs, ...bandTrajs];
 
