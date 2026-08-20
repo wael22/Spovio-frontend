@@ -2,8 +2,20 @@ import { createRoot } from "react-dom/client";
 import * as Sentry from "@sentry/react";
 import App from "./App.tsx";
 import { ThemeProvider } from "./components/ThemeProvider.tsx";
+import { registerSW } from "virtual:pwa-register";
 import "./i18n";
 import "./index.css";
+
+// Auto-update PWA service worker immediately without stale caching
+registerSW({
+  immediate: true,
+  onNeedRefresh() {
+    console.log('[PWA] New content available, reloading...');
+  },
+  onOfflineReady() {
+    console.log('[PWA] App ready to work offline');
+  },
+});
 
 // Sentry configuré via VITE_SENTRY_DSN dans les variables d'environnement
 const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN;
