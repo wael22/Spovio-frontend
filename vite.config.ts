@@ -110,6 +110,8 @@ export default defineConfig(({ mode }) => ({
         suppressWarnings: true,
       },
       workbox: {
+        skipWaiting: true,
+        clientsClaim: true,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,jpg,woff2}'],
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api\/.*/, /^\/bunny-stream\/.*/],
