@@ -219,7 +219,7 @@ export const videoService = {
         api.post(`/videos/${videoId}/share-with-user`, { recipient_email: recipientEmail, message }),
     getDownloadUrl: (videoId: string) => `${API_BASE_URL}/videos/${videoId}/download`,
     getSharedWithMe: () => api.get('/videos/shared-with-me'),
-    removeSharedAccess: (sharedVideoId: string) => api.delete(`/videos/shared/${sharedVideoId}`),
+    removeSharedAccess: (sharedVideoId: string | number) => api.delete(`/videos/shared/${sharedVideoId}`),
     getMySharedVideos: () => api.get('/videos/my-shared-videos'),
     getVideoOverlays: (videoId: string) => api.get(`/videos/${videoId}/overlays`),
     getShareLink: (videoId: string) => api.post(`/videos/${videoId}/share-link`),
