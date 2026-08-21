@@ -101,15 +101,9 @@ const DirectRecordingModal = ({ isOpen, onClose, onRecordingStarted, onVideoClai
         setValidating(true);
         setError("");
 
-        // 1. Check if it's a Video Share (contains /s/ or matches a UUID token)
-        const uuidRegex = /[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/;
-        const isShareUrl = trimmedCode.includes('/s/');
-        const uuidMatch = trimmedCode.match(uuidRegex);
-
-        if (isShareUrl || uuidMatch) {
-            const shareToken = isShareUrl
-                ? trimmedCode.split('/s/')[1].split(/[?#]/)[0]
-                : (uuidMatch ? uuidMatch[0] : trimmedCode);
+        // 1. If it contains '/s/', it is definitively a Video Share Link
+        if (trimmedCode.includes('/s/')) {
+            const shareToken = trimmedCode.split('/s/')[1].split(/[?#]/)[0];
 
             try {
                 // Resolve public share link
@@ -139,7 +133,7 @@ const DirectRecordingModal = ({ isOpen, onClose, onRecordingStarted, onVideoClai
             }
         }
 
-        // 2. Otherwise process as Court QR code
+        // 2. Otherwise process as Court QR code (handles short codes, /c/ URLs, and court UUIDs)
         try {
             const response = await videoService.scanQrCode(trimmedCode);
             const data = response.data || response;
