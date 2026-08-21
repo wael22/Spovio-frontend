@@ -652,6 +652,10 @@
       "title": "🔗 Nouvelle vidéo partagée",
       "msg": "{{sender}} a partagé une vidéo avec vous."
     },
+    "videoClaimed": {
+      "title": "🔗 Nouvelle vidéo ajoutée",
+      "msg": "La vidéo \"{{title}}\" a été ajoutée à votre bibliothèque."
+    },
     "systemMaintenance": {
       "title": "⚙️ Maintenance système",
       "msg": "Une maintenance système est prévue."

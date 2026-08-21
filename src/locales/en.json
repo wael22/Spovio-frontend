@@ -648,6 +648,10 @@
       "title": "🔗 New video shared",
       "msg": "{{sender}} shared a video with you."
     },
+    "videoClaimed": {
+      "title": "🔗 New video added",
+      "msg": "Video \"{{title}}\" was added to your library."
+    },
     "systemMaintenance": {
       "title": "⚙️ System maintenance",
       "msg": "System maintenance is scheduled."
