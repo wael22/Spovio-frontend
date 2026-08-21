@@ -67,7 +67,7 @@ export function ShareVideoModal({
     };
 
     const loadShareLink = async () => {
-        if (!videoId || shareUrl) return;
+        if (!videoId) return;
         try {
             setLoadingLink(true);
             const response = await videoService.getShareLink(videoId.toString());
@@ -80,19 +80,23 @@ export function ShareVideoModal({
     };
 
     useEffect(() => {
+        if (!open) {
+            setShareUrl(null);
+            setEmail("");
+            setMessage("");
+            setCopied(false);
+            setCurrentShares([]);
+            return;
+        }
+
         if (open && videoId) {
+            setShareUrl(null);
             loadShares();
             if (activeTab === "link") {
                 loadShareLink();
             }
         }
     }, [open, videoId, activeTab]);
-
-    useEffect(() => {
-        if (open && activeTab === "link" && !shareUrl && videoId) {
-            loadShareLink();
-        }
-    }, [open, activeTab]);
 
     const handleShare = async () => {
         if (!email.trim()) {
@@ -167,7 +171,7 @@ export function ShareVideoModal({
         }
         
         try {
-            await videoService.removeSharedAccess(shareId);
+            await videoService.removeSharedAccess(shareId.toString());
             toast({
                 title: `✅ ${t('modals.common.success')}`,
                 description: isFrench ? "Le partage a été annulé avec succès." : "Share cancelled successfully.",

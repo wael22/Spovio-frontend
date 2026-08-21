@@ -85,6 +85,21 @@ export function translateNotification(
   message: string
 ): { title: string; message: string } {
   const normalizedType = (type || "").toLowerCase();
+
+  // Special handling for videos claimed via public link / QR code
+  if (normalizedType === "video_shared" || normalizedType === "share") {
+    if (message.includes("lien de partage") || message.includes("bibliothèque") || message.includes("ajoutée") || message.includes("added to your library")) {
+      const titleMatch = message.match(/["']([^"']+)["']/);
+      const videoTitle = titleMatch ? titleMatch[1] : "";
+      return {
+        title: i18n.t("notifications.videoClaimed.title", "🔗 Nouvelle vidéo ajoutée"),
+        message: videoTitle
+          ? i18n.t("notifications.videoClaimed.msg", { title: videoTitle, defaultValue: `La vidéo "${videoTitle}" a été ajoutée à votre bibliothèque.` })
+          : message,
+      };
+    }
+  }
+
   const cfg = patterns[normalizedType] || patterns[typeAliases[normalizedType]];
 
   if (!cfg) {
@@ -93,11 +108,18 @@ export function translateNotification(
 
   const params: Record<string, string> = {};
   if (cfg.regex && cfg.paramNames) {
-    const match = title.match(cfg.regex) || message.match(cfg.regex);
+    const match = message.match(cfg.regex) || title.match(cfg.regex);
     if (match) {
       cfg.paramNames.forEach((name, i) => {
         params[name] = (match[i + 1] || "").trim();
       });
+    }
+  }
+
+  // Fallback to ensure {{sender}} is never displayed raw if regex match fails
+  if (normalizedType === "video_shared" || normalizedType === "share") {
+    if (!params.sender) {
+      params.sender = i18n.language?.startsWith('fr') ? "Un joueur" : "A player";
     }
   }
 

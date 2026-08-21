@@ -7,11 +7,7 @@ export default function ErrorButton() {
       <button
         className="px-6 py-3 bg-red-600 text-white rounded hover:bg-red-700 font-bold"
         onClick={() => {
-          console.info('User triggered test error', {
-            action: 'test_error_button_click',
-          });
-          // Send a test metric before throwing the error
-          Sentry.metrics.increment('test_counter', 1);
+          console.info('User triggered test error');
           throw new Error('This is your first error!');
         }}
       >
