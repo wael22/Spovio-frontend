@@ -9,6 +9,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { TutorialProvider } from "@/contexts/TutorialContext";
 import { TutorialOverlay } from "@/components/tutorial";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import GuestRoute from "@/components/GuestRoute";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import ErrorButton from "@/components/ErrorButton";
@@ -83,10 +84,24 @@ const App = () => (
                     <Route path="/s/:shareToken" element={<ShareRedirect />} />
 
                     {/* Authentication */}
-                    <Route path="/auth" element={<Auth />} />
+                    <Route
+                      path="/auth"
+                      element={
+                        <GuestRoute>
+                          <Auth />
+                        </GuestRoute>
+                      }
+                    />
                     <Route path="/verify-email" element={<EmailVerification />} />
                     <Route path="/google-auth-callback" element={<GoogleAuthCallback />} />
-                    <Route path="/forgot-password" element={<ForgotPassword />} />
+                    <Route
+                      path="/forgot-password"
+                      element={
+                        <GuestRoute>
+                          <ForgotPassword />
+                        </GuestRoute>
+                      }
+                    />
                     <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/super-secret-login" element={<SuperAdminLogin />} />
                     <Route path="/player-interest" element={<PlayerInterest />} />
