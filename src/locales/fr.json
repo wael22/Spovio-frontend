@@ -105,15 +105,19 @@
       }
     },
     "directRecording": {
-      "titleScan": "Démarrage Rapide via QR",
+      "titleScan": "Scanner QR Code",
       "titleConfig": "Configuration du Match",
-      "scanInstruction": "Scanner le code du terrain pour démarrer",
+      "scanInstruction": "Scannez le QR code d'un terrain ou d'une vidéo partagée",
       "configInstruction": "Personnalisez votre enregistrement avant de commencer",
-      "scanGuide": "Pointez votre caméra vers le QR code sur le poteau du terrain",
+      "scanGuide": "Pointez votre caméra vers le QR code du terrain ou d'un partage",
       "validating": "Validation du code...",
       "connected": "Connecté",
       "retry": "Ré-essayer",
-      "start": "Démarrer"
+      "start": "Démarrer",
+      "manualInstruction": "Ou entrez le code du terrain ou lien de partage :",
+      "manualPlaceholder": "Ex: A1B2 ou lien...",
+      "validate": "Valider",
+      "shareClaimSuccess": "Vidéo partagée \"{{title}}\" ajoutée à vos vidéos !"
     },
     "reportIssue": {
       "title": "Signaler un problème vidéo",

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -104,23 +104,23 @@ const Dashboard = () => {
   };
 
   // Fetch user videos
-  useEffect(() => {
-    const fetchVideos = async () => {
-      try {
-        const response = await videoService.getMyVideos();
-        setVideos(response.data.videos || []);
-      } catch (error: any) {
-        console.error('Failed to fetch videos:', error);
-        if (error.response?.status !== 401) {
-          toast.error(t("toasts.videosLoadError"));
-        }
-      } finally {
-        setLoading(false);
+  const fetchVideos = useCallback(async () => {
+    try {
+      const response = await videoService.getMyVideos();
+      setVideos(response.data.videos || []);
+    } catch (error: any) {
+      console.error('Failed to fetch videos:', error);
+      if (error.response?.status !== 401) {
+        toast.error(t("toasts.videosLoadError"));
       }
-    };
-
-    fetchVideos();
+    } finally {
+      setLoading(false);
+    }
   }, [t]);
+
+  useEffect(() => {
+    fetchVideos();
+  }, [fetchVideos]);
 
   // Fetch clips count
   useEffect(() => {
@@ -602,6 +602,9 @@ const Dashboard = () => {
           setInitialQrCode(undefined);
         }}
         initialQrCode={initialQrCode}
+        onVideoClaimed={() => {
+          fetchVideos();
+        }}
         onRecordingStarted={async (session) => {
           setActiveRecording(session);
           setTimeout(fetchActiveRecording, 1000);

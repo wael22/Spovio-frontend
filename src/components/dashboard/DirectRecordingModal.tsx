@@ -34,6 +34,7 @@ interface DirectRecordingModalProps {
     isOpen: boolean;
     onClose: () => void;
     onRecordingStarted?: (session: any) => void;
+    onVideoClaimed?: (video: any) => void;
     initialQrCode?: string;
 }
 
@@ -41,8 +42,8 @@ type ModalStep = "scanning" | "configuring";
 
 // Durations moved inside component
 
-const DirectRecordingModal = ({ isOpen, onClose, onRecordingStarted, initialQrCode }: DirectRecordingModalProps) => {
-    const { t } = useTranslation();
+const DirectRecordingModal = ({ isOpen, onClose, onRecordingStarted, onVideoClaimed, initialQrCode }: DirectRecordingModalProps) => {
+    const { t, i18n } = useTranslation();
     const { user } = useAuth();
     const [step, setStep] = useState<ModalStep>("scanning");
 
@@ -88,19 +89,59 @@ const DirectRecordingModal = ({ isOpen, onClose, onRecordingStarted, initialQrCo
     }, [isOpen]);
 
     const handleScanSuccess = async (code: string) => {
-        if (!code || code.length < 3) {
-            const msg = 'Code invalide';
+        if (!code || code.trim().length < 3) {
+            const msg = t('modals.common.error') || 'Code invalide';
             setError(msg);
             toast.error(msg);
             return;
         }
-        console.log('✅ Direct Scan Success:', code);
-        setQrCode(code);
+        const trimmedCode = code.trim();
+        console.log('✅ Direct Scan Success:', trimmedCode);
+        setQrCode(trimmedCode);
         setValidating(true);
         setError("");
 
+        // 1. Check if it's a Video Share (contains /s/ or matches a UUID token)
+        const uuidRegex = /[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/;
+        const isShareUrl = trimmedCode.includes('/s/');
+        const uuidMatch = trimmedCode.match(uuidRegex);
+
+        if (isShareUrl || uuidMatch) {
+            const shareToken = isShareUrl
+                ? trimmedCode.split('/s/')[1].split(/[?#]/)[0]
+                : (uuidMatch ? uuidMatch[0] : trimmedCode);
+
+            try {
+                // Resolve public share link
+                const response = await videoService.resolveShareLink(shareToken);
+                const videoData = response.data || response;
+                const videoId = videoData.video_id || videoData.id;
+
+                if (videoId) {
+                    // Claim the shared video to add it to user's library
+                    await videoService.claimShare(videoId);
+                    const titleStr = videoData.title || (i18n.language?.startsWith('fr') ? 'Vidéo' : 'Video');
+                    toast.success(t('modals.directRecording.shareClaimSuccess', { title: titleStr }));
+
+                    if (onVideoClaimed) {
+                        onVideoClaimed(videoData);
+                    }
+                    onClose();
+                    return;
+                }
+            } catch (err: any) {
+                console.error('❌ Video Share Claim Error:', err);
+                const msg = err.response?.data?.error || err.response?.data?.message || t('modals.common.error');
+                setError(msg);
+                toast.error(msg);
+                setValidating(false);
+                return;
+            }
+        }
+
+        // 2. Otherwise process as Court QR code
         try {
-            const response = await videoService.scanQrCode(code);
+            const response = await videoService.scanQrCode(trimmedCode);
             const data = response.data || response;
 
             if (!data.club || !data.court) {
@@ -221,20 +262,22 @@ const DirectRecordingModal = ({ isOpen, onClose, onRecordingStarted, initialQrCo
                                 </div>
 
                                 <div className="mt-4 pt-4 border-t border-border/50 text-center space-y-3">
-                                    <p className="text-sm font-medium text-muted-foreground">Ou entrez le code du terrain :</p>
-                                    <div className="flex max-w-[240px] mx-auto gap-2">
+                                    <p className="text-sm font-medium text-muted-foreground">{t('modals.directRecording.manualInstruction') || "Ou entrez le code du terrain ou lien de partage :"}</p>
+                                    <div className="flex max-w-[320px] mx-auto gap-2">
                                         <Input
-                                            placeholder="Ex: A1B2"
+                                            placeholder={t('modals.directRecording.manualPlaceholder') || "Ex: A1B2 ou lien..."}
                                             value={manualCode}
-                                            onChange={(e) => setManualCode(e.target.value.toUpperCase())}
-                                            className="uppercase text-center font-bold tracking-widest"
-                                            maxLength={6}
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                setManualCode(val.length <= 6 && !val.includes('/') ? val.toUpperCase() : val);
+                                            }}
+                                            className="text-center font-semibold tracking-wide"
                                         />
                                         <Button
                                             onClick={() => handleScanSuccess(manualCode)}
-                                            disabled={!manualCode || validating}
+                                            disabled={!manualCode.trim() || validating}
                                         >
-                                            Valider
+                                            {t('modals.directRecording.validate') || "Valider"}
                                         </Button>
                                     </div>
                                 </div>

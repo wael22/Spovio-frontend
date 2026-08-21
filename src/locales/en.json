@@ -105,15 +105,19 @@
       }
     },
     "directRecording": {
-      "titleScan": "Quick Start via QR",
+      "titleScan": "Scan QR Code",
       "titleConfig": "Match Configuration",
-      "scanInstruction": "Scan court code to start",
+      "scanInstruction": "Scan a court QR code or a shared video QR code",
       "configInstruction": "Customize your recording before starting",
-      "scanGuide": "Point your camera at the QR code on the court post",
+      "scanGuide": "Point your camera at a court QR code or shared video QR code",
       "validating": "Validating code...",
       "connected": "Connected",
       "retry": "Try Again",
-      "start": "Start"
+      "start": "Start",
+      "manualInstruction": "Or enter the court code or share link:",
+      "manualPlaceholder": "Ex: A1B2 or link...",
+      "validate": "Validate",
+      "shareClaimSuccess": "Shared video \"{{title}}\" added to your videos!"
     },
     "reportIssue": {
       "title": "Report Video Issue",
