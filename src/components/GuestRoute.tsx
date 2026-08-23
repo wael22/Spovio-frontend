@@ -20,7 +20,10 @@ const GuestRoute: React.FC<GuestRouteProps> = ({ children }) => {
         );
     }
 
-    if (user) {
+    const token = localStorage.getItem('token');
+
+    // Only redirect if both user object and token exist
+    if (user && token) {
         console.log(`↩️ GuestRoute: User already authenticated (${user.role}), redirecting...`);
         switch (user.role) {
             case 'super_admin':
@@ -32,6 +35,11 @@ const GuestRoute: React.FC<GuestRouteProps> = ({ children }) => {
             default:
                 return <Navigate to="/dashboard" replace />;
         }
+    }
+
+    // If user state is lingering without a token, clean it up
+    if (user && !token) {
+        localStorage.removeItem('user');
     }
 
     return <>{children}</>;

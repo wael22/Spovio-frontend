@@ -141,6 +141,11 @@ api.interceptors.response.use(
     },
     (error) => {
         if (error.response?.status === 401) {
+            // 🔥 CRITICAL: Clean up stale session immediately on 401
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            localStorage.removeItem('spovio_cached_videos');
+
             if (error.config?.url?.includes('/auth/me')) {
                 return Promise.reject(error);
             }
@@ -156,11 +161,11 @@ api.interceptors.response.use(
 
             if (!isRedirecting && !isPublicRoute) {
                 isRedirecting = true;
-                console.warn('[API] Redirecting to /auth - 401 Unauthorized (session expired)');
+                console.warn('[API] Session expired (401) - Cleared localStorage and redirecting to /auth');
                 window.location.href = '/auth';
                 setTimeout(() => {
                     isRedirecting = false;
-                }, 1000);
+                }, 1500);
             }
         }
         return Promise.reject(error);
