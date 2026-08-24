@@ -16,7 +16,7 @@ const CourtRedirect: React.FC = () => {
                 // Optimistic redirect, ProtectedRoute will handle true validation
                 navigate('/dashboard');
             } else {
-                navigate('/auth');
+                navigate(`/auth?court_qr=${encodeURIComponent(qrCode)}`);
             }
         } else {
             navigate('/');

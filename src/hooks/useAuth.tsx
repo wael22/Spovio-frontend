@@ -56,8 +56,18 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             if (isInitialized) return;
 
             // Try to restore session from localStorage first (fast)
+            const token = localStorage.getItem('token');
             const storedUser = localStorage.getItem('user');
-            if (storedUser) {
+
+            if (!token) {
+                setUser(null);
+                localStorage.removeItem('user');
+                setLoading(false);
+                setIsInitialized(true);
+                return;
+            }
+
+            if (storedUser && token) {
                 try {
                     setUser(JSON.parse(storedUser));
                 } catch (e) {
@@ -86,6 +96,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
                     setUser(null);
                     localStorage.removeItem('user');
                     localStorage.removeItem('token'); // 🔥 CRITICAL: Clear JWT token on expiration
+                    localStorage.removeItem('spovio_cached_videos');
                 } else {
                     console.error("Error checking authentication status:", error);
                     // Safe fallback if network error

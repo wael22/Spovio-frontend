@@ -243,7 +243,9 @@ const Auth = () => {
 
     try {
       setIsLoading(true);
-      const response = await authService.getGoogleAuthUrl();
+      const urlParams = new URLSearchParams(window.location.search);
+      const pendingCourtQr = urlParams.get('court_qr') || localStorage.getItem('pending_court_qr') || '';
+      const response = await authService.getGoogleAuthUrl({ court_qr: pendingCourtQr });
       if (response.data && response.data.auth_url) {
         window.location.href = response.data.auth_url;
       } else {

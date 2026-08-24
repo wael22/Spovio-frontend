@@ -37,6 +37,13 @@ const GoogleAuthCallback = () => {
                     localStorage.setItem('token', response.data.token);
                     console.log("GoogleAuthCallback: Token stored in localStorage");
 
+                    // 1.1 Stocker le court_qr si renvoyé par le flux OAuth
+                    const courtQr = searchParams.get('court_qr');
+                    if (courtQr) {
+                        localStorage.setItem('pending_court_qr', courtQr);
+                        console.log("GoogleAuthCallback: Stored pending_court_qr:", courtQr);
+                    }
+
                     // 2. Mettre à jour le contexte d'authentification si possible
                     // (On suppose que login() gère ça, sinon on reloading)
 
