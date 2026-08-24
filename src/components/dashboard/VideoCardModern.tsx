@@ -93,7 +93,7 @@ export function VideoCardModern({
 
   const isFailed = processingStatus === 'failed';
   const isProcessing = processingStatus === 'processing' || processingStatus === 'uploading';
-  const isAiCompleted = aiAnalyticsCompleted || aiStatus === 'completed' || processingStatus === 'ready' || (!processingStatus && !isExpired);
+  const isAiCompleted = Boolean((aiAnalyticsCompleted === true || aiStatus === 'completed') && !isExpired);
 
   const isRosterConfigured = (() => {
     if (!matchPlayers) return false;
@@ -243,10 +243,12 @@ export function VideoCardModern({
               {isExpired ? t('components.videoCard.menu.playExpired') : t('components.videoCard.menu.play')}
             </DropdownMenuItem>
 
-            <DropdownMenuItem onClick={() => navigate(`/analytics/${id}`)} disabled={isExpired || !isRosterConfigured} className="text-cyan-600 dark:text-cyan-400 font-medium">
-              <BarChart3 className="h-4 w-4 mr-2 text-cyan-600 dark:text-cyan-400" />
-              {t('components.videoCard.menu.viewAnalytics', 'View AI Match Analytics')}
-            </DropdownMenuItem>
+            {isAiCompleted && (
+              <DropdownMenuItem onClick={() => navigate(`/analytics/${id}`)} disabled={isExpired || !isRosterConfigured} className="text-cyan-600 dark:text-cyan-400 font-medium">
+                <BarChart3 className="h-4 w-4 mr-2 text-cyan-600 dark:text-cyan-400" />
+                {t('components.videoCard.menu.viewAnalytics', 'View AI Match Analytics')}
+              </DropdownMenuItem>
+            )}
 
             {isAiCompleted && (
               <DropdownMenuItem onClick={onSetupMatchPlayers} disabled={isExpired} className="text-emerald-400 font-medium">

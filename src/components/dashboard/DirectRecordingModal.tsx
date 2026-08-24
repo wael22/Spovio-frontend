@@ -150,6 +150,7 @@ const DirectRecordingModal = ({ isOpen, onClose, onRecordingStarted, onVideoClai
 
             console.log('✅ QR Validated:', data);
             setScannedData({ club: data.club, court: data.court });
+            setAiAnalyticsRequested(data.court.has_ai === true);
             setStep("configuring");
             toast.success(`Terrain détecté: ${data.court.name}`);
         } catch (err: any) {
@@ -172,6 +173,9 @@ const DirectRecordingModal = ({ isOpen, onClose, onRecordingStarted, onVideoClai
 
         setStarting(true);
         try {
+            const isAiEligible = scannedData?.court?.has_ai === true;
+            const effectiveAiRequested = isAiEligible && aiAnalyticsRequested;
+
             const response = await recordingService.startAdvancedRecording({
                 club_id: parseInt(scannedData.club.id),
                 court_id: parseInt(scannedData.court.id),
@@ -179,7 +183,7 @@ const DirectRecordingModal = ({ isOpen, onClose, onRecordingStarted, onVideoClai
                 qr_code: qrCode,
                 title: title || undefined,
                 description: description || undefined,
-                ai_analytics_requested: aiAnalyticsRequested,
+                ai_analytics_requested: effectiveAiRequested,
             });
 
             toast.success(t('modals.common.success'));

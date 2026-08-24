@@ -131,6 +131,7 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted, in
     } else {
       setCourts([]);
       setSelectedCourt("");
+      setAiAnalyticsRequested(false);
     }
   }, [selectedClub]);
 
@@ -138,11 +139,12 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted, in
   useEffect(() => {
     if (pendingScannedCourt.current && courts.length > 0) {
       const targetId = pendingScannedCourt.current.id.toString();
-      const exists = courts.some(c => c.id.toString() === targetId);
+      const courtObj = courts.find(c => c.id.toString() === targetId);
 
-      if (exists) {
+      if (courtObj) {
         console.log('🎯 Auto-selecting pending court:', targetId);
         setSelectedCourt(targetId);
+        setAiAnalyticsRequested(courtObj.has_ai === true);
         // We clear it to avoid re-selecting if user changes manually and we reload.
         pendingScannedCourt.current = null;
       }
@@ -325,6 +327,9 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted, in
         return;
       }
 
+      const isAiEligible = courts.find(c => c.id.toString() === selectedCourt)?.has_ai === true;
+      const effectiveAiRequested = isAiEligible && aiAnalyticsRequested;
+
       // QR code is valid, start recording
       const response = await recordingService.startAdvancedRecording({
         club_id: parseInt(selectedClub),
@@ -333,7 +338,7 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted, in
         qr_code: qrCode,
         title: title || undefined,
         description: description || undefined,
-        ai_analytics_requested: aiAnalyticsRequested,
+        ai_analytics_requested: effectiveAiRequested,
       });
 
       toast.success("Enregistrement démarré avec succès !");
@@ -367,7 +372,12 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted, in
     <motion.button
       whileHover={{ scale: 1.01 }}
       whileTap={{ scale: 0.99 }}
-      onClick={() => court.available && setSelectedCourt(court.id.toString())}
+      onClick={() => {
+        if (court.available) {
+          setSelectedCourt(court.id.toString());
+          setAiAnalyticsRequested(court.has_ai === true);
+        }
+      }}
       disabled={!court.available}
       className={`w-full p-3 rounded-xl border flex flex-col transition-all text-left ${selectedCourt === court.id.toString()
         ? "border-primary bg-primary/10"
