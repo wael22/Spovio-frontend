@@ -7,15 +7,25 @@ import "./i18n";
 import "./index.css";
 
 // Auto-update PWA service worker immediately without stale caching
-registerSW({
+const updateSW = registerSW({
   immediate: true,
   onNeedRefresh() {
-    console.log('[PWA] New content available, reloading...');
+    console.log('[PWA] New content available, updating service worker...');
+    updateSW(true);
   },
   onOfflineReady() {
     console.log('[PWA] App ready to work offline');
   },
 });
+
+// Force update check on load to avoid stale cached bundles
+if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then((registrations) => {
+    for (const registration of registrations) {
+      registration.update();
+    }
+  });
+}
 
 // Sentry configuré via VITE_SENTRY_DSN dans les variables d'environnement
 const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN;

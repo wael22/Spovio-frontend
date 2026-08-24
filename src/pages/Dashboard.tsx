@@ -70,7 +70,7 @@ const Dashboard = () => {
   const [selectedVideo, setSelectedVideo] = useState<any | null>(null);
   const [videos, setVideos] = useState<any[]>(() => {
     try {
-      const cached = localStorage.getItem('spovio_cached_videos');
+      const cached = localStorage.getItem('spovio_cached_videos_v3');
       return cached ? JSON.parse(cached) : [];
     } catch {
       return [];
@@ -79,7 +79,7 @@ const Dashboard = () => {
   const [activeRecording, setActiveRecording] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(() => {
     try {
-      const cached = localStorage.getItem('spovio_cached_videos');
+      const cached = localStorage.getItem('spovio_cached_videos_v3');
       return !(cached && JSON.parse(cached).length > 0);
     } catch {
       return true;
@@ -127,7 +127,7 @@ const Dashboard = () => {
       const freshVideos = response.data.videos || [];
       setVideos(freshVideos);
       try {
-        localStorage.setItem('spovio_cached_videos', JSON.stringify(freshVideos));
+        localStorage.setItem('spovio_cached_videos_v3', JSON.stringify(freshVideos));
       } catch {
         // LocalStorage quota safety
       }
