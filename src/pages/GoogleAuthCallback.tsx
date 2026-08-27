@@ -33,9 +33,12 @@ const GoogleAuthCallback = () => {
                 console.log("GoogleAuthCallback: Backyard response:", response.data);
 
                 if (response.data && response.data.token) {
-                    // 1. Stocker le token explicitement
+                    // 1. Stocker le token et l'utilisateur explicitement
                     localStorage.setItem('token', response.data.token);
-                    console.log("GoogleAuthCallback: Token stored in localStorage");
+                    if (response.data.user) {
+                        localStorage.setItem('user', JSON.stringify(response.data.user));
+                    }
+                    console.log("GoogleAuthCallback: Token and User stored in localStorage");
 
                     // 1.1 Stocker le court_qr si renvoyé par le flux OAuth
                     const courtQr = searchParams.get('court_qr');

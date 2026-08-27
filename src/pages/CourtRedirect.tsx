@@ -12,7 +12,7 @@ const CourtRedirect: React.FC = () => {
             const token = localStorage.getItem('token');
             const user = localStorage.getItem('user');
 
-            if (token || user) {
+            if (token && user) {
                 // Optimistic redirect, ProtectedRoute will handle true validation
                 navigate('/dashboard');
             } else {
