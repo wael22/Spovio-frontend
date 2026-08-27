@@ -56,8 +56,24 @@ const Auth = () => {
    */
   const { login, register, claimPendingShare } = useAuth();
 
-  // Sauvegarder l'acceptation des CGU dans localStorage
+  // Synchroniser les paramètres URL et les CGU
   useEffect(() => {
+    // Si sur le domaine non-www, rediriger immédiatement vers www.spovio.net en conservant les paramètres
+    if (window.location.hostname === 'spovio.net') {
+      window.location.replace(`https://www.spovio.net${window.location.pathname}${window.location.search}`);
+      return;
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const courtQr = urlParams.get('court_qr');
+    if (courtQr) {
+      localStorage.setItem('pending_court_qr', courtQr);
+    }
+    const shareToken = urlParams.get('share_token');
+    if (shareToken) {
+      localStorage.setItem('pending_share_token', shareToken);
+    }
+
     localStorage.setItem('spovio_google_terms_accepted', googleTermsAccepted.toString());
   }, [googleTermsAccepted]);
 
@@ -78,12 +94,17 @@ const Auth = () => {
         // Claim pending share if any
         await claimPendingShare();
 
+        const urlParams = new URLSearchParams(window.location.search);
+        const courtQr = urlParams.get('court_qr') || localStorage.getItem('pending_court_qr');
+
         // Redirect based on role
         const role = result.user.role;
         if (role === 'super_admin') {
           navigate("/admin");
         } else if (role === 'club_admin') {
           navigate("/club");
+        } else if (courtQr) {
+          navigate(`/dashboard?court_qr=${encodeURIComponent(courtQr)}`);
         } else {
           navigate("/dashboard");
         }

@@ -82,6 +82,13 @@ const GoogleAuthCallback = () => {
                         dest = "/admin";
                     } else if (role === 'club_admin') {
                         dest = "/club";
+                    } else if (courtQr) {
+                        dest = `/dashboard?court_qr=${encodeURIComponent(courtQr)}`;
+                    }
+
+                    // Ensure target is on canonical domain www.spovio.net
+                    if (window.location.hostname === 'spovio.net') {
+                        dest = `https://www.spovio.net${dest}`;
                     }
 
                     console.log("GoogleAuthCallback: Redirecting to:", dest);

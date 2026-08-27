@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useTutorialContext } from "@/contexts/TutorialContext";
 import { videoService, recordingService, getAssetUrl, getVideoThumbnailUrl } from "@/lib/api";
@@ -72,17 +72,24 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [clipsCount, setClipsCount] = useState(0);
   const [isClipEditorOpen, setIsClipEditorOpen] = useState(false);
-  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
   const [initialQrCode, setInitialQrCode] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    const pendingQr = localStorage.getItem('pending_court_qr');
+    const urlCourtQr = searchParams.get('court_qr');
+    const storageCourtQr = localStorage.getItem('pending_court_qr');
+    const pendingQr = urlCourtQr || storageCourtQr;
+
     if (pendingQr) {
       localStorage.removeItem('pending_court_qr');
+      if (urlCourtQr) {
+        searchParams.delete('court_qr');
+        setSearchParams(searchParams, { replace: true });
+      }
       setInitialQrCode(pendingQr);
       setIsDirectRecordingModalOpen(true);
     }
-  }, []);
+  }, [searchParams, setSearchParams]);
   // scannedQrCode removed as it's now handled internally by DirectRecordingModal
 
   // Fonction pour démarrer le tutoriel manuellement

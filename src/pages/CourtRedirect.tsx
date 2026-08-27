@@ -7,16 +7,21 @@ const CourtRedirect: React.FC = () => {
 
     useEffect(() => {
         if (qrCode) {
+            // Immediate canonical domain redirect if on non-www
+            if (window.location.hostname === 'spovio.net') {
+                window.location.replace(`https://www.spovio.net/c/${encodeURIComponent(qrCode)}`);
+                return;
+            }
+
             localStorage.setItem('pending_court_qr', qrCode);
             // Check auth status (both token and user object, since auth is mixed session/JWT)
             const token = localStorage.getItem('token');
             const user = localStorage.getItem('user');
 
             if (token && user) {
-                // Optimistic redirect, ProtectedRoute will handle true validation
-                navigate('/dashboard');
+                navigate(`/dashboard?court_qr=${encodeURIComponent(qrCode)}`, { replace: true });
             } else {
-                navigate(`/auth?court_qr=${encodeURIComponent(qrCode)}`);
+                navigate(`/auth?court_qr=${encodeURIComponent(qrCode)}`, { replace: true });
             }
         } else {
             navigate('/');
