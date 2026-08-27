@@ -201,7 +201,11 @@ const Auth = () => {
       setIsLoading(true);
       const urlParams = new URLSearchParams(window.location.search);
       const pendingCourtQr = urlParams.get('court_qr') || localStorage.getItem('pending_court_qr') || '';
-      const response = await authService.getGoogleAuthUrl({ court_qr: pendingCourtQr });
+      const pendingShareToken = urlParams.get('share_token') || localStorage.getItem('pending_share_token') || '';
+      const response = await authService.getGoogleAuthUrl({
+        court_qr: pendingCourtQr || undefined,
+        share_token: pendingShareToken || undefined,
+      });
       if (response.data && response.data.auth_url) {
         window.location.href = response.data.auth_url;
       } else {

@@ -20,7 +20,15 @@ if (SENTRY_DSN) {
     replaysOnErrorSampleRate: 1.0,
     enableLogs: false
   });
-}
+// Auto-reload on Vite chunk preload errors (happens when a new version is deployed)
+window.addEventListener("vite:preloadError", () => {
+  const lastReload = sessionStorage.getItem("vite_preload_reload");
+  const now = Date.now();
+  if (!lastReload || now - parseInt(lastReload, 10) > 10000) {
+    sessionStorage.setItem("vite_preload_reload", now.toString());
+    window.location.reload();
+  }
+});
 
 createRoot(document.getElementById("root")!).render(
   <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>

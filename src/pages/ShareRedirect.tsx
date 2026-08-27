@@ -22,12 +22,13 @@ const ShareRedirect = () => {
         const response = await videoService.resolveShareLink(shareToken);
         const { video_id } = response.data;
 
-        if (isAuthenticated && user) {
+        const token = localStorage.getItem('token');
+        if (token && user) {
           await videoService.claimShare(video_id);
           navigate("/dashboard", { replace: true });
         } else {
           localStorage.setItem("pending_share_token", shareToken);
-          navigate("/auth", { replace: true });
+          navigate(`/auth?share_token=${encodeURIComponent(shareToken)}`, { replace: true });
         }
       } catch (error: any) {
         const msg = error.response?.data?.error || "Ce lien de partage est invalide ou a expiré.";

@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { authService } from '@/lib/api';
+import { authService, videoService } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
@@ -45,6 +45,23 @@ const GoogleAuthCallback = () => {
                     if (courtQr) {
                         localStorage.setItem('pending_court_qr', courtQr);
                         console.log("GoogleAuthCallback: Stored pending_court_qr:", courtQr);
+                    }
+
+                    // 1.2 Récupérer et réclamer le lien de partage si présent
+                    const shareToken = searchParams.get('share_token') || localStorage.getItem('pending_share_token');
+                    if (shareToken) {
+                        try {
+                            const resolveResponse = await videoService.resolveShareLink(shareToken);
+                            const videoId = resolveResponse.data?.video_id || resolveResponse.data?.id;
+                            if (videoId) {
+                                await videoService.claimShare(videoId);
+                                console.log("GoogleAuthCallback: Shared video claimed:", videoId);
+                            }
+                            localStorage.removeItem('pending_share_token');
+                        } catch (err) {
+                            console.error("GoogleAuthCallback: Error claiming share:", err);
+                            localStorage.removeItem('pending_share_token');
+                        }
                     }
 
                     // 2. Mettre à jour le contexte d'authentification si possible

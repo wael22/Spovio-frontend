@@ -191,7 +191,7 @@ export const authService = {
     getCurrentUser: () => api.get('/auth/me'),
     verifyEmail: (email: string, code: string) => api.post('/auth/verify-email', { email, code }),
     resendVerificationCode: (email: string) => api.post('/auth/resend-verification', { email }),
-    getGoogleAuthUrl: (params?: { court_qr?: string }) => api.get('/auth/google-auth-url', { params }),
+    getGoogleAuthUrl: (params?: { court_qr?: string; share_token?: string }) => api.get('/auth/google-auth-url', { params }),
     googleAuthenticate: (token: string) => api.post('/auth/google/authenticate', { token }),
     // uploadAvatar: reused above as updateAvatar
     forgotPassword: (email: string) => api.post('/auth/forgot-password', { email }),
