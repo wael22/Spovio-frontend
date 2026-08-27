@@ -75,6 +75,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [clipsCount, setClipsCount] = useState(0);
   const [isClipEditorOpen, setIsClipEditorOpen] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [initialQrCode, setInitialQrCode] = useState<string | undefined>(undefined);
 
   useEffect(() => {
