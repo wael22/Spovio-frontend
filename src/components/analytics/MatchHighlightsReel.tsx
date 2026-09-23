@@ -26,7 +26,7 @@ import {
 } from 'lucide-react';
 import type { AnalyticsPlayer } from './PlayerSelector';
 
-const BUNNY_VIDEO_ID = '3daf69bf-9395-4ed3-a3b9-5d2dceb74809';
+const BUNNY_VIDEO_ID = '465b044c-8265-45f3-af0b-0b28af659968';
 const BUNNY_CDN_HOST = 'https://vz-9b857324-07d.b-cdn.net';
 const VIDEO_MP4_URL = `${BUNNY_CDN_HOST}/${BUNNY_VIDEO_ID}/play_720p.mp4`;
 const THUMBNAIL_URL = `${BUNNY_CDN_HOST}/${BUNNY_VIDEO_ID}/thumbnail.jpg`;
