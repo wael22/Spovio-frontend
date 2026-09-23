@@ -61,10 +61,55 @@ const Auth = () => {
     localStorage.setItem('spovio_google_terms_accepted', googleTermsAccepted.toString());
   }, [googleTermsAccepted]);
 
-  // Support auto-login via direct demo link token (?demoToken=... or ?token=...)
+  // Pre-fill demo credentials when loaded directly on demo instance
+  useEffect(() => {
+    const isDemoHost = window.location.hostname.includes('demo.spovio.net') || 
+                       window.location.hostname.includes('demo');
+    if (isDemoHost) {
+      setLoginForm((prev) => ({
+        ...prev,
+        email: prev.email || 'demo@spovio.net',
+        password: prev.password || 'Demo123!'
+      }));
+    }
+  }, []);
+
+  // Support auto-login via ?autologin=true or direct demo link token (?demoToken=... or ?token=...)
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
+    const autoLogin = searchParams.get('autologin') === 'true' || searchParams.get('auto') === 'true';
     const demoToken = searchParams.get('demoToken') || searchParams.get('token');
+
+    if (autoLogin) {
+      setIsLoading(true);
+      login({ email: 'demo@spovio.net', password: 'Demo123!' })
+        .then((result) => {
+          if (result && result.success && result.user) {
+            toast({
+              title: t("auth.loginSuccess", { defaultValue: "Connexion réussie" }),
+              description: t("auth.welcomeUser", {
+                name: result.user.name || result.user.email,
+                defaultValue: `Bienvenue ${result.user.name || result.user.email}`,
+              }),
+            });
+            navigate('/dashboard', { replace: true });
+          } else {
+            throw new Error(result?.error || 'Auto-login failed');
+          }
+        })
+        .catch((err) => {
+          console.error("Auto-login failed:", err);
+          toast({
+            title: t("auth.loginError", { defaultValue: "Erreur de connexion" }),
+            description: "Impossible de se connecter automatiquement au compte démo.",
+            variant: "destructive",
+          });
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+      return;
+    }
 
     if (demoToken) {
       setIsLoading(true);
@@ -107,6 +152,20 @@ const Auth = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Check if demo account entered on non-demo host
+    const isDemoHost = window.location.hostname.includes('demo.spovio.net') || 
+                       window.location.hostname.includes('demo');
+    if (!isDemoHost && loginForm.email.trim().toLowerCase() === 'demo@spovio.net') {
+      setIsLoading(true);
+      toast({
+        title: t("auth.demoRedirectTitle", { defaultValue: "Redirection vers la démo..." }),
+        description: t("auth.demoRedirectDesc", { defaultValue: "Connexion automatique à l'espace de démonstration..." }),
+      });
+      window.location.href = 'https://demo.spovio.net/auth?autologin=true';
+      return;
+    }
+
     setIsLoading(true);
 
     try {
