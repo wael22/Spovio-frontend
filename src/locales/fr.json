@@ -893,6 +893,8 @@
     "noCode": "Vous n'avez pas reçu de code ?",
     "sending": "Envoi en cours...",
     "resendCode": "Renvoyer le code",
+    "demoRedirectTitle": "Redirection vers la démo...",
+    "demoRedirectDesc": "Connexion automatique à l'espace de démonstration...",
     "errors": {
       "missing_data": "Les données requises sont manquantes",
       "email_required": "L'email est requis",

@@ -54,7 +54,7 @@ const Auth = () => {
    * FIX: Use useAuth hook instead of direct service call to properly update 
    * global state and trigger redirects in ProtectedRoute
    */
-  const { login, register, claimPendingShare } = useAuth();
+  const { login, register, claimPendingShare, setUser } = useAuth();
 
   // Synchroniser les paramètres URL et les CGU
   useEffect(() => {
@@ -77,8 +77,110 @@ const Auth = () => {
     localStorage.setItem('spovio_google_terms_accepted', googleTermsAccepted.toString());
   }, [googleTermsAccepted]);
 
+  // Pre-fill demo credentials when loaded directly on demo instance
+  useEffect(() => {
+    const isDemoHost = window.location.hostname.includes('demo.spovio.net') || 
+                       window.location.hostname.includes('demo');
+    if (isDemoHost) {
+      setLoginForm((prev) => ({
+        ...prev,
+        email: prev.email || 'demo@spovio.net',
+        password: prev.password || 'Demo123!'
+      }));
+    }
+  }, []);
+
+  // Support auto-login via ?autologin=true or direct demo link token (?demoToken=... or ?token=...)
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const autoLogin = searchParams.get('autologin') === 'true' || searchParams.get('auto') === 'true';
+    const demoToken = searchParams.get('demoToken') || searchParams.get('token');
+
+    if (autoLogin) {
+      setIsLoading(true);
+      login({ email: 'demo@spovio.net', password: 'Demo123!' })
+        .then((result) => {
+          if (result && result.success && result.user) {
+            toast({
+              title: t("auth.loginSuccess", { defaultValue: "Connexion réussie" }),
+              description: t("auth.welcomeUser", {
+                name: result.user.name || result.user.email,
+                defaultValue: `Bienvenue ${result.user.name || result.user.email}`,
+              }),
+            });
+            navigate('/dashboard', { replace: true });
+          } else {
+            throw new Error(result?.error || 'Auto-login failed');
+          }
+        })
+        .catch((err) => {
+          console.error("Auto-login failed:", err);
+          toast({
+            title: t("auth.loginError", { defaultValue: "Erreur de connexion" }),
+            description: "Impossible de se connecter automatiquement au compte démo.",
+            variant: "destructive",
+          });
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+      return;
+    }
+
+    if (demoToken) {
+      setIsLoading(true);
+      localStorage.setItem('token', demoToken);
+      authService
+        .getCurrentUser()
+        .then((res) => {
+          if (res.data && res.data.user) {
+            setUser(res.data.user);
+            localStorage.setItem('user', JSON.stringify(res.data.user));
+            toast({
+              title: t("auth.loginSuccess", { defaultValue: "Connexion réussie" }),
+              description: t("auth.welcomeUser", { name: res.data.user.name || res.data.user.email, defaultValue: `Bienvenue ${res.data.user.name || res.data.user.email}` }),
+            });
+            const role = res.data.user.role;
+            let dest = "/dashboard";
+            if (role === 'super_admin') {
+              dest = "/admin";
+            } else if (role === 'club_admin' || role === 'club') {
+              dest = "/club";
+            }
+            window.location.href = dest;
+          }
+        })
+        .catch((err) => {
+          console.error("Demo token verification failed:", err);
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          toast({
+            title: "Demo Link Error",
+            description: "Invalid or expired demo link",
+            variant: "destructive",
+          });
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    }
+  }, []);
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Check if demo account entered on non-demo host
+    const isDemoHost = window.location.hostname.includes('demo.spovio.net') || 
+                       window.location.hostname.includes('demo');
+    if (!isDemoHost && loginForm.email.trim().toLowerCase() === 'demo@spovio.net') {
+      setIsLoading(true);
+      toast({
+        title: t("auth.demoRedirectTitle", { defaultValue: "Redirection vers la démo..." }),
+        description: t("auth.demoRedirectDesc", { defaultValue: "Connexion automatique à l'espace de démonstration..." }),
+      });
+      window.location.href = 'https://demo.spovio.net/auth?autologin=true';
+      return;
+    }
+
     setIsLoading(true);
 
     try {

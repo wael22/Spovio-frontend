@@ -106,6 +106,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             setError(null);
             setLoading(true);
             const response = await authService.login(credentials);
+
+            // Handle redirect if returned by backend (e.g. demo instance redirect)
+            if (response.data?.redirect_url) {
+                window.location.href = response.data.redirect_url;
+                return { success: true };
+            }
+
             const userData = response.data.user;
             const token = response.data.token;
 

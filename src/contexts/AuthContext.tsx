@@ -1,4 +1,4 @@
-﻿// Authentication Context for MySmash
+// Authentication Context for MySmash
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { authService } from '../lib/api';  // Session-based auth
 
@@ -43,6 +43,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const login = async (email: string, password: string) => {
         try {
             const response = await authService.login({ email, password });
+
+            if (response.data?.redirect_url) {
+                window.location.href = response.data.redirect_url;
+                return;
+            }
+
             setUser(response.data.user);
 
             if (response.data.token) {
