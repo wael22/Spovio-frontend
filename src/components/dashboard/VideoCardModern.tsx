@@ -12,7 +12,8 @@ import {
   Download,
   Lock,
   AlertTriangle,
-  Loader2
+  Loader2,
+  Video
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,6 +37,7 @@ interface VideoCardModernProps {
   court?: string;
   isExpired?: boolean;
   processingStatus?: string;
+  anglesCount?: number;
   onPlay?: () => void;
   onShare?: () => void;
   onDelete?: () => void;
@@ -54,6 +56,7 @@ export function VideoCardModern({
   court,
   isExpired = false,
   processingStatus,
+  anglesCount,
   onPlay,
   onShare,
   onDelete,
@@ -135,6 +138,14 @@ export function VideoCardModern({
           <Clock className="h-3 w-3 text-white/80" />
           <span className="text-xs font-medium text-white">{duration}</span>
         </div>
+
+        {/* Angles Badge */}
+        {anglesCount && anglesCount > 1 && (
+          <div className="absolute bottom-3 right-3 flex items-center gap-1.5 px-2 py-1 rounded-md bg-primary/90 text-primary-foreground backdrop-blur-sm shadow-sm font-semibold text-xs">
+            <Video className="h-3 w-3" />
+            <span>{`${anglesCount} Angles`}</span>
+          </div>
+        )}
 
         {/* Shared Badge */}
         {shared && !isExpired && (

@@ -50,7 +50,7 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
         name: '', address: '', phone_number: '', email: '', password: '', credits_balance: 0
     });
     const [courtFormData, setCourtFormData] = useState({
-        name: '', camera_url: '', qr_code: '', short_code: '', has_audio: true
+        name: '', camera_url: '', camera_url_2: '', qr_code: '', short_code: '', has_audio: true
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showLogoModal, setShowLogoModal] = useState(false);
@@ -587,8 +587,14 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                                                 <div className="space-y-1 text-sm">
                                                     <div className="flex items-center gap-2">
                                                         <Video className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                                                        <span className="text-gray-600 dark:text-gray-300 font-mono text-xs">{court.camera_url}</span>
+                                                        <span className="text-gray-600 dark:text-gray-300 font-mono text-xs">{court.camera_url_2 ? `Cam 1: ${court.camera_url}` : court.camera_url}</span>
                                                     </div>
+                                                    {court.camera_url_2 && (
+                                                        <div className="flex items-center gap-2">
+                                                            <Video className="h-4 w-4 text-blue-500 dark:text-blue-400" />
+                                                            <span className="text-gray-600 dark:text-gray-300 font-mono text-xs">Cam 2: {court.camera_url_2}</span>
+                                                        </div>
+                                                    )}
                                                     {court.qr_code && (
                                                         <div className="flex items-center gap-3 mt-3">
                                                             <div className="p-2 bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700">
@@ -624,6 +630,7 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                                                         setCourtFormData({
                                                             name: court.name,
                                                             camera_url: court.camera_url,
+                                                            camera_url_2: court.camera_url_2 || (court.cameras?.find((c: any) => c.camera_index === 2)?.camera_url || ''),
                                                             qr_code: court.qr_code || '',
                                                             short_code: court.short_code || '',
                                                             has_audio: court.has_audio !== false
@@ -688,6 +695,7 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                         const courtData = {
                             name: formData.get('court-name') as string,
                             camera_url: formData.get('camera-url') as string,
+                            camera_url_2: (formData.get('camera-url-2') as string) || '',
                             has_audio: formData.get('has-audio') === 'on'
                         };
 
@@ -713,13 +721,25 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="camera-url">URL de la caméra</Label>
+                            <Label htmlFor="camera-url">URL de la Caméra 1 (Principale)</Label>
                             <Input
                                 id="camera-url"
                                 name="camera-url"
                                 placeholder="http://212.231.225.55:88/axis-cgi/mjpg/video.cgi"
                                 required
                             />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="camera-url-2">URL de la Caméra 2 (Optionnelle - 2ème angle)</Label>
+                            <Input
+                                id="camera-url-2"
+                                name="camera-url-2"
+                                placeholder="rtsp://... ou http://... (optionnel)"
+                            />
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                                Laissez vide si le terrain ne dispose que d'une seule caméra.
+                            </p>
                         </div>
 
                         <div className="space-y-2">
@@ -798,7 +818,7 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="edit-camera-url">URL de la caméra</Label>
+                            <Label htmlFor="edit-camera-url">URL de la Caméra 1 (Principale)</Label>
                             <Input
                                 id="edit-camera-url"
                                 value={courtFormData.camera_url}
@@ -806,6 +826,19 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                                 placeholder="http://212.231.225.55:88/axis-cgi/mjpg/video.cgi"
                                 required
                             />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="edit-camera-url-2">URL de la Caméra 2 (Optionnelle - 2ème angle)</Label>
+                            <Input
+                                id="edit-camera-url-2"
+                                value={courtFormData.camera_url_2}
+                                onChange={(e) => setCourtFormData(prev => ({ ...prev, camera_url_2: e.target.value }))}
+                                placeholder="rtsp://... ou http://... (optionnel)"
+                            />
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                                Laissez vide si le terrain ne dispose que d'une seule caméra.
+                            </p>
                         </div>
 
                         <div className="space-y-2">

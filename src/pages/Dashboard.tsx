@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -237,6 +237,21 @@ const Dashboard = () => {
 
     return true;
   });
+
+  // Regrouper les vidéos par match (match_session_id) pour n'afficher qu'1 carte principale par match
+  const displayVideos = useMemo(() => {
+    const seenMatchSessions = new Set<string>();
+    return filteredVideos.filter((video) => {
+      if (!video.match_session_id) {
+        return true;
+      }
+      if (seenMatchSessions.has(video.match_session_id)) {
+        return false;
+      }
+      seenMatchSessions.add(video.match_session_id);
+      return true;
+    });
+  }, [filteredVideos]);
 
   const handlePlayVideo = (video: any) => {
     setSelectedVideo(video);
@@ -532,34 +547,45 @@ const Dashboard = () => {
             animate="visible"
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
           >
-            {filteredVideos.map((video, index) => (
-              <motion.div
-                key={video.id}
-                variants={itemVariants}
-                custom={index}
-              >
-                <VideoCardModern
-                  id={video.id}
-                  title={video.title || 'Sans titre'}
-                  thumbnail={getVideoThumbnailUrl(video)}
-                  duration={formatDuration(video.duration || 0)}
-                  date={video.created_at || new Date().toISOString()}
-                  shared={video.is_shared || false}
-                  court={video.court_name || 'Court'}
-                  isExpired={video.is_expired || false}
-                  processingStatus={video.processing_status}
-                  onPlay={() => handlePlayVideo(video)}
-                  onShare={() => handleShareVideo(video)}
-                  onEdit={() => handleEditVideo(video)}
-                  onDelete={() => handleDeleteVideo(video)}
-                  onDownload={() => handleDownloadVideo(video)}
-                  onCreateClip={() => handleCreateClip(video)}
-                />
-              </motion.div>
-            ))}
+            {displayVideos.map((video, index) => {
+              const matchVideos = video.match_session_id
+                ? videos.filter(v => v.match_session_id === video.match_session_id)
+                : [video];
+              const anglesCount = matchVideos.length;
+              const cleanTitle = (anglesCount > 1 && video.title)
+                ? video.title.replace(/\s*-\s*Caméra\s*\d+$/i, '')
+                : (video.title || 'Sans titre');
+
+              return (
+                <motion.div
+                  key={video.id}
+                  variants={itemVariants}
+                  custom={index}
+                >
+                  <VideoCardModern
+                    id={video.id}
+                    title={cleanTitle}
+                    thumbnail={getVideoThumbnailUrl(video)}
+                    duration={formatDuration(video.duration || 0)}
+                    date={video.created_at || new Date().toISOString()}
+                    shared={video.is_shared || false}
+                    court={video.court_name || 'Court'}
+                    isExpired={video.is_expired || false}
+                    processingStatus={video.processing_status}
+                    anglesCount={anglesCount}
+                    onPlay={() => handlePlayVideo(video)}
+                    onShare={() => handleShareVideo(video)}
+                    onEdit={() => handleEditVideo(video)}
+                    onDelete={() => handleDeleteVideo(video)}
+                    onDownload={() => handleDownloadVideo(video)}
+                    onCreateClip={() => handleCreateClip(video)}
+                  />
+                </motion.div>
+              );
+            })}
           </motion.div>
 
-          {filteredVideos.length === 0 && (
+          {displayVideos.length === 0 && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -642,6 +668,7 @@ const Dashboard = () => {
           setSelectedVideo(null);
         }}
         video={selectedVideo}
+        allVideos={videos}
       />
 
       <EditVideoTitleModal

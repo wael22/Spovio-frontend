@@ -1,28 +1,51 @@
-﻿import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useEffect, useRef, useState, useCallback } from "react";
 import Hls from "hls.js";
 import { Button } from "@/components/ui/button";
-import { Scissors, X } from "lucide-react";
+import { Scissors, Video as VideoIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { VideoClipEditor } from "./VideoClipEditor";
 
 interface VideoPlayerModalProps {
     isOpen: boolean;
     onClose: () => void;
-    video: {
-        id: string;
-        title?: string;
-        file_url?: string;
-        bunny_video_id?: string;
-    } | null;
+    video: any;
+    allVideos?: any[];
 }
 
-export function VideoPlayerModal({ isOpen, onClose, video }: VideoPlayerModalProps) {
+export function VideoPlayerModal({ isOpen, onClose, video, allVideos = [] }: VideoPlayerModalProps) {
     const { t } = useTranslation();
     const videoRef = useRef<HTMLVideoElement>(null);
     const hlsRef = useRef<Hls | null>(null);
     const [videoElement, setVideoElement] = useState<HTMLVideoElement | null>(null);
     const [clipEditorOpen, setClipEditorOpen] = useState(false);
+    const [currentVideo, setCurrentVideo] = useState<any>(video);
+
+    useEffect(() => {
+        setCurrentVideo(video);
+    }, [video]);
+
+    // Détecter les vidéos compagnons (même session de match / multi-caméras)
+    const companionVideos = (currentVideo?.match_session_id && allVideos?.length)
+        ? allVideos.filter(v => v.match_session_id === currentVideo.match_session_id)
+                   .sort((a, b) => (a.camera_index || 1) - (b.camera_index || 1))
+        : [];
+
+    const handleSwitchAngle = (companion: any) => {
+        if (!companion || companion.id === currentVideo?.id) return;
+        const savedTime = videoElement?.currentTime || 0;
+        const wasPlaying = videoElement ? !videoElement.paused : false;
+        setCurrentVideo(companion);
+
+        setTimeout(() => {
+            if (videoRef.current) {
+                videoRef.current.currentTime = savedTime;
+                if (wasPlaying) {
+                    videoRef.current.play().catch(() => {});
+                }
+            }
+        }, 300);
+    };
 
     // Callback ref to capture video element when it mounts (same as PadelVar)
     const videoCallbackRef = useCallback((node: HTMLVideoElement | null) => {
@@ -35,14 +58,14 @@ export function VideoPlayerModal({ isOpen, onClose, video }: VideoPlayerModalPro
 
     useEffect(() => {
         console.log('[VideoPlayer] useEffect START', {
-            hasVideo: !!video,
+            hasVideo: !!currentVideo,
             isOpen,
             hasVideoElement: !!videoElement
         });
 
-        if (!video || !isOpen || !videoElement) {
+        if (!currentVideo || !isOpen || !videoElement) {
             console.log('[VideoPlayer] Skipping HLS init:', {
-                hasVideo: !!video,
+                hasVideo: !!currentVideo,
                 isOpen,
                 hasVideoElement: !!videoElement
             });
@@ -53,7 +76,7 @@ export function VideoPlayerModal({ isOpen, onClose, video }: VideoPlayerModalPro
             return;
         }
 
-        const videoUrl = video.file_url || '';
+        const videoUrl = currentVideo.file_url || '';
         if (!videoUrl) {
             console.log('[VideoPlayer] No video URL found');
             return;
@@ -123,16 +146,34 @@ export function VideoPlayerModal({ isOpen, onClose, video }: VideoPlayerModalPro
                 hlsRef.current = null;
             }
         };
-    }, [video, isOpen, videoElement]);
+    }, [currentVideo, isOpen, videoElement]);
 
-    if (!video) return null;
+    if (!currentVideo) return null;
 
     return (
         <>
             <Dialog open={isOpen} onOpenChange={onClose}>
                 <DialogContent className="sm:max-w-4xl md:max-w-5xl p-0">
-                    <div className="flex items-center justify-between p-4 border-b">
-                        <h3 className="font-semibold text-lg">{video.title || t('modals.videoPlayer.title')}</h3>
+                    <div className="flex items-center justify-between p-4 border-b flex-wrap gap-2">
+                        <div className="flex items-center gap-3">
+                            <h3 className="font-semibold text-lg">{currentVideo.title || t('modals.videoPlayer.title')}</h3>
+                            {companionVideos.length > 1 && (
+                                <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
+                                    {companionVideos.map((cVid) => (
+                                        <Button
+                                            key={cVid.id}
+                                            variant={cVid.id === currentVideo.id ? "default" : "ghost"}
+                                            size="sm"
+                                            onClick={() => handleSwitchAngle(cVid)}
+                                            className="h-7 text-xs px-2.5 font-medium gap-1"
+                                        >
+                                            <VideoIcon className="h-3 w-3" />
+                                            {`Angle ${cVid.camera_index || 1}`}
+                                        </Button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                         <Button
                             variant="outline"
                             size="sm"
@@ -161,7 +202,7 @@ export function VideoPlayerModal({ isOpen, onClose, video }: VideoPlayerModalPro
                 <VideoClipEditor
                     isOpen={clipEditorOpen}
                     onClose={() => setClipEditorOpen(false)}
-                    video={video}
+                    video={currentVideo}
                     onClipCreated={() => {
                         setClipEditorOpen(false);
                     }}
