@@ -2,9 +2,10 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useEffect, useRef, useState, useCallback } from "react";
 import Hls from "hls.js";
 import { Button } from "@/components/ui/button";
-import { Scissors, Video as VideoIcon } from "lucide-react";
+import { Scissors, Video as VideoIcon, Download } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { VideoClipEditor } from "./VideoClipEditor";
+import { toast } from "sonner";
 
 interface VideoPlayerModalProps {
     isOpen: boolean;
@@ -45,6 +46,47 @@ export function VideoPlayerModal({ isOpen, onClose, video, allVideos = [] }: Vid
                 }
             }
         }, 300);
+    };
+
+    const handleDownloadCurrent = async () => {
+        if (!currentVideo) return;
+        if (currentVideo.is_expired || (currentVideo.processing_status && currentVideo.processing_status !== 'ready')) {
+            toast.error(t('toasts.downloadUnavailable', 'Téléchargement indisponible'));
+            return;
+        }
+        if (!currentVideo.bunny_video_id) {
+            toast.error(t('toasts.bunnyMissing', 'Vidéo non disponible pour le téléchargement'));
+            return;
+        }
+
+        const angleLabel = companionVideos.length > 1 ? ` (Angle ${currentVideo.camera_index || 1})` : '';
+        try {
+            toast.loading(`Préparation du téléchargement${angleLabel}...`, { id: 'player-download-toast' });
+            const { getWorkingVideoUrl } = await import('@/lib/bunnyVideoHelper');
+            const finalUrl = await getWorkingVideoUrl(currentVideo.bunny_video_id, '720p');
+
+            toast.loading(`Téléchargement en cours${angleLabel}...`, { id: 'player-download-toast' });
+            const response = await fetch(finalUrl);
+            if (!response.ok) throw new Error('Network error');
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            const angleSuffix = companionVideos.length > 1 ? `_Angle${currentVideo.camera_index || 1}` : '';
+            link.download = `${(currentVideo.title || 'video').replace(/\s+/g, '_')}${angleSuffix}.mp4`;
+            document.body.appendChild(link);
+            link.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(link);
+
+            toast.dismiss('player-download-toast');
+            toast.success(`Téléchargement terminé${angleLabel} !`);
+        } catch (err) {
+            console.error('Download error:', err);
+            toast.dismiss('player-download-toast');
+            window.open(`https://vz-9b857324-07d.b-cdn.net/${currentVideo.bunny_video_id}/play_720p.mp4`, '_blank');
+        }
     };
 
     // Callback ref to capture video element when it mounts (same as PadelVar)
@@ -174,15 +216,33 @@ export function VideoPlayerModal({ isOpen, onClose, video, allVideos = [] }: Vid
                                 </div>
                             )}
                         </div>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setClipEditorOpen(true)}
-                            className="gap-2"
-                        >
-                            <Scissors className="h-4 w-4" />
-                            {t('modals.videoPlayer.createClip')}
-                        </Button>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={handleDownloadCurrent}
+                                className="gap-2"
+                                disabled={currentVideo.is_expired || (currentVideo.processing_status && currentVideo.processing_status !== 'ready')}
+                            >
+                                <Download className="h-4 w-4" />
+                                {companionVideos.length > 1
+                                    ? `Télécharger Angle ${currentVideo.camera_index || 1}`
+                                    : t('components.videoCard.menu.download', 'Télécharger')
+                                }
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setClipEditorOpen(true)}
+                                className="gap-2"
+                            >
+                                <Scissors className="h-4 w-4" />
+                                {companionVideos.length > 1
+                                    ? `Créer clip (Angle ${currentVideo.camera_index || 1})`
+                                    : t('modals.videoPlayer.createClip', 'Créer un clip')
+                                }
+                            </Button>
+                        </div>
                     </div>
 
                     <div className="relative bg-black">

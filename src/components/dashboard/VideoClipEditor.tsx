@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Video Clip Editor Component
  * Allows users to create clips from videos using FFmpeg.wasm client-side processing
  */
@@ -284,6 +284,11 @@ export function VideoClipEditor({ isOpen, onClose, video, onClipCreated }: Video
                     <DialogTitle className="flex items-center gap-2">
                         <Scissors className="h-5 w-5" />
                         {t('components.clipEditor.title')}
+                        {video.camera_index && (
+                            <span className="text-xs px-2.5 py-0.5 rounded-full bg-primary/20 text-primary font-medium">
+                                Angle {video.camera_index}
+                            </span>
+                        )}
                     </DialogTitle>
                     <DialogDescription>
                         {t('components.clipEditor.subtitle')}

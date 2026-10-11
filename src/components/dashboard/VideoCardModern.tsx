@@ -38,12 +38,13 @@ interface VideoCardModernProps {
   isExpired?: boolean;
   processingStatus?: string;
   anglesCount?: number;
+  companionVideos?: any[];
   onPlay?: () => void;
   onShare?: () => void;
   onDelete?: () => void;
-  onCreateClip?: () => void;
+  onCreateClip?: (video?: any) => void;
   onEdit?: () => void;
-  onDownload?: () => void;
+  onDownload?: (video?: any) => void;
 }
 
 export function VideoCardModern({
@@ -57,6 +58,7 @@ export function VideoCardModern({
   isExpired = false,
   processingStatus,
   anglesCount,
+  companionVideos = [],
   onPlay,
   onShare,
   onDelete,
@@ -195,15 +197,30 @@ export function VideoCardModern({
               <MoreVertical className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuItem onClick={onPlay} disabled={isExpired}>
               <Play className="h-4 w-4 mr-2" />
               {isExpired ? t('components.videoCard.menu.playExpired') : t('components.videoCard.menu.play')}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={onCreateClip} disabled={isExpired}>
-              <Scissors className="h-4 w-4 mr-2" />
-              {isExpired ? t('components.videoCard.menu.createClipUnavailable') : t('components.videoCard.menu.createClip')}
-            </DropdownMenuItem>
+
+            {companionVideos && companionVideos.length > 1 ? (
+              companionVideos.map((cVid) => (
+                <DropdownMenuItem
+                  key={`clip-${cVid.id}`}
+                  onClick={() => onCreateClip?.(cVid)}
+                  disabled={isExpired}
+                >
+                  <Scissors className="h-4 w-4 mr-2" />
+                  {`Créer clip (Angle ${cVid.camera_index || 1})`}
+                </DropdownMenuItem>
+              ))
+            ) : (
+              <DropdownMenuItem onClick={() => onCreateClip?.()} disabled={isExpired}>
+                <Scissors className="h-4 w-4 mr-2" />
+                {isExpired ? t('components.videoCard.menu.createClipUnavailable') : t('components.videoCard.menu.createClip')}
+              </DropdownMenuItem>
+            )}
+
             <DropdownMenuItem onClick={onEdit} disabled={isExpired}>
               <Edit className="h-4 w-4 mr-2" />
               {t('components.videoCard.menu.editTitle')}
@@ -212,10 +229,24 @@ export function VideoCardModern({
               <Share2 className="h-4 w-4 mr-2" />
               {t('components.videoCard.menu.share')}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={onDownload} disabled={isExpired}>
-              <Download className="h-4 w-4 mr-2" />
-              {isExpired ? t('components.videoCard.menu.downloadUnavailable') : t('components.videoCard.menu.download')}
-            </DropdownMenuItem>
+
+            {companionVideos && companionVideos.length > 1 ? (
+              companionVideos.map((cVid) => (
+                <DropdownMenuItem
+                  key={`dl-${cVid.id}`}
+                  onClick={() => onDownload?.(cVid)}
+                  disabled={isExpired}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  {`Télécharger Angle ${cVid.camera_index || 1}`}
+                </DropdownMenuItem>
+              ))
+            ) : (
+              <DropdownMenuItem onClick={() => onDownload?.()} disabled={isExpired}>
+                <Download className="h-4 w-4 mr-2" />
+                {isExpired ? t('components.videoCard.menu.downloadUnavailable') : t('components.videoCard.menu.download')}
+              </DropdownMenuItem>
+            )}
 
             <DropdownMenuSeparator />
             <DropdownMenuItem

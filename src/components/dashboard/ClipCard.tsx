@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   Play,
@@ -30,6 +30,7 @@ interface ClipCardProps {
   duration: string;
   date: string;
   videoTitle?: string;
+  cameraIndex?: number;
   status?: 'completed' | 'processing' | 'pending' | 'failed';
   onPlay?: () => void;
   onShare?: () => void;
@@ -44,6 +45,7 @@ export function ClipCard({
   duration,
   date,
   videoTitle,
+  cameraIndex,
   status = 'completed',
   onPlay,
   onShare,
@@ -107,6 +109,13 @@ export function ClipCard({
           <Clock className="h-3 w-3 text-accent-foreground" />
           <span className="text-xs font-medium text-accent-foreground">{duration}</span>
         </div>
+
+        {/* Camera Angle Badge */}
+        {cameraIndex && (
+          <div className="absolute bottom-3 right-3 flex items-center gap-1 px-2 py-1 rounded-md bg-black/60 backdrop-blur-sm text-[11px] font-medium text-white/90">
+            <span>Angle {cameraIndex}</span>
+          </div>
+        )}
 
         {/* Status Badge */}
         <div className="absolute top-3 left-3">

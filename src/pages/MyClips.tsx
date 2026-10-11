@@ -296,6 +296,7 @@ const MyClips = () => {
                   duration={clip.duration ? `${Math.floor(clip.duration / 60)}:${(clip.duration % 60).toString().padStart(2, '0')}` : '0:00'}
                   date={clip.created_at || new Date().toISOString()}
                   videoTitle={clip.video_title || 'Vidéo'}
+                  cameraIndex={clip.camera_index}
                   status={clip.status}
                   onPlay={() => handlePlayClip(clip)}
                   onShare={() => handleShareClip({

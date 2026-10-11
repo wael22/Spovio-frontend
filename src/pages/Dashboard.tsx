@@ -550,6 +550,7 @@ const Dashboard = () => {
             {displayVideos.map((video, index) => {
               const matchVideos = video.match_session_id
                 ? videos.filter(v => v.match_session_id === video.match_session_id)
+                        .sort((a, b) => (a.camera_index || 1) - (b.camera_index || 1))
                 : [video];
               const anglesCount = matchVideos.length;
               const cleanTitle = (anglesCount > 1 && video.title)
@@ -573,12 +574,13 @@ const Dashboard = () => {
                     isExpired={video.is_expired || false}
                     processingStatus={video.processing_status}
                     anglesCount={anglesCount}
+                    companionVideos={matchVideos}
                     onPlay={() => handlePlayVideo(video)}
                     onShare={() => handleShareVideo(video)}
                     onEdit={() => handleEditVideo(video)}
                     onDelete={() => handleDeleteVideo(video)}
-                    onDownload={() => handleDownloadVideo(video)}
-                    onCreateClip={() => handleCreateClip(video)}
+                    onDownload={(targetVid) => handleDownloadVideo(targetVid || video)}
+                    onCreateClip={(targetVid) => handleCreateClip(targetVid || video)}
                   />
                 </motion.div>
               );
