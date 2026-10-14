@@ -6,6 +6,7 @@ import { Scissors, Video as VideoIcon, Download } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { VideoClipEditor } from "./VideoClipEditor";
 import { toast } from "sonner";
+import { getMatchKey } from "@/lib/videoUtils";
 
 interface VideoPlayerModalProps {
     isOpen: boolean;
@@ -27,8 +28,9 @@ export function VideoPlayerModal({ isOpen, onClose, video, allVideos = [] }: Vid
     }, [video]);
 
     // Détecter les vidéos compagnons (même session de match / multi-caméras)
-    const companionVideos = (currentVideo?.match_session_id && allVideos?.length)
-        ? allVideos.filter(v => v.match_session_id === currentVideo.match_session_id)
+    const currentMatchKey = getMatchKey(currentVideo);
+    const companionVideos = (currentMatchKey && allVideos?.length)
+        ? allVideos.filter(v => getMatchKey(v) === currentMatchKey)
                    .sort((a, b) => (a.camera_index || 1) - (b.camera_index || 1))
         : [];
 

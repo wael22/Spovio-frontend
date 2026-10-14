@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useTutorialContext } from "@/contexts/TutorialContext";
 import { videoService, recordingService, getAssetUrl, getVideoThumbnailUrl } from "@/lib/api";
+import { getMatchKey, getCleanVideoTitle } from "@/lib/videoUtils";
 import { DashboardNavbar } from "@/components/dashboard/DashboardNavbar";
 import { StatCardModern } from "@/components/dashboard/StatCardModern";
 import { VideoCardModern } from "@/components/dashboard/VideoCardModern";
@@ -238,19 +239,24 @@ const Dashboard = () => {
     return true;
   });
 
-  // Regrouper les vidéos par match (match_session_id) pour n'afficher qu'1 carte principale par match
+  // Regrouper les vidéos par match (match_session_id ou fallback d'angle) pour n'afficher qu'1 carte par match
   const displayVideos = useMemo(() => {
-    const seenMatchSessions = new Set<string>();
-    return filteredVideos.filter((video) => {
-      if (!video.match_session_id) {
-        return true;
+    const groups = new Map<string, any[]>();
+    for (const video of filteredVideos) {
+      const key = getMatchKey(video);
+      if (!groups.has(key)) {
+        groups.set(key, []);
       }
-      if (seenMatchSessions.has(video.match_session_id)) {
-        return false;
-      }
-      seenMatchSessions.add(video.match_session_id);
-      return true;
-    });
+      groups.get(key)!.push(video);
+    }
+
+    const result: any[] = [];
+    for (const groupVideos of groups.values()) {
+      // Trier pour s'assurer que Caméra 1 est la carte représentative principale
+      groupVideos.sort((a, b) => (a.camera_index || 1) - (b.camera_index || 1));
+      result.push(groupVideos[0]);
+    }
+    return result;
   }, [filteredVideos]);
 
   const handlePlayVideo = (video: any) => {
@@ -548,14 +554,12 @@ const Dashboard = () => {
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
           >
             {displayVideos.map((video, index) => {
-              const matchVideos = video.match_session_id
-                ? videos.filter(v => v.match_session_id === video.match_session_id)
-                        .sort((a, b) => (a.camera_index || 1) - (b.camera_index || 1))
-                : [video];
+              const matchKey = getMatchKey(video);
+              const matchVideos = videos
+                .filter(v => getMatchKey(v) === matchKey)
+                .sort((a, b) => (a.camera_index || 1) - (b.camera_index || 1));
               const anglesCount = matchVideos.length;
-              const cleanTitle = (anglesCount > 1 && video.title)
-                ? video.title.replace(/\s*-\s*Caméra\s*\d+$/i, '')
-                : (video.title || 'Sans titre');
+              const cleanTitle = getCleanVideoTitle(video, anglesCount);
 
               return (
                 <motion.div
