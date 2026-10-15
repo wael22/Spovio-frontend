@@ -1,5 +1,6 @@
 import { createRoot } from "react-dom/client";
 import * as Sentry from "@sentry/react";
+import { registerSW } from "virtual:pwa-register";
 import App from "./App.tsx";
 import { ThemeProvider } from "./components/ThemeProvider.tsx";
 import "./i18n";
@@ -21,6 +22,14 @@ if (SENTRY_DSN) {
     enableLogs: false
   });
 }
+
+// Auto-update Service Worker whenever a new version is deployed
+const updateSW = registerSW({
+  immediate: true,
+  onNeedRefresh() {
+    updateSW(true);
+  },
+});
 
 // Auto-reload on Vite chunk preload errors (happens when a new version is deployed)
 window.addEventListener("vite:preloadError", () => {
