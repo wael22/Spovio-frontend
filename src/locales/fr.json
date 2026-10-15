@@ -193,7 +193,11 @@
     },
     "videoPlayer": {
       "title": "Lecteur vidéo",
-      "createClip": "Créer un Clip",
+      "createClip": "Créer un clip",
+      "createClipAngle": "Créer clip (Angle {{angle}})",
+      "download": "Télécharger",
+      "downloadAngle": "Télécharger Angle {{angle}}",
+      "angle": "Angle {{angle}}",
       "unsupported": "Votre navigateur ne supporte pas la lecture vidéo."
     }
   },

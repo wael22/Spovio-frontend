@@ -194,6 +194,10 @@
     "videoPlayer": {
       "title": "Video Player",
       "createClip": "Create Clip",
+      "createClipAngle": "Create Clip (Angle {{angle}})",
+      "download": "Download",
+      "downloadAngle": "Download Angle {{angle}}",
+      "angle": "Angle {{angle}}",
       "unsupported": "Your browser does not support video playback."
     }
   },

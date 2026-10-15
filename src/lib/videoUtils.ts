@@ -26,8 +26,8 @@ export function getMatchKey(video: any): string {
   }
 
   // 4. Fallback: Title pattern (e.g. "new - Caméra 1" and "new - Caméra 2") on same court & approximate date
-  if (video.title && /-\s*Caméra\s*\d+$/i.test(video.title)) {
-    const baseTitle = video.title.replace(/\s*-\s*Caméra\s*\d+$/i, '').trim().toLowerCase();
+  if (video.title && /-\s*(Caméra|Camera)\s*\d+$/i.test(video.title)) {
+    const baseTitle = video.title.replace(/\s*-\s*(Caméra|Camera)\s*\d+$/i, '').trim().toLowerCase();
     const courtKey = String(video.court_id || video.court_name || '');
     const dateKey = (video.created_at || video.recorded_at || '').substring(0, 16);
     return `grouped_${baseTitle}_${courtKey}_${dateKey}`;
@@ -37,12 +37,12 @@ export function getMatchKey(video: any): string {
 }
 
 /**
- * Cleans camera suffixes (e.g. "- Caméra 1") from match title when multiple angles exist.
+ * Cleans camera suffixes (e.g. "- Caméra 1" or "- Camera 1") from match title when multiple angles exist.
  */
 export function getCleanVideoTitle(video: any, anglesCount: number = 1): string {
-  if (!video || !video.title) return 'Sans titre';
+  if (!video || !video.title) return '';
   if (anglesCount > 1) {
-    return video.title.replace(/\s*-\s*Caméra\s*\d+$/i, '').trim() || video.title;
+    return video.title.replace(/\s*-\s*(Caméra|Camera)\s*\d+$/i, '').trim() || video.title;
   }
   return video.title;
 }
