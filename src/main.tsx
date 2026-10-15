@@ -19,7 +19,7 @@ if (SENTRY_DSN) {
     tracesSampleRate: 0.1,
     replaysSessionSampleRate: 0.1,
     replaysOnErrorSampleRate: 1.0,
-    enableLogs: false
+    debug: false
   });
 }
 
