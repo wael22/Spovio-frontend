@@ -31,6 +31,16 @@ const updateSW = registerSW({
   },
 });
 
+if ('serviceWorker' in navigator) {
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!refreshing) {
+      refreshing = true;
+      window.location.reload();
+    }
+  });
+}
+
 // Auto-reload on Vite chunk preload errors (happens when a new version is deployed)
 window.addEventListener("vite:preloadError", () => {
   const lastReload = sessionStorage.getItem("vite_preload_reload");

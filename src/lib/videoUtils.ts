@@ -25,11 +25,12 @@ export function getMatchKey(video: any): string {
     if (match) return match[1];
   }
 
-  // 4. Fallback: Title pattern (e.g. "new - Caméra 1" and "new - Caméra 2") on same court & approximate date
+  // 4. Fallback: Title pattern (e.g. "Mixte p25 - Caméra 1" and "Mixte p25 - Caméra 2") on same court & date
   if (video.title && /-\s*(Caméra|Camera)\s*\d+$/i.test(video.title)) {
     const baseTitle = video.title.replace(/\s*-\s*(Caméra|Camera)\s*\d+$/i, '').trim().toLowerCase();
-    const courtKey = String(video.court_id || video.court_name || '');
-    const dateKey = (video.created_at || video.recorded_at || '').substring(0, 16);
+    const courtKey = String(video.court_name || video.court_id || '').trim().toLowerCase();
+    const rawDate = String(video.recorded_at || video.created_at || '');
+    const dateKey = rawDate.length >= 10 ? rawDate.substring(0, 10) : '';
     return `grouped_${baseTitle}_${courtKey}_${dateKey}`;
   }
 
