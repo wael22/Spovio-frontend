@@ -643,7 +643,7 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted, in
                     ))}
                   </select>
                   <p className="text-xs text-muted-foreground">
-                    Les règles (avantage, point d'or, tie-break...) sont appliquées par le scoreboard ESP32.
+                    Les règles (avantage, point d'or, tie-break...) sont appliquées par le scoreboard du terrain.
                   </p>
                 </div>
               </div>

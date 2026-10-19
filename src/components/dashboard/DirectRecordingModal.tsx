@@ -386,7 +386,7 @@ const DirectRecordingModal = ({ isOpen, onClose, onRecordingStarted, onVideoClai
                                                 ))}
                                             </select>
                                             <p className="text-[10px] text-muted-foreground">
-                                                Le score et les règles sont pilotés par le scoreboard ESP32.
+                                                Le score et les règles sont pilotés par le scoreboard du terrain.
                                             </p>
                                         </div>
                                     </div>
