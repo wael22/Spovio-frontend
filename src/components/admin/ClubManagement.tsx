@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import { Plus, Building, MapPin, Phone, Mail, Loader2, Edit, Trash2, MoreVertical, Coins, Video, Eye, Settings, ArrowUpDown, ArrowUp, ArrowDown, Image, Upload, X, Download } from 'lucide-react';
+import { Plus, Building, MapPin, Phone, Mail, Loader2, Edit, Trash2, MoreVertical, Coins, Video, Eye, Settings, ArrowUpDown, ArrowUp, ArrowDown, Image, Upload, X, Download, Trophy } from 'lucide-react';
 import ClubOverlayManager from './ClubOverlayManager';
 import CourtControlPanel from './CourtControlPanel';
 
@@ -50,8 +50,10 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
         name: '', address: '', phone_number: '', email: '', password: '', credits_balance: 0
     });
     const [courtFormData, setCourtFormData] = useState({
-        name: '', camera_url: '', camera_url_2: '', qr_code: '', short_code: '', has_audio: true
+        name: '', camera_url: '', camera_url_2: '', qr_code: '', short_code: '', has_audio: true,
+        has_scoreboard: false, scoreboard_ref: '', scoreboard_active: true
     });
+    const [addHasScoreboard, setAddHasScoreboard] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showLogoModal, setShowLogoModal] = useState(false);
     const [logoFile, setLogoFile] = useState<File | null>(null);
@@ -595,6 +597,17 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                                                             <span className="text-gray-600 dark:text-gray-300 font-mono text-xs">Cam 2: {court.camera_url_2}</span>
                                                         </div>
                                                     )}
+                                                    {court.has_scoreboard && (
+                                                        <div className="flex items-center gap-2">
+                                                            <Trophy className="h-4 w-4 text-amber-500" />
+                                                            <span className="text-gray-600 dark:text-gray-300 text-xs">
+                                                                Scoreboard <span className="font-mono font-semibold">{court.scoreboard_ref}</span>
+                                                            </span>
+                                                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${court.scoreboard_active ? 'bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300' : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300'}`}>
+                                                                {court.scoreboard_active ? 'Actif' : 'Inactif'}
+                                                            </span>
+                                                        </div>
+                                                    )}
                                                     {court.qr_code && (
                                                         <div className="flex items-center gap-3 mt-3">
                                                             <div className="p-2 bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700">
@@ -633,7 +646,10 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                                                             camera_url_2: court.camera_url_2 || (court.cameras?.find((c: any) => c.camera_index === 2)?.camera_url || ''),
                                                             qr_code: court.qr_code || '',
                                                             short_code: court.short_code || '',
-                                                            has_audio: court.has_audio !== false
+                                                            has_audio: court.has_audio !== false,
+                                                            has_scoreboard: !!court.has_scoreboard,
+                                                            scoreboard_ref: court.scoreboard_ref || '',
+                                                            scoreboard_active: court.scoreboard_active !== false
                                                         });
                                                         setShowEditCourtModal(true);
                                                     }}
@@ -682,7 +698,7 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
             </Dialog>
 
             {/* Add Court Modal - Full Implementation */}
-            <Dialog open={showCourtModal} onOpenChange={setShowCourtModal}>
+            <Dialog open={showCourtModal} onOpenChange={(open) => { setShowCourtModal(open); if (!open) setAddHasScoreboard(false); }}>
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Ajouter un Terrain - {selectedClub?.name}</DialogTitle>
@@ -696,7 +712,10 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                             name: formData.get('court-name') as string,
                             camera_url: formData.get('camera-url') as string,
                             camera_url_2: (formData.get('camera-url-2') as string) || '',
-                            has_audio: formData.get('has-audio') === 'on'
+                            has_audio: formData.get('has-audio') === 'on',
+                            has_scoreboard: addHasScoreboard,
+                            scoreboard_ref: addHasScoreboard ? (formData.get('scoreboard-ref') as string) : null,
+                            scoreboard_active: addHasScoreboard
                         };
 
                         if (!selectedClub) return;
@@ -757,6 +776,50 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                                 </label>
                             </div>
                         </div>
+
+                        <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                            <input
+                                id="has-scoreboard"
+                                type="checkbox"
+                                checked={addHasScoreboard}
+                                onChange={(e) => setAddHasScoreboard(e.target.checked)}
+                                className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 dark:text-blue-400 focus:ring-blue-500"
+                            />
+                            <label htmlFor="has-scoreboard" className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer flex items-center gap-1">
+                                <Trophy className="h-4 w-4 text-amber-500" />
+                                Ce terrain dispose d'un scoreboard ESP32
+                            </label>
+                        </div>
+
+                        {addHasScoreboard && (
+                            <div className="space-y-3 p-3 border rounded-lg bg-amber-50/50 dark:bg-amber-950/20">
+                                <div className="space-y-2">
+                                    <Label htmlFor="scoreboard-ref">Référence du scoreboard</Label>
+                                    <Input
+                                        id="scoreboard-ref"
+                                        name="scoreboard-ref"
+                                        placeholder="Ex: court1"
+                                        required
+                                        className="font-mono"
+                                    />
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                                        Identifiant envoyé par l'ESP32 dans le champ <code>court</code> de son payload.
+                                    </p>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <input
+                                        id="scoreboard-active"
+                                        name="scoreboard-active"
+                                        type="checkbox"
+                                        defaultChecked
+                                        className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 dark:text-blue-400 focus:ring-blue-500"
+                                    />
+                                    <label htmlFor="scoreboard-active" className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                                        Scoreboard actif (score affiché pendant les enregistrements)
+                                    </label>
+                                </div>
+                            </div>
+                        )}
 
                         <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg">
                             <div className="flex items-center space-x-2 mb-2">
@@ -881,6 +944,51 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                                 Activer l'enregistrement audio sur ce terrain
                             </label>
                         </div>
+
+                        <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                            <input
+                                id="edit-has-scoreboard"
+                                type="checkbox"
+                                checked={courtFormData.has_scoreboard}
+                                onChange={(e) => setCourtFormData(prev => ({ ...prev, has_scoreboard: e.target.checked }))}
+                                className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 dark:text-blue-400 focus:ring-blue-500"
+                            />
+                            <label htmlFor="edit-has-scoreboard" className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer flex items-center gap-1">
+                                <Trophy className="h-4 w-4 text-amber-500" />
+                                Ce terrain dispose d'un scoreboard ESP32
+                            </label>
+                        </div>
+
+                        {courtFormData.has_scoreboard && (
+                            <div className="space-y-3 p-3 border rounded-lg bg-amber-50/50 dark:bg-amber-950/20">
+                                <div className="space-y-2">
+                                    <Label htmlFor="edit-scoreboard-ref">Référence du scoreboard</Label>
+                                    <Input
+                                        id="edit-scoreboard-ref"
+                                        value={courtFormData.scoreboard_ref}
+                                        onChange={(e) => setCourtFormData(prev => ({ ...prev, scoreboard_ref: e.target.value }))}
+                                        placeholder="Ex: court1"
+                                        required
+                                        className="font-mono"
+                                    />
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                                        Identifiant envoyé par l'ESP32 dans le champ <code>court</code> de son payload.
+                                    </p>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <input
+                                        id="edit-scoreboard-active"
+                                        type="checkbox"
+                                        checked={courtFormData.scoreboard_active}
+                                        onChange={(e) => setCourtFormData(prev => ({ ...prev, scoreboard_active: e.target.checked }))}
+                                        className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 dark:text-blue-400 focus:ring-blue-500"
+                                    />
+                                    <label htmlFor="edit-scoreboard-active" className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                                        Scoreboard actif (score affiché pendant les enregistrements)
+                                    </label>
+                                </div>
+                            </div>
+                        )}
 
                         <div className="flex justify-end space-x-2">
                             <Button type="button" variant="outline" onClick={() => setShowEditCourtModal(false)}>

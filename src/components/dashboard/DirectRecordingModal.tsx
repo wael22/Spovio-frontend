@@ -22,9 +22,11 @@ import {
     AlertCircle,
     Camera,
     ArrowLeft,
-    CheckCircle
+    CheckCircle,
+    Trophy
 } from "lucide-react";
 import { recordingService, videoService } from "@/lib/api";
+import { SCORE_MODES, isScoreMode } from "@/lib/scoreModes";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from "react-i18next";
@@ -60,6 +62,9 @@ const DirectRecordingModal = ({ isOpen, onClose, onRecordingStarted, onVideoClai
     const [qrCode, setQrCode] = useState("");
     const [scannedData, setScannedData] = useState<{ club: any; court: any } | null>(null);
     const [manualCode, setManualCode] = useState("");
+    const [teamA, setTeamA] = useState("");
+    const [teamB, setTeamB] = useState("");
+    const [scoreMode, setScoreMode] = useState("ADV 9+STB");
 
     useEffect(() => {
         if (isOpen && initialQrCode) {
@@ -81,6 +86,9 @@ const DirectRecordingModal = ({ isOpen, onClose, onRecordingStarted, onVideoClai
                 setDescription("");
                 setQrCode("");
                 setScannedData(null);
+                setTeamA("");
+                setTeamB("");
+                setScoreMode("ADV 9+STB");
                 setError("");
                 setStarting(false);
                 setValidating(false);
@@ -147,6 +155,9 @@ const DirectRecordingModal = ({ isOpen, onClose, onRecordingStarted, onVideoClai
             console.log('✅ QR Validated:', data);
             setScannedData({ club: data.club, court: data.court });
             setStep("configuring");
+            if (isScoreMode(data.court?.scoreboard_last_fmt)) {
+                setScoreMode(data.court.scoreboard_last_fmt);
+            }
             toast.success(`Terrain détecté: ${data.court.name}`);
         } catch (err: any) {
             console.error('❌ QR Validation Error:', err);
@@ -166,6 +177,14 @@ const DirectRecordingModal = ({ isOpen, onClose, onRecordingStarted, onVideoClai
             return;
         }
 
+        const scoreboardActive = !!(scannedData.court?.has_scoreboard && scannedData.court?.scoreboard_active);
+        if (scoreboardActive && (!teamA.trim() || !teamB.trim())) {
+            const msg = "Renseignez les noms des deux équipes pour afficher le score";
+            setError(msg);
+            toast.error(msg);
+            return;
+        }
+
         setStarting(true);
         try {
             const response = await recordingService.startAdvancedRecording({
@@ -175,6 +194,11 @@ const DirectRecordingModal = ({ isOpen, onClose, onRecordingStarted, onVideoClai
                 qr_code: qrCode,
                 title: title || undefined,
                 description: description || undefined,
+                match_config: scoreboardActive ? {
+                    team_a: teamA.trim(),
+                    team_b: teamB.trim(),
+                    score_mode: scoreMode,
+                } : undefined,
             });
 
             toast.success(t('modals.common.success'));
@@ -313,6 +337,60 @@ const DirectRecordingModal = ({ isOpen, onClose, onRecordingStarted, onVideoClai
                                         </Badge>
                                     )}
                                 </div>
+
+                                {/* Scoreboard / Match configuration */}
+                                {scannedData?.court?.has_scoreboard && scannedData?.court?.scoreboard_active && (
+                                    <div className="space-y-3 p-3 rounded-xl border border-amber-500/30 bg-amber-500/5">
+                                        <Label className="flex items-center gap-2">
+                                            <Trophy className="h-4 w-4 text-amber-500" />
+                                            Configuration du match
+                                        </Label>
+
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <div className="space-y-1">
+                                                <Label htmlFor="direct-team-a" className="text-[10px] uppercase tracking-wider text-muted-foreground">Équipe 1</Label>
+                                                <Input
+                                                    id="direct-team-a"
+                                                    placeholder="Ali / Ben"
+                                                    value={teamA}
+                                                    onChange={(e) => setTeamA(e.target.value)}
+                                                    maxLength={60}
+                                                    className="bg-background/50"
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <Label htmlFor="direct-team-b" className="text-[10px] uppercase tracking-wider text-muted-foreground">Équipe 2</Label>
+                                                <Input
+                                                    id="direct-team-b"
+                                                    placeholder="Sami / Karim"
+                                                    value={teamB}
+                                                    onChange={(e) => setTeamB(e.target.value)}
+                                                    maxLength={60}
+                                                    className="bg-background/50"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-1">
+                                            <Label htmlFor="direct-score-mode" className="text-[10px] uppercase tracking-wider text-muted-foreground">Format de score</Label>
+                                            <select
+                                                id="direct-score-mode"
+                                                value={scoreMode}
+                                                onChange={(e) => setScoreMode(e.target.value)}
+                                                className="flex h-10 w-full items-center rounded-md border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                            >
+                                                {SCORE_MODES.map((mode) => (
+                                                    <option key={mode.value} value={mode.value}>
+                                                        {mode.label}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <p className="text-[10px] text-muted-foreground">
+                                                Le score et les règles sont pilotés par le scoreboard du terrain.
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
 
                                 {/* Title Input */}
                                 <div className="space-y-2">

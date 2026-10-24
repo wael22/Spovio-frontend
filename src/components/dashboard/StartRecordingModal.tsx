@@ -24,9 +24,11 @@ import {
   AlertCircle,
   CheckCircle,
   User,
-  Camera
+  Camera,
+  Trophy
 } from "lucide-react";
 import { playerService, recordingService, videoService } from "@/lib/api";
+import { SCORE_MODES, isScoreMode } from "@/lib/scoreModes";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from "react-i18next";
@@ -58,6 +60,9 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted, in
   const [selectedClub, setSelectedClub] = useState("");
   const [selectedCourt, setSelectedCourt] = useState("");
   const [qrCode, setQrCode] = useState("");
+  const [teamA, setTeamA] = useState("");
+  const [teamB, setTeamB] = useState("");
+  const [scoreMode, setScoreMode] = useState("ADV 9+STB");
 
   // UI state
   const [clubs, setClubs] = useState<any[]>([]);
@@ -93,6 +98,9 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted, in
       setSelectedDuration(90);
       setSelectedClub("");
       setSelectedCourt("");
+      setTeamA("");
+      setTeamB("");
+      setScoreMode("ADV 9+STB");
 
       // Only clear QR code state if we don't have an initial one
       if (!initialQrCode) {
@@ -295,6 +303,15 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted, in
       return;
     }
 
+    const selectedCourtData = courts.find(c => c.id.toString() === selectedCourt);
+    const needsScore = !!(selectedCourtData?.has_scoreboard && selectedCourtData?.scoreboard_active);
+
+    if (needsScore && (!teamA.trim() || !teamB.trim())) {
+      setError("Renseignez les noms des deux équipes pour afficher le score pendant l'enregistrement");
+      toast.error("Noms des équipes requis");
+      return;
+    }
+
     if (!user || !user.id) {
       setError("Utilisateur non authentifié");
       toast.error("Utilisateur non authentifié");
@@ -330,6 +347,11 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted, in
         qr_code: qrCode,
         title: title || undefined,
         description: description || undefined,
+        match_config: needsScore ? {
+          team_a: teamA.trim(),
+          team_b: teamB.trim(),
+          score_mode: scoreMode,
+        } : undefined,
       });
 
       toast.success("Enregistrement démarré avec succès !");
@@ -347,6 +369,9 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted, in
       setSelectedClub("");
       setSelectedCourt("");
       setQrCode("");
+      setTeamA("");
+      setTeamB("");
+      setScoreMode("ADV 9+STB");
     } catch (error: any) {
       console.error('Failed to start recording:', error);
       const errorMessage = error.response?.data?.error || 'Erreur lors du démarrage de l\'enregistrement';
@@ -376,17 +401,25 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted, in
           <p className="font-medium">{court.name}</p>
           <p className="text-xs text-muted-foreground">Terrain #{court.number || court.id}</p>
         </div>
-        {court.available ? (
-          <Badge variant="secondary" className="flex items-center gap-1">
-            <CheckCircle className="h-3 w-3 text-green-600" />
-            <span>{t('modals.startRecording.courtStatus.available')}</span>
-          </Badge>
-        ) : (
-          <Badge variant="destructive" className="flex items-center gap-1">
-            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-            <span>{t('modals.startRecording.courtStatus.occupied')}</span>
-          </Badge>
-        )}
+        <div className="flex items-center gap-1">
+          {court.available ? (
+            <Badge variant="secondary" className="flex items-center gap-1">
+              <CheckCircle className="h-3 w-3 text-green-600" />
+              <span>{t('modals.startRecording.courtStatus.available')}</span>
+            </Badge>
+          ) : (
+            <Badge variant="destructive" className="flex items-center gap-1">
+              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+              <span>{t('modals.startRecording.courtStatus.occupied')}</span>
+            </Badge>
+          )}
+          {court.has_scoreboard && court.scoreboard_active && (
+            <Badge variant="outline" className="flex items-center gap-1 border-amber-500/50 text-amber-600 dark:text-amber-400">
+              <Trophy className="h-3 w-3" />
+              <span>Score</span>
+            </Badge>
+          )}
+        </div>
       </div>
 
       {/* 🆕 Show recording info if court is occupied */}
@@ -415,6 +448,15 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted, in
 
   const selectedDurationOption = durations.find(d => d.value === selectedDuration);
   const selectedCourtObj = courts.find(c => c.id.toString() === selectedCourt);
+  const scoreboardActive = !!(selectedCourtObj?.has_scoreboard && selectedCourtObj?.scoreboard_active);
+
+  useEffect(() => {
+    const court = courts.find(c => c.id.toString() === selectedCourt);
+    if (!court?.has_scoreboard || !court?.scoreboard_active) return;
+    if (isScoreMode(court.scoreboard_last_fmt)) {
+      setScoreMode(court.scoreboard_last_fmt);
+    }
+  }, [selectedCourt, courts]);
 
   return (
     <>
@@ -552,6 +594,60 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted, in
                 </p>
               )}
             </div>
+
+            {/* Scoreboard / Match configuration */}
+            {scoreboardActive && (
+              <div className="space-y-3 p-3 rounded-xl border border-amber-500/30 bg-amber-500/5">
+                <Label className="flex items-center gap-2">
+                  <Trophy className="h-4 w-4 text-amber-500" />
+                  Configuration du match (score gravé dans la vidéo)
+                </Label>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="team-a" className="text-xs text-muted-foreground">Équipe 1</Label>
+                    <Input
+                      id="team-a"
+                      placeholder="Ex: Ali / Ben"
+                      value={teamA}
+                      onChange={(e) => setTeamA(e.target.value)}
+                      maxLength={60}
+                      className="bg-background/50 border-border/50"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="team-b" className="text-xs text-muted-foreground">Équipe 2</Label>
+                    <Input
+                      id="team-b"
+                      placeholder="Ex: Sami / Karim"
+                      value={teamB}
+                      onChange={(e) => setTeamB(e.target.value)}
+                      maxLength={60}
+                      className="bg-background/50 border-border/50"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="score-mode" className="text-xs text-muted-foreground">Format de score</Label>
+                  <select
+                    id="score-mode"
+                    value={scoreMode}
+                    onChange={(e) => setScoreMode(e.target.value)}
+                    className="flex h-10 w-full items-center rounded-md border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                  >
+                    {SCORE_MODES.map((mode) => (
+                      <option key={mode.value} value={mode.value}>
+                        {mode.label}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-muted-foreground">
+                    Les règles (avantage, point d'or, tie-break...) sont appliquées par le scoreboard du terrain.
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* QR Code */}
             <div className="space-y-2">
