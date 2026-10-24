@@ -55,19 +55,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             // Avoid multiple initializations
             if (isInitialized) return;
 
-            // Try to restore session from localStorage first (fast)
+            // Try to restore user from localStorage first for instant UI render
             const token = localStorage.getItem('token');
             const storedUser = localStorage.getItem('user');
 
-            if (!token) {
-                setUser(null);
-                localStorage.removeItem('user');
-                setLoading(false);
-                setIsInitialized(true);
-                return;
-            }
-
-            if (storedUser && token) {
+            if (storedUser) {
                 try {
                     setUser(JSON.parse(storedUser));
                 } catch (e) {
@@ -77,11 +69,19 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             }
 
             try {
-                // Verify with backend
+                // Verify with backend (supports both JWT token header and session cookies)
                 const response = await authService.getCurrentUser();
-                setUser(response.data.user);
-                // Update storage with fresh data
-                localStorage.setItem('user', JSON.stringify(response.data.user));
+                if (response.data?.user) {
+                    setUser(response.data.user);
+                    localStorage.setItem('user', JSON.stringify(response.data.user));
+                    if (response.data.token) {
+                        localStorage.setItem('token', response.data.token);
+                    }
+                } else {
+                    setUser(null);
+                    localStorage.removeItem('user');
+                    localStorage.removeItem('token');
+                }
             } catch (error: any) {
                 // 401 is expected if not authenticated
                 if (error.response?.status === 401) {
@@ -181,11 +181,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             const userData = response.data.user;
             setUser(userData);
             localStorage.setItem('user', JSON.stringify(userData));
+            if (response.data?.token) {
+                localStorage.setItem('token', response.data.token);
+            }
             return userData;
         } catch (error: any) {
             if (error.response?.status === 401) {
                 setUser(null);
                 localStorage.removeItem('user');
+                localStorage.removeItem('token');
             }
             throw error;
         }

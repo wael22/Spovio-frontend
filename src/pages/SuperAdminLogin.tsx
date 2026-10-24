@@ -65,11 +65,18 @@ const SuperAdminLogin: React.FC = () => {
         setLoading(true);
         setError('');
         try {
-            if (step === 'setup_2fa') {
-                await authService.superAdminSetup2FA({ code: formData.code });
-            } else {
-                await authService.superAdminVerify2FA({ code: formData.code });
+            const response = step === 'setup_2fa'
+                ? await authService.superAdminSetup2FA({ code: formData.code })
+                : await authService.superAdminVerify2FA({ code: formData.code });
+
+            const token = response.data?.token;
+            if (token) {
+                localStorage.setItem('token', token);
             }
+            if (response.data?.user) {
+                localStorage.setItem('user', JSON.stringify(response.data.user));
+            }
+
             // Success! Sync auth context with backend
             await fetchUser();
             navigate('/admin');
