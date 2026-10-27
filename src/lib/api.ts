@@ -371,6 +371,8 @@ export const adminService = {
         api.patch(`/admin/shared-videos/${sharedId}`, data),
     updateClip: (clipId: number, data: { title?: string; description?: string; bunny_video_id?: string; file_url?: string; storage_download_url?: string }) => 
         api.patch(`/admin/clips/${clipId}`, data),
+    retryClip: (clipId: number) => api.post(`/admin/clips/${clipId}/retry`),
+    reprocessStuckClips: () => api.post('/admin/clips/reprocess-stuck'),
     deleteVideo: (videoId: string, mode: 'local_only' | 'cloud_only' | 'local_and_cloud' = 'local_and_cloud') =>
         api.delete(`/admin/videos/${videoId}`, { data: { mode } }),
     archiveVideo: (videoId: number | string) =>

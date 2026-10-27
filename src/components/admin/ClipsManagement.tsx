@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Scissors, User, Clock, Trash2, Edit, MoreVertical } from 'lucide-react';
+import { Loader2, Scissors, User, Clock, Trash2, Edit, MoreVertical, RotateCw, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface ClipData {
@@ -26,12 +26,14 @@ interface ClipData {
     file_url?: string | null;
     storage_download_url?: string | null;
     status: string;
+    error_message?: string | null;
     created_at: string;
 }
 
 const ClipsManagement: React.FC = () => {
     const [clips, setClips] = useState<ClipData[]>([]);
     const [loading, setLoading] = useState(true);
+    const [reprocessing, setReprocessing] = useState(false);
     const [error, setError] = useState('');
 
     // Modal state for editing
@@ -58,6 +60,35 @@ const ClipsManagement: React.FC = () => {
             setError('Erreur lors du chargement des clips');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleRetry = async (clipId: number) => {
+        try {
+            toast.info('Relance du traitement du clip en streaming...');
+            await adminService.retryClip(clipId);
+            toast.success('Traitement relancé avec succès');
+            setTimeout(loadClips, 1500);
+        } catch (error: any) {
+            const errorMsg = error.response?.data?.error || 'Erreur lors de la relance';
+            toast.error(errorMsg);
+        }
+    };
+
+    const handleReprocessStuck = async () => {
+        try {
+            setReprocessing(true);
+            toast.info('Relance de tous les clips bloqués en streaming...');
+            const response = await adminService.reprocessStuckClips();
+            toast.success(response.data.message || 'Clips bloqués relancés');
+            setTimeout(() => {
+                loadClips();
+            }, 3000);
+        } catch (error: any) {
+            const errorMsg = error.response?.data?.error || 'Erreur lors de la relance groupée';
+            toast.error(errorMsg);
+        } finally {
+            setReprocessing(false);
         }
     };
 
@@ -153,6 +184,31 @@ const ClipsManagement: React.FC = () => {
                             <CardTitle>Clips Créés</CardTitle>
                             <CardDescription>Visualisez tous les clips créés par les utilisateurs</CardDescription>
                         </div>
+                        <div className="flex items-center space-x-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={handleReprocessStuck}
+                                disabled={reprocessing || loading}
+                                className="text-blue-600 border-blue-200 hover:bg-blue-50 dark:hover:bg-blue-950 font-medium"
+                            >
+                                {reprocessing ? (
+                                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                ) : (
+                                    <RotateCw className="h-4 w-4 mr-2" />
+                                )}
+                                <span>Relancer clips bloqués</span>
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={loadClips}
+                                disabled={loading}
+                                title="Actualiser"
+                            >
+                                <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                            </Button>
+                        </div>
                     </div>
                 </CardHeader>
 
@@ -209,7 +265,17 @@ const ClipsManagement: React.FC = () => {
                                                 ({formatTime(clip.end_time - clip.start_time)})
                                             </div>
                                         </TableCell>
-                                        <TableCell>{getStatusBadge(clip.status)}</TableCell>
+                                        <TableCell>
+                                            <div>{getStatusBadge(clip.status)}</div>
+                                            {clip.error_message && (
+                                                <div
+                                                    className="text-xs text-red-500 mt-1 max-w-[160px] truncate cursor-help"
+                                                    title={clip.error_message}
+                                                >
+                                                    {clip.error_message}
+                                                </div>
+                                            )}
+                                        </TableCell>
                                         <TableCell>{formatDate(clip.created_at)}</TableCell>
                                         <TableCell className="text-right">
                                             <DropdownMenu>
@@ -219,6 +285,21 @@ const ClipsManagement: React.FC = () => {
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end" className="w-64">
+                                                    <DropdownMenuItem
+                                                        onClick={() => handleRetry(clip.id)}
+                                                        className="cursor-pointer text-amber-600 dark:text-amber-400"
+                                                    >
+                                                        <RotateCw className="mr-2 h-4 w-4" />
+                                                        <div className="flex-1">
+                                                            <div>🔄 Relancer le découpage</div>
+                                                            <div className="text-xs text-muted-foreground">
+                                                                Découper en streaming & upload
+                                                            </div>
+                                                        </div>
+                                                    </DropdownMenuItem>
+
+                                                    <DropdownMenuSeparator />
+
                                                     <DropdownMenuItem
                                                         onClick={() => openEditDialog(clip)}
                                                         className="cursor-pointer text-blue-600"
