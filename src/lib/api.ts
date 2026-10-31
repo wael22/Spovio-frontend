@@ -467,6 +467,44 @@ export const recoveryService = {
     getRequests: () => api.get('/recovery/requests'), // Admin only endpoint, but grouped here for context or can stay in adminService
 };
 
+// 🆕 AI Match Analysis Service (EC2 Worker & Papermill)
+export interface AIMatchAnalysis {
+    id: number;
+    match_id: string;
+    video_id?: number | null;
+    court_id?: number | null;
+    status: 'pending' | 'processing' | 'completed' | 'failed';
+    s3_bucket?: string | null;
+    s3_key?: string | null;
+    stats?: {
+        total_rallies?: number;
+        total_hits?: number;
+        total_bounces?: number;
+        longest_rally_hits?: number;
+        avg_rally_duration_sec?: number;
+        court_coverage?: {
+            team_a_distance_km?: number;
+            team_b_distance_km?: number;
+        };
+        [key: string]: any;
+    } | null;
+    video_meta?: {
+        resolution?: string;
+        fps?: number;
+        duration_seconds?: number;
+        total_frames?: number;
+        [key: string]: any;
+    } | null;
+    error_message?: string | null;
+    created_at?: string | null;
+    started_at?: string | null;
+    completed_at?: string | null;
+}
 
+export const aiAnalysisService = {
+    getAnalyses: (limit = 50) => api.get<{ success: boolean; analyses: AIMatchAnalysis[]; total: number }>(`/ai/results?limit=${limit}`),
+    triggerTest: (data?: { match_id?: string; s3_key?: string; s3_bucket?: string }) => api.post('/ai/trigger-test', data || {}),
+    deleteAnalysis: (id: number) => api.delete(`/ai/results/${id}`),
+};
 
 export default api;

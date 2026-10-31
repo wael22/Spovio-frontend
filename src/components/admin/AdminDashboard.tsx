@@ -20,8 +20,10 @@ import {
     User,
     LogOut,
     Shield,
-    Database
+    Database,
+    Cpu
 } from 'lucide-react';
+import AIMatchAnalysisManagement from './AIMatchAnalysisManagement';
 import UserManagement from './UserManagement';
 import ClubManagement from './ClubManagement';
 import VideoManagement from './VideoManagement';
@@ -274,6 +276,11 @@ const AdminDashboard: React.FC = () => {
                                 <Database className="h-4 w-4" />Récupération
                             </span>
                         </TabsTrigger>
+                        <TabsTrigger value="ai-analysis">
+                            <span className="inline-flex items-center gap-1">
+                                <Cpu className="h-4 w-4 text-primary" />Analyse IA
+                            </span>
+                        </TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="overview" className="mt-6">
@@ -318,6 +325,10 @@ const AdminDashboard: React.FC = () => {
 
                     <TabsContent value="recovery" className="mt-6">
                         <RecoveryManagement />
+                    </TabsContent>
+
+                    <TabsContent value="ai-analysis" className="mt-6">
+                        <AIMatchAnalysisManagement />
                     </TabsContent>
                 </Tabs>
             </div>
