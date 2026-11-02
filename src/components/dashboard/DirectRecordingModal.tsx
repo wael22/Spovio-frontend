@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import {
     Clock,
     Play,
@@ -23,7 +24,8 @@ import {
     Camera,
     ArrowLeft,
     CheckCircle,
-    Trophy
+    Trophy,
+    Sparkles
 } from "lucide-react";
 import { recordingService, videoService } from "@/lib/api";
 import { SCORE_MODES, isScoreMode } from "@/lib/scoreModes";
@@ -65,6 +67,7 @@ const DirectRecordingModal = ({ isOpen, onClose, onRecordingStarted, onVideoClai
     const [teamA, setTeamA] = useState("");
     const [teamB, setTeamB] = useState("");
     const [scoreMode, setScoreMode] = useState("ADV 9+STB");
+    const [aiAnalyticsRequested, setAiAnalyticsRequested] = useState(false);
 
     useEffect(() => {
         if (isOpen && initialQrCode) {
@@ -89,6 +92,7 @@ const DirectRecordingModal = ({ isOpen, onClose, onRecordingStarted, onVideoClai
                 setTeamA("");
                 setTeamB("");
                 setScoreMode("ADV 9+STB");
+                setAiAnalyticsRequested(false);
                 setError("");
                 setStarting(false);
                 setValidating(false);
@@ -154,6 +158,7 @@ const DirectRecordingModal = ({ isOpen, onClose, onRecordingStarted, onVideoClai
 
             console.log('✅ QR Validated:', data);
             setScannedData({ club: data.club, court: data.court });
+            setAiAnalyticsRequested(data.court?.has_ai === true);
             setStep("configuring");
             if (isScoreMode(data.court?.scoreboard_last_fmt)) {
                 setScoreMode(data.court.scoreboard_last_fmt);
@@ -187,6 +192,9 @@ const DirectRecordingModal = ({ isOpen, onClose, onRecordingStarted, onVideoClai
 
         setStarting(true);
         try {
+            const isAiEligible = scannedData.court?.has_ai === true;
+            const effectiveAiRequested = isAiEligible && aiAnalyticsRequested;
+
             const response = await recordingService.startAdvancedRecording({
                 club_id: parseInt(scannedData.club.id),
                 court_id: parseInt(scannedData.court.id),
@@ -194,6 +202,7 @@ const DirectRecordingModal = ({ isOpen, onClose, onRecordingStarted, onVideoClai
                 qr_code: qrCode,
                 title: title || undefined,
                 description: description || undefined,
+                ai_analytics_requested: effectiveAiRequested,
                 match_config: scoreboardActive ? {
                     team_a: teamA.trim(),
                     team_b: teamB.trim(),
@@ -403,6 +412,26 @@ const DirectRecordingModal = ({ isOpen, onClose, onRecordingStarted, onVideoClai
                                         className="bg-background/50"
                                     />
                                 </div>
+
+                                {/* Toggle Analyse IA */}
+                                {scannedData?.court?.has_ai === true && (
+                                    <div className="flex items-center justify-between p-3 rounded-xl border border-purple-500/30 bg-purple-500/5">
+                                        <div className="space-y-0.5">
+                                            <Label htmlFor="direct-ai-toggle" className="text-sm font-medium flex items-center gap-1.5 cursor-pointer text-purple-400">
+                                                <Sparkles className="w-4 h-4 text-purple-400" />
+                                                Analyse de match par IA
+                                            </Label>
+                                            <p className="text-xs text-muted-foreground">
+                                                Génération des temps forts et statistiques de match par GPU EC2
+                                            </p>
+                                        </div>
+                                        <Switch
+                                            id="direct-ai-toggle"
+                                            checked={aiAnalyticsRequested}
+                                            onCheckedChange={setAiAnalyticsRequested}
+                                        />
+                                    </div>
+                                )}
 
                                 {/* Duration Picker */}
                                 <div className="space-y-2">

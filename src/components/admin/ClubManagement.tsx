@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import { Plus, Building, MapPin, Phone, Mail, Loader2, Edit, Trash2, MoreVertical, Coins, Video, Eye, Settings, ArrowUpDown, ArrowUp, ArrowDown, Image, Upload, X, Download, Trophy } from 'lucide-react';
+import { Plus, Building, MapPin, Phone, Mail, Loader2, Edit, Trash2, MoreVertical, Coins, Video, Eye, Settings, ArrowUpDown, ArrowUp, ArrowDown, Image, Upload, X, Download, Trophy, Sparkles } from 'lucide-react';
 import ClubOverlayManager from './ClubOverlayManager';
 import CourtControlPanel from './CourtControlPanel';
 
@@ -50,7 +50,7 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
         name: '', address: '', phone_number: '', email: '', password: '', credits_balance: 0
     });
     const [courtFormData, setCourtFormData] = useState({
-        name: '', camera_url: '', camera_url_2: '', qr_code: '', short_code: '', has_audio: true,
+        name: '', camera_url: '', camera_url_2: '', qr_code: '', short_code: '', has_audio: true, has_ai: false,
         has_scoreboard: false, scoreboard_ref: '', scoreboard_active: true
     });
     const [addHasScoreboard, setAddHasScoreboard] = useState(false);
@@ -647,6 +647,7 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                                                             qr_code: court.qr_code || '',
                                                             short_code: court.short_code || '',
                                                             has_audio: court.has_audio !== false,
+                                                            has_ai: court.has_ai === true,
                                                             has_scoreboard: !!court.has_scoreboard,
                                                             scoreboard_ref: court.scoreboard_ref || '',
                                                             scoreboard_active: court.scoreboard_active !== false
@@ -713,6 +714,7 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                             camera_url: formData.get('camera-url') as string,
                             camera_url_2: (formData.get('camera-url-2') as string) || '',
                             has_audio: formData.get('has-audio') === 'on',
+                            has_ai: formData.get('has-ai') === 'on',
                             has_scoreboard: addHasScoreboard,
                             scoreboard_ref: addHasScoreboard ? (formData.get('scoreboard-ref') as string) : null,
                             scoreboard_active: addHasScoreboard
@@ -762,7 +764,7 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="has-audio">Son</Label>
+                            <Label htmlFor="has-audio">Son & Options</Label>
                             <div className="flex items-center space-x-2">
                                 <input
                                     id="has-audio"
@@ -775,6 +777,20 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                                     Activer l'enregistrement audio sur ce terrain
                                 </label>
                             </div>
+                        </div>
+
+                        <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                            <input
+                                id="has-ai"
+                                name="has-ai"
+                                type="checkbox"
+                                defaultChecked={false}
+                                className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-purple-600 dark:text-purple-400 focus:ring-purple-500"
+                            />
+                            <label htmlFor="has-ai" className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer flex items-center gap-1.5">
+                                <Sparkles className="h-4 w-4 text-purple-500" />
+                                Terrain équipé pour l'analyse IA (GPU EC2)
+                            </label>
                         </div>
 
                         <div className="flex items-center space-x-2 p-3 border rounded-lg">
@@ -942,6 +958,20 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                             />
                             <label htmlFor="edit-has-audio" className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
                                 Activer l'enregistrement audio sur ce terrain
+                            </label>
+                        </div>
+
+                        <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                            <input
+                                id="edit-has-ai"
+                                type="checkbox"
+                                checked={courtFormData.has_ai}
+                                onChange={(e) => setCourtFormData(prev => ({ ...prev, has_ai: e.target.checked }))}
+                                className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-purple-600 dark:text-purple-400 focus:ring-purple-500"
+                            />
+                            <label htmlFor="edit-has-ai" className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer flex items-center gap-1.5">
+                                <Sparkles className="h-4 w-4 text-purple-500" />
+                                Terrain équipé pour l'analyse IA (GPU EC2)
                             </label>
                         </div>
 

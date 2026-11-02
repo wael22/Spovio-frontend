@@ -504,6 +504,7 @@ export interface AIMatchAnalysis {
 export const aiAnalysisService = {
     getAnalyses: (limit = 50) => api.get<{ success: boolean; analyses: AIMatchAnalysis[]; total: number }>(`/ai/results?limit=${limit}`),
     triggerTest: (data?: { match_id?: string; s3_key?: string; s3_bucket?: string }) => api.post('/ai/trigger-test', data || {}),
+    analyzeVideo: (videoId: string | number) => api.post<{ success: boolean; message: string; analysis?: AIMatchAnalysis }>(`/ai/analyze-video/${videoId}`),
     deleteAnalysis: (id: number) => api.delete(`/ai/results/${id}`),
 };
 

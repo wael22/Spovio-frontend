@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 // Radix Select intentionally NOT used inside Dialog to avoid Portal-in-Portal removeChild crash
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import {
   Clock,
   Play,
@@ -25,7 +26,8 @@ import {
   CheckCircle,
   User,
   Camera,
-  Trophy
+  Trophy,
+  Sparkles
 } from "lucide-react";
 import { playerService, recordingService, videoService } from "@/lib/api";
 import { SCORE_MODES, isScoreMode } from "@/lib/scoreModes";
@@ -63,6 +65,7 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted, in
   const [teamA, setTeamA] = useState("");
   const [teamB, setTeamB] = useState("");
   const [scoreMode, setScoreMode] = useState("ADV 9+STB");
+  const [aiAnalyticsRequested, setAiAnalyticsRequested] = useState(false);
 
   // UI state
   const [clubs, setClubs] = useState<any[]>([]);
@@ -101,6 +104,7 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted, in
       setTeamA("");
       setTeamB("");
       setScoreMode("ADV 9+STB");
+      setAiAnalyticsRequested(false);
 
       // Only clear QR code state if we don't have an initial one
       if (!initialQrCode) {
@@ -143,12 +147,12 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted, in
   useEffect(() => {
     if (pendingScannedCourt.current && courts.length > 0) {
       const targetId = pendingScannedCourt.current.id.toString();
-      const exists = courts.some(c => c.id.toString() === targetId);
+      const courtObj = courts.find(c => c.id.toString() === targetId);
 
-      if (exists) {
+      if (courtObj) {
         console.log('🎯 Auto-selecting pending court:', targetId);
         setSelectedCourt(targetId);
-        // We clear it to avoid re-selecting if user changes manually and we reload.
+        setAiAnalyticsRequested(courtObj.has_ai === true);
         pendingScannedCourt.current = null;
       }
     }
@@ -339,6 +343,9 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted, in
         return;
       }
 
+      const isAiEligible = courts.find(c => c.id.toString() === selectedCourt)?.has_ai === true;
+      const effectiveAiRequested = isAiEligible && aiAnalyticsRequested;
+
       // QR code is valid, start recording
       const response = await recordingService.startAdvancedRecording({
         club_id: parseInt(selectedClub),
@@ -347,6 +354,7 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted, in
         qr_code: qrCode,
         title: title || undefined,
         description: description || undefined,
+        ai_analytics_requested: effectiveAiRequested,
         match_config: needsScore ? {
           team_a: teamA.trim(),
           team_b: teamB.trim(),
@@ -387,7 +395,12 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted, in
     <motion.button
       whileHover={{ scale: 1.01 }}
       whileTap={{ scale: 0.99 }}
-      onClick={() => court.available && setSelectedCourt(court.id.toString())}
+      onClick={() => {
+        if (court.available) {
+          setSelectedCourt(court.id.toString());
+          setAiAnalyticsRequested(court.has_ai === true);
+        }
+      }}
       disabled={!court.available}
       className={`w-full p-3 rounded-xl border flex flex-col transition-all text-left ${selectedCourt === court.id.toString()
         ? "border-primary bg-primary/10"
@@ -402,6 +415,12 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted, in
           <p className="text-xs text-muted-foreground">Terrain #{court.number || court.id}</p>
         </div>
         <div className="flex items-center gap-1">
+          {court.has_ai && (
+            <Badge variant="outline" className="border-purple-500/40 text-purple-400 text-[10px] gap-1 px-1.5 py-0">
+              <Sparkles className="w-2.5 h-2.5" />
+              IA
+            </Badge>
+          )}
           {court.available ? (
             <Badge variant="secondary" className="flex items-center gap-1">
               <CheckCircle className="h-3 w-3 text-green-600" />
@@ -646,6 +665,26 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted, in
                     Les règles (avantage, point d'or, tie-break...) sont appliquées par le scoreboard du terrain.
                   </p>
                 </div>
+              </div>
+            )}
+
+            {/* Toggle Analyse IA */}
+            {courts.find(c => c.id.toString() === selectedCourt)?.has_ai && (
+              <div className="flex items-center justify-between p-3 rounded-xl border border-purple-500/30 bg-purple-500/5">
+                <div className="space-y-0.5">
+                  <Label htmlFor="start-ai-toggle" className="text-sm font-medium flex items-center gap-1.5 cursor-pointer text-purple-400">
+                    <Sparkles className="w-4 h-4 text-purple-400" />
+                    Analyse de match par IA
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    Génération des temps forts et statistiques de match par GPU EC2
+                  </p>
+                </div>
+                <Switch
+                  id="start-ai-toggle"
+                  checked={aiAnalyticsRequested}
+                  onCheckedChange={setAiAnalyticsRequested}
+                />
               </div>
             )}
 

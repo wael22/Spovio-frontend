@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { adminService } from '@/lib/api';
+import { adminService, aiAnalysisService } from '@/lib/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Video, Loader2, Trash2, User, Building, MoreVertical, HardDrive, Cloud, AlertTriangle, ArrowUpDown, ArrowUp, ArrowDown, RefreshCw, Edit, Plus, Archive } from 'lucide-react';
+import { Video, Loader2, Trash2, User, Building, MoreVertical, HardDrive, Cloud, AlertTriangle, ArrowUpDown, ArrowUp, ArrowDown, RefreshCw, Edit, Plus, Archive, Cpu, Sparkles, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface VideoData {
@@ -26,6 +26,8 @@ interface VideoData {
     file_url?: string;
     cloud_deleted_at?: string;
     has_local_file?: boolean;
+    ai_status?: string;
+    ai_analytics_requested?: boolean;
 }
 
 interface VideoManagementProps {
@@ -45,6 +47,24 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ onStatsUpdate }) => {
     const [selectedVideo, setSelectedVideo] = useState<VideoData | null>(null);
     const [bunnyVideoId, setBunnyVideoId] = useState('');
     const [bunnyUrl, setBunnyUrl] = useState('');
+    const [analyzingVideoId, setAnalyzingVideoId] = useState<string | null>(null);
+
+    const handleTriggerAI = async (videoId: string) => {
+        setAnalyzingVideoId(videoId);
+        try {
+            const resp = await aiAnalysisService.analyzeVideo(videoId);
+            if (resp.data.success) {
+                toast.success(resp.data.message || "Analyse IA lancée avec succès !");
+                loadVideos();
+            } else {
+                toast.error(resp.data.message || "Échec du lancement de l'analyse IA");
+            }
+        } catch (err: any) {
+            toast.error(err.response?.data?.error || "Erreur lors du lancement de l'analyse IA");
+        } finally {
+            setAnalyzingVideoId(null);
+        }
+    };
 
     // Modal state - Create Manual Video
     const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -419,7 +439,29 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ onStatsUpdate }) => {
                                         <TableCell>{formatDate(video.recorded_at)}</TableCell>
                                         <TableCell>{formatDuration(video.duration)}</TableCell>
                                         <TableCell>
-                                            {getStatusBadge(video)}
+                                            <div className="flex flex-col gap-1 items-start">
+                                                {getStatusBadge(video)}
+                                                {video.ai_status === 'completed' && (
+                                                    <Badge className="bg-purple-500/15 text-purple-400 border-purple-500/30 text-[10px] gap-1 px-1.5 py-0">
+                                                        <Sparkles className="w-2.5 h-2.5" /> IA Prête
+                                                    </Badge>
+                                                )}
+                                                {video.ai_status === 'processing' && (
+                                                    <Badge className="bg-amber-500/15 text-amber-400 border-amber-500/30 text-[10px] gap-1 px-1.5 py-0 animate-pulse">
+                                                        <Loader2 className="w-2.5 h-2.5 animate-spin" /> IA En cours
+                                                    </Badge>
+                                                )}
+                                                {video.ai_status === 'pending' && (
+                                                    <Badge className="bg-blue-500/15 text-blue-400 border-blue-500/30 text-[10px] gap-1 px-1.5 py-0">
+                                                        <Clock className="w-2.5 h-2.5" /> IA En attente
+                                                    </Badge>
+                                                )}
+                                                {video.ai_status === 'failed' && (
+                                                    <Badge className="bg-red-500/15 text-red-400 border-red-500/30 text-[10px] gap-1 px-1.5 py-0">
+                                                        IA Échouée
+                                                    </Badge>
+                                                )}
+                                            </div>
                                         </TableCell>
                                         <TableCell>
                                             <DropdownMenu>
@@ -429,6 +471,27 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ onStatsUpdate }) => {
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end" className="w-64">
+                                                    {/* AI Analysis trigger */}
+                                                    <DropdownMenuItem
+                                                        onClick={() => handleTriggerAI(video.id)}
+                                                        disabled={analyzingVideoId === video.id || video.ai_status === 'processing'}
+                                                        className="cursor-pointer text-purple-600 dark:text-purple-400 font-medium"
+                                                    >
+                                                        {analyzingVideoId === video.id ? (
+                                                            <Loader2 className="mr-2 h-4 w-4 animate-spin text-purple-600" />
+                                                        ) : (
+                                                            <Cpu className="mr-2 h-4 w-4 text-purple-600" />
+                                                        )}
+                                                        <div className="flex-1">
+                                                            <div>⚡ Lancer l'Analyse IA</div>
+                                                            <div className="text-xs text-muted-foreground">
+                                                                {video.ai_status === 'completed' ? 'Relancer le calcul des stats' : 'Démarrer worker GPU EC2'}
+                                                            </div>
+                                                        </div>
+                                                    </DropdownMenuItem>
+
+                                                    <DropdownMenuSeparator />
+
                                                     {/* Edit URL - Available for all videos */}
                                                     <DropdownMenuItem
                                                         onClick={() => openManualUrlDialog(video)}

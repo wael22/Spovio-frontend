@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useTutorialContext } from "@/contexts/TutorialContext";
-import { videoService, recordingService, getAssetUrl, getVideoThumbnailUrl } from "@/lib/api";
+import { videoService, recordingService, getAssetUrl, getVideoThumbnailUrl, aiAnalysisService } from "@/lib/api";
 import { getMatchKey, getCleanVideoTitle } from "@/lib/videoUtils";
 import { DashboardNavbar } from "@/components/dashboard/DashboardNavbar";
 import { StatCardModern } from "@/components/dashboard/StatCardModern";
@@ -404,6 +404,21 @@ const Dashboard = () => {
     setIsClipEditorOpen(true);
   };
 
+  const handleTriggerAIVideo = async (videoId: string) => {
+    try {
+      toast.loading("Lancement de l'analyse IA...", { id: `ai-${videoId}` });
+      const resp = await aiAnalysisService.analyzeVideo(videoId);
+      if (resp.data.success) {
+        toast.success(resp.data.message || "Analyse IA programmée sur le GPU EC2 !", { id: `ai-${videoId}` });
+        loadVideos();
+      } else {
+        toast.error(resp.data.message || "Échec", { id: `ai-${videoId}` });
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || "Erreur lors du lancement de l'analyse IA", { id: `ai-${videoId}` });
+    }
+  };
+
   // Calculate stats
   const ownedVideos = videos.filter(v => !v.is_shared);  // Mes vidéos possédées
   const sharedVideos = videos.filter(v => v.is_shared);   // Vidéos reçues/partagées avec moi
@@ -585,6 +600,8 @@ const Dashboard = () => {
                     onDelete={() => handleDeleteVideo(video)}
                     onDownload={(targetVid) => handleDownloadVideo(targetVid || video)}
                     onCreateClip={(targetVid) => handleCreateClip(targetVid || video)}
+                    aiStatus={video.ai_status}
+                    onTriggerAI={handleTriggerAIVideo}
                   />
                 </motion.div>
               );

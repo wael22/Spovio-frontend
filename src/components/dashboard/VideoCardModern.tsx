@@ -13,7 +13,9 @@ import {
   Lock,
   AlertTriangle,
   Loader2,
-  Video
+  Video,
+  Cpu,
+  Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -45,6 +47,8 @@ interface VideoCardModernProps {
   onCreateClip?: (video?: any) => void;
   onEdit?: () => void;
   onDownload?: (video?: any) => void;
+  aiStatus?: string;
+  onTriggerAI?: (id: string) => void;
 }
 
 export function VideoCardModern({
@@ -65,6 +69,8 @@ export function VideoCardModern({
   onCreateClip,
   onEdit,
   onDownload,
+  aiStatus,
+  onTriggerAI,
 }: VideoCardModernProps) {
   const { t, i18n } = useTranslation();
   const [isHovered, setIsHovered] = useState(false);
@@ -133,6 +139,14 @@ export function VideoCardModern({
               <Play className="h-6 w-6 fill-current" />
             </Button>
           </motion.div>
+        )}
+
+        {/* AI Completed Badge */}
+        {aiStatus === 'completed' && !isExpired && (
+          <div className="absolute top-3 left-3 z-10 flex items-center gap-1 px-2 py-0.5 rounded-full bg-purple-600/80 backdrop-blur-sm text-[11px] font-medium text-white shadow-sm">
+            <Sparkles className="h-3 w-3" />
+            IA Prête
+          </div>
         )}
 
         {/* Duration Badge */}
@@ -218,6 +232,17 @@ export function VideoCardModern({
               <DropdownMenuItem onClick={() => onCreateClip?.()} disabled={isExpired}>
                 <Scissors className="h-4 w-4 mr-2" />
                 {isExpired ? t('components.videoCard.menu.createClipUnavailable') : t('components.videoCard.menu.createClip')}
+              </DropdownMenuItem>
+            )}
+
+            {onTriggerAI && !isExpired && (
+              <DropdownMenuItem
+                onClick={() => onTriggerAI(id)}
+                disabled={aiStatus === 'processing'}
+                className="text-purple-600 dark:text-purple-400 font-medium cursor-pointer"
+              >
+                <Cpu className="h-4 w-4 mr-2 text-purple-600 dark:text-purple-400" />
+                {aiStatus === 'completed' ? "Relancer l'Analyse IA" : "Lancer l'Analyse IA"}
               </DropdownMenuItem>
             )}
 
