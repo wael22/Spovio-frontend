@@ -950,7 +950,7 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                                 id="edit-has-scoreboard"
                                 type="checkbox"
                                 checked={courtFormData.has_scoreboard}
-                                onChange={(e) => setCourtFormData(prev => ({ ...prev, has_scoreboard: e.target.checked }))}
+                                onChange={(e) => setCourtFormData(prev => ({ ...prev, has_scoreboard: e.target.checked, scoreboard_active: e.target.checked ? prev.scoreboard_active : false }))}
                                 className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 dark:text-blue-400 focus:ring-blue-500"
                             />
                             <label htmlFor="edit-has-scoreboard" className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer flex items-center gap-1">
