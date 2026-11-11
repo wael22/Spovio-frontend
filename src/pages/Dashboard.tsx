@@ -692,6 +692,15 @@ const Dashboard = () => {
         }}
         video={selectedVideo}
         allVideos={videos}
+        onClipCreated={async () => {
+          try {
+            const { clipService } = await import('@/lib/api');
+            const response = await clipService.getMyClips();
+            setClipsCount(response.data.clips?.length || 0);
+          } catch (error) {
+            console.error('Failed to refresh clips count:', error);
+          }
+        }}
       />
 
       <EditVideoTitleModal

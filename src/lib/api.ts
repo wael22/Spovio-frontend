@@ -198,9 +198,58 @@ export const authService = {
     resetPassword: (token: string, newPassword: string) => api.post('/auth/reset-password', { token, new_password: newPassword }),
 };
 
+export interface ServeSegment {
+    num: number;
+    label: string;
+    team: 'near' | 'far' | string;
+    source?: string;
+    serve_time: string;
+    hit_time?: string;
+    end_time: string;
+    start_sec: number;
+    hit_sec?: number | null;
+    end_sec: number;
+    duration_s: number;
+    ended_by: string;
+    exchange?: boolean;
+    ball_frames?: number | null;
+    ready_frame?: number | null;
+    start_frame?: number | null;
+    end_frame?: number | null;
+}
+
+export interface VideoSegmentsSummary {
+    total_rallies: number;
+    near_serves: number;
+    far_serves: number;
+    avg_rally_duration_sec: number;
+    longest_rally_sec: number;
+    shortest_rally_sec: number;
+    total_active_play_sec: number;
+    breaks_count: number;
+}
+
+export interface VideoSegmentsResponse {
+    success: boolean;
+    video_id: number;
+    has_segments: boolean;
+    analysis_id?: number | null;
+    status?: string;
+    serves: ServeSegment[];
+    summary?: VideoSegmentsSummary | null;
+    video_meta?: {
+        resolution?: string;
+        fps?: number;
+        duration_seconds?: number;
+        total_frames?: number;
+        [key: string]: any;
+    } | null;
+}
+
 // Video Service
 export const videoService = {
     getMyVideos: () => api.get(`/videos/my-videos?_t=${Date.now()}`),
+    getVideoSegments: (videoId: string | number) => api.get<VideoSegmentsResponse>(`/videos/${videoId}/segments`),
     startRecording: (data: any) => api.post('/videos/record', data),
     stopRecording: (data: any) => api.post('/videos/stop-recording', data),
     unlockVideo: (videoId: string) => api.post(`/videos/${videoId}/unlock`),

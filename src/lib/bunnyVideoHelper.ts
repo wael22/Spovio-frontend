@@ -68,6 +68,35 @@ export function getBunnyPlaylistUrl(bunnyVideoId: string): string {
 }
 
 /**
+ * Resolves the optimal streaming URL for video playback.
+ * Prefers Bunny HLS (.m3u8) when bunny_video_id is known so long match videos seek instantaneously.
+ */
+export function getPreferredPlaybackUrl(video: {
+    file_url?: string | null;
+    bunny_video_id?: string | null;
+} | null | undefined): string {
+    if (!video) return '';
+    const rawUrl = video.file_url || '';
+
+    if (rawUrl.includes('.m3u8')) {
+        return rawUrl;
+    }
+
+    if (video.bunny_video_id && (!rawUrl || rawUrl.includes('.b-cdn.net'))) {
+        return getBunnyPlaylistUrl(video.bunny_video_id);
+    }
+
+    if (rawUrl) {
+        const match = rawUrl.match(/https?:\/\/[^/]+\/([0-9a-f-]{36})\/play(?:_\d+p)?\.mp4/i);
+        if (match) {
+            return getBunnyPlaylistUrl(match[1]);
+        }
+    }
+
+    return rawUrl;
+}
+
+/**
  * Retourne toutes les résolutions disponibles pour une vidéo
  */
 export async function getAvailableResolutions(bunnyVideoId: string): Promise<string[]> {

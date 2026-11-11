@@ -198,7 +198,38 @@
       "download": "Télécharger",
       "downloadAngle": "Télécharger Angle {{angle}}",
       "angle": "Angle {{angle}}",
-      "unsupported": "Votre navigateur ne supporte pas la lecture vidéo."
+      "unsupported": "Votre navigateur ne supporte pas la lecture vidéo.",
+      "servesPanel": "Services ({{count}})",
+      "servesTitle": "Services & Échanges",
+      "searchPlaceholder": "Chercher #service ou temps (ex: 14, 12:10)",
+      "filterAll": "Tous",
+      "filterNear": "Proche",
+      "filterFar": "Loin",
+      "filterLong": "Longs ≥30s",
+      "filterBreaks": "Pauses",
+      "teamNear": "Proche",
+      "teamFar": "Loin",
+      "skipDeadTime": "Échanges seuls",
+      "skipDeadTimeTooltip": "Sauter automatiquement les temps morts et changements de côté",
+      "autoFollow": "Suivre",
+      "clipMargin": "Marge clip",
+      "quickClip": "Clip rapide",
+      "editClip": "Ajuster",
+      "creatingClip": "Envoi...",
+      "clipQueued": "Clip envoyé ✓",
+      "clipStartedToast": "Clip \"{{title}}\" lancé ! Retrouvez-le dans Mes Clips.",
+      "clipErrorToast": "Impossible de lancer la création du clip.",
+      "prevServe": "Service préc.",
+      "nextServe": "Service suiv.",
+      "breakLabel": "Changement de côté / Pause",
+      "jumpTo": "Aller à",
+      "activeTime": "Jeu actif",
+      "avgDuration": "Moy.",
+      "noMatchingServes": "Aucun service ne correspond à ce filtre",
+      "endOfRallies": "Fin des échanges",
+      "playbackSpeed": "Vitesse de lecture",
+      "fullscreen": "Plein écran",
+      "exitFullscreen": "Quitter le plein écran"
     }
   },
   "pages": {
@@ -610,7 +641,7 @@
       "errors": {
         "titleRequired": "Veuillez entrer un titre",
         "minDuration": "Le clip doit durer au moins 1 seconde",
-        "maxDuration": "Le clip ne peut pas durer plus de 60 secondes",
+        "maxDuration": "Le clip ne peut pas durer plus de 180 secondes (3 min)",
         "noVideo": "Aucune vidéo sélectionnée"
       }
     }

@@ -50,7 +50,7 @@ const MyClips = () => {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isPlayerModalOpen, setIsPlayerModalOpen] = useState(false);
   const [selectedClip, setSelectedClip] = useState<{ id: number; title: string; file_url?: string; bunny_video_id?: string } | null>(null);
-  const [selectedVideo, setSelectedVideo] = useState<{ id: string; title: string; file_url?: string } | null>(null);
+  const [selectedVideo, setSelectedVideo] = useState<{ id: string; title: string; file_url?: string; bunny_video_id?: string } | null>(null);
   const [clips, setClips] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -147,7 +147,8 @@ const MyClips = () => {
     setSelectedVideo({
       id: clip.id,
       title: clip.title,
-      file_url: clip.file_url
+      file_url: clip.file_url,
+      bunny_video_id: clip.bunny_video_id,
     });
     setIsPlayerModalOpen(true);
   };
@@ -351,6 +352,7 @@ const MyClips = () => {
         isOpen={isPlayerModalOpen}
         onClose={() => setIsPlayerModalOpen(false)}
         video={selectedVideo}
+        isClip
       />
     </>
   );

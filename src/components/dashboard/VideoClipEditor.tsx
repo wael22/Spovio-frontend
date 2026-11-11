@@ -21,6 +21,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { Scissors, Play, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { clipService } from '@/lib/api';
+import { getPreferredPlaybackUrl } from '@/lib/bunnyVideoHelper';
 import { toast } from 'sonner';
 import { useTranslation } from "react-i18next";
 
@@ -32,13 +33,28 @@ interface VideoClipEditorProps {
         title?: string;
         file_url?: string;
         bunny_video_id?: string;
+        camera_index?: number;
+        duration?: number;
     } | null;
     onClipCreated?: (clip: any) => void;
+    initialStartTime?: number;
+    initialEndTime?: number;
+    initialTitle?: string;
+    initialDescription?: string;
 }
 
 type ProcessingStep = 'upload' | '';
 
-export function VideoClipEditor({ isOpen, onClose, video, onClipCreated }: VideoClipEditorProps) {
+export function VideoClipEditor({
+    isOpen,
+    onClose,
+    video,
+    onClipCreated,
+    initialStartTime,
+    initialEndTime,
+    initialTitle,
+    initialDescription,
+}: VideoClipEditorProps) {
     const { t } = useTranslation();
     // UI States
     const [loading, setLoading] = useState(false);
@@ -54,12 +70,34 @@ export function VideoClipEditor({ isOpen, onClose, video, onClipCreated }: Video
     const [isPreviewing, setIsPreviewing] = useState(false);
 
     // Selection states
-    const [startTime, setStartTime] = useState(0);
-    const [endTime, setEndTime] = useState(30);
+    const hasInitialRange =
+        typeof initialStartTime === 'number' &&
+        typeof initialEndTime === 'number' &&
+        initialEndTime > initialStartTime;
+
+    const [startTime, setStartTime] = useState(initialStartTime ?? 0);
+    const [endTime, setEndTime] = useState(initialEndTime ?? 30);
 
     // Clip metadata
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
+    const [title, setTitle] = useState(initialTitle ?? '');
+    const [description, setDescription] = useState(initialDescription ?? '');
+
+    // Sync initial values whenever editor opens with a new preset segment
+    useEffect(() => {
+        if (!isOpen) return;
+        setError('');
+        setSuccess(false);
+        setProcessingStep('');
+        const s = typeof initialStartTime === 'number' ? Math.max(0, initialStartTime) : 0;
+        const e =
+            typeof initialEndTime === 'number' && initialEndTime > s
+                ? initialEndTime
+                : Math.min(s + 30, video?.duration || s + 30);
+        setStartTime(Number(s.toFixed(1)));
+        setEndTime(Number(e.toFixed(1)));
+        setTitle(initialTitle ?? '');
+        setDescription(initialDescription ?? '');
+    }, [isOpen, initialStartTime, initialEndTime, initialTitle, initialDescription, video?.id, video?.duration]);
 
     const videoRef = useRef<HTMLVideoElement>(null);
     const hlsRef = useRef<Hls | null>(null);
@@ -84,7 +122,7 @@ export function VideoClipEditor({ isOpen, onClose, video, onClipCreated }: Video
             return;
         }
 
-        const videoUrl = video.file_url || '';
+        const videoUrl = getPreferredPlaybackUrl(video) || video.file_url || '';
         if (!videoUrl) return;
 
         if (hlsRef.current) {
@@ -99,21 +137,33 @@ export function VideoClipEditor({ isOpen, onClose, video, onClipCreated }: Video
             videoElement.src = videoUrl;
             videoElement.load();
         } else if (isHLS && Hls.isSupported()) {
-            const hls = new Hls({ enableWorker: true });
+            const hls = new Hls({ enableWorker: true, startPosition: initialStartTime ?? -1 });
             hls.loadSource(videoUrl);
             hls.attachMedia(videoElement);
             hlsRef.current = hls;
 
             hls.on(Hls.Events.MANIFEST_PARSED, () => {
                 console.log('[ClipEditor] HLS Ready');
+                if (typeof initialStartTime === 'number' && initialStartTime > 0) {
+                    videoElement.currentTime = initialStartTime;
+                }
             });
 
             hls.on(Hls.Events.ERROR, (event, data) => {
                 if (data.fatal) {
                     console.error('[ClipEditor] HLS error:', data);
+                    if (video.file_url && video.file_url !== videoUrl && data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+                        hls.destroy();
+                        videoElement.src = video.file_url;
+                        videoElement.load();
+                        return;
+                    }
                     setError('Erreur de lecture vidéo');
                 }
             });
+        } else if (isHLS && videoElement.canPlayType('application/vnd.apple.mpegurl')) {
+            videoElement.src = videoUrl;
+            videoElement.load();
         }
 
         return () => {
@@ -127,9 +177,17 @@ export function VideoClipEditor({ isOpen, onClose, video, onClipCreated }: Video
     // Update duration when video loads
     const handleVideoLoaded = () => {
         if (videoRef.current) {
-            const videoDuration = videoRef.current.duration;
+            const videoDuration = videoRef.current.duration || video?.duration || 0;
             setDuration(videoDuration);
-            setEndTime(Math.min(30, videoDuration));
+            if (hasInitialRange && typeof initialStartTime === 'number' && typeof initialEndTime === 'number') {
+                const clampedStart = Math.max(0, Math.min(initialStartTime, Math.max(0, videoDuration - 1)));
+                const clampedEnd = Math.min(videoDuration, Math.max(clampedStart + 1, initialEndTime));
+                setStartTime(Number(clampedStart.toFixed(1)));
+                setEndTime(Number(clampedEnd.toFixed(1)));
+                videoRef.current.currentTime = clampedStart;
+            } else {
+                setEndTime(Math.min(30, videoDuration));
+            }
         }
     };
 
@@ -212,7 +270,7 @@ export function VideoClipEditor({ isOpen, onClose, video, onClipCreated }: Video
             return;
         }
 
-        if (endTime - startTime > 60) {
+        if (endTime - startTime > 180) {
             setError(t('components.clipEditor.errors.maxDuration'));
             return;
         }
@@ -375,44 +433,84 @@ export function VideoClipEditor({ isOpen, onClose, video, onClipCreated }: Video
                         </div>
 
                         <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                                <Label className="text-sm">{t('components.clipEditor.startTime') || "Début"}</Label>
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={goToStart}
-                                    className="h-6 px-2 text-xs"
-                                >
-                                    {t('components.clipEditor.goToStart')}
-                                </Button>
+                            <div className="flex items-center justify-between gap-2">
+                                <Label className="text-sm">{t('components.clipEditor.startTime') || "Début"} ({formatTime(startTime)})</Label>
+                                <div className="flex items-center gap-1">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setStartTime(prev => Number(Math.max(0, prev - 1).toFixed(1)))}
+                                        className="h-6 px-2 text-xs"
+                                    >
+                                        -1s
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setStartTime(prev => Number(Math.min(endTime - 1, prev + 1).toFixed(1)))}
+                                        className="h-6 px-2 text-xs"
+                                    >
+                                        +1s
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={goToStart}
+                                        className="h-6 px-2 text-xs"
+                                    >
+                                        {t('components.clipEditor.goToStart')}
+                                    </Button>
+                                </div>
                             </div>
                             <Slider
                                 value={[startTime]}
                                 onValueChange={(value) => setStartTime(Math.min(value[0], endTime - 1))}
-                                max={duration}
+                                max={duration || Math.max(endTime, 60)}
                                 step={0.1}
                                 className="w-full"
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                                <Label className="text-sm">{t('components.clipEditor.endTime') || "Fin"}</Label>
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={goToEnd}
-                                    className="h-6 px-2 text-xs"
-                                >
-                                    {t('components.clipEditor.goToEnd')}
-                                </Button>
+                            <div className="flex items-center justify-between gap-2">
+                                <Label className="text-sm">{t('components.clipEditor.endTime') || "Fin"} ({formatTime(endTime)})</Label>
+                                <div className="flex items-center gap-1">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setEndTime(prev => Number(Math.max(startTime + 1, prev - 1).toFixed(1)))}
+                                        className="h-6 px-2 text-xs"
+                                    >
+                                        -1s
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setEndTime(prev => Number(Math.min(duration || prev + 10, prev + 1).toFixed(1)))}
+                                        className="h-6 px-2 text-xs"
+                                    >
+                                        +1s
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={goToEnd}
+                                        className="h-6 px-2 text-xs"
+                                    >
+                                        {t('components.clipEditor.goToEnd')}
+                                    </Button>
+                                </div>
                             </div>
                             <Slider
                                 value={[endTime]}
                                 onValueChange={(value) => setEndTime(Math.max(value[0], startTime + 1))}
-                                max={duration}
+                                max={duration || Math.max(endTime, 60)}
                                 step={0.1}
                                 className="w-full"
                             />

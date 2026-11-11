@@ -198,7 +198,38 @@
       "download": "Download",
       "downloadAngle": "Download Angle {{angle}}",
       "angle": "Angle {{angle}}",
-      "unsupported": "Your browser does not support video playback."
+      "unsupported": "Your browser does not support video playback.",
+      "servesPanel": "Serves ({{count}})",
+      "servesTitle": "Serves & Rallies",
+      "searchPlaceholder": "Search #serve or time (e.g. 14, 12:10)",
+      "filterAll": "All",
+      "filterNear": "Near",
+      "filterFar": "Far",
+      "filterLong": "Long ≥30s",
+      "filterBreaks": "Breaks",
+      "teamNear": "Near",
+      "teamFar": "Far",
+      "skipDeadTime": "Rallies only",
+      "skipDeadTimeTooltip": "Automatically skip dead time and changeovers between rallies",
+      "autoFollow": "Follow",
+      "clipMargin": "Clip margin",
+      "quickClip": "Quick clip",
+      "editClip": "Trim & edit",
+      "creatingClip": "Sending...",
+      "clipQueued": "Clip queued ✓",
+      "clipStartedToast": "Clip \"{{title}}\" started! Check My Clips shortly.",
+      "clipErrorToast": "Failed to start clip creation.",
+      "prevServe": "Previous serve",
+      "nextServe": "Next serve",
+      "breakLabel": "Changeover / Break",
+      "jumpTo": "Jump to",
+      "activeTime": "Active play",
+      "avgDuration": "Avg",
+      "noMatchingServes": "No serves match this filter",
+      "endOfRallies": "End of rallies",
+      "playbackSpeed": "Playback speed",
+      "fullscreen": "Fullscreen",
+      "exitFullscreen": "Exit fullscreen"
     }
   },
   "pages": {
@@ -606,7 +637,7 @@
       "errors": {
         "titleRequired": "Please enter a title",
         "minDuration": "Clip must be at least 1 second",
-        "maxDuration": "Clip cannot exceed 60 seconds",
+        "maxDuration": "Clip cannot exceed 180 seconds (3 min)",
         "noVideo": "No video selected"
       }
     }
