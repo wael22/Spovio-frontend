@@ -133,19 +133,19 @@ export const ServesSidebar = React.memo(function ServesSidebar({
   return (
     <aside className="flex flex-col h-full bg-background dark:bg-slate-950/95 text-foreground border-t lg:border-t-0 lg:border-l border-border min-h-0">
       {/* Sidebar Header & Quick Stats */}
-      <div className="p-3 border-b border-border space-y-2.5 shrink-0 bg-card/60 dark:bg-transparent">
+      <div className="p-2.5 sm:p-3 border-b border-border space-y-2 sm:space-y-2.5 shrink-0 bg-card/60 dark:bg-transparent">
         <div className="flex items-center justify-between gap-2">
           <div className="min-w-0">
-            <h4 className="text-sm font-semibold text-foreground flex items-center gap-1.5">
-              <Activity className="h-4 w-4 text-primary shrink-0" />
+            <h4 className="text-xs sm:text-sm font-semibold text-foreground flex items-center gap-1.5">
+              <Activity className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary shrink-0" />
               <span className="truncate">
                 {t("modals.videoPlayer.servesTitle", "Services & Échanges")}
               </span>
-              <span className="text-xs px-1.5 py-0.5 rounded-full bg-primary/15 text-primary font-bold tabular-nums">
+              <span className="text-[11px] sm:text-xs px-1.5 py-0.5 rounded-full bg-primary/15 text-primary font-bold tabular-nums">
                 {serves.length}
               </span>
             </h4>
-            <div className="flex items-center gap-2.5 text-[11px] text-muted-foreground mt-0.5 tabular-nums">
+            <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5 tabular-nums">
               <span className="flex items-center gap-1">
                 <Clock className="h-3 w-3" />
                 {counts.activeMins}m {t("modals.videoPlayer.activeTime", "jeu actif")}
@@ -157,25 +157,40 @@ export const ServesSidebar = React.memo(function ServesSidebar({
             </div>
           </div>
 
-          <Button
-            type="button"
-            variant={autoFollow ? "secondary" : "ghost"}
-            size="sm"
-            onClick={() => setAutoFollow((v) => !v)}
-            className="h-7 px-2 text-[11px] gap-1 shrink-0"
-            title={
-              autoFollow
-                ? "Auto-scroll actif sur le service en cours"
-                : "Activer l'auto-scroll"
-            }
-          >
-            {autoFollow ? (
-              <Lock className="h-3 w-3 text-primary" />
-            ) : (
-              <Unlock className="h-3 w-3" />
-            )}
-            <span>{t("modals.videoPlayer.autoFollow", "Suivre")}</span>
-          </Button>
+          <div className="flex items-center gap-1.5 shrink-0">
+            {/* Compact Mobile Clip Margin Cycle Pill */}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => onChangeClipPadding((clipPaddingSec + 1) % 3)}
+              title={t("modals.videoPlayer.clipMargin", "Marge clip rapide")}
+              className="sm:hidden h-7 px-2 text-[11px] gap-1 text-foreground tabular-nums"
+            >
+              <Scissors className="h-3 w-3 text-primary" />
+              <span>{clipPaddingSec === 0 ? "Exact" : `±${clipPaddingSec}s`}</span>
+            </Button>
+
+            <Button
+              type="button"
+              variant={autoFollow ? "secondary" : "ghost"}
+              size="sm"
+              onClick={() => setAutoFollow((v) => !v)}
+              className="h-7 px-2 text-[11px] gap-1 shrink-0"
+              title={
+                autoFollow
+                  ? "Auto-scroll actif sur le service en cours"
+                  : "Activer l'auto-scroll"
+              }
+            >
+              {autoFollow ? (
+                <Lock className="h-3 w-3 text-primary" />
+              ) : (
+                <Unlock className="h-3 w-3" />
+              )}
+              <span>{t("modals.videoPlayer.autoFollow", "Suivre")}</span>
+            </Button>
+          </div>
         </div>
 
         {/* Search Input */}
@@ -201,8 +216,11 @@ export const ServesSidebar = React.memo(function ServesSidebar({
           )}
         </div>
 
-        {/* Filter Chips */}
-        <div className="flex items-center gap-1 flex-wrap">
+        {/* Filter Chips — 1 scrollable row on mobile, wrapping cleanly on larger screens */}
+        <div
+          className="flex items-center gap-1 flex-nowrap sm:flex-wrap overflow-x-auto no-scrollbar pb-0.5 sm:pb-0"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        >
           {(
             [
               { id: "all", label: `${t("modals.videoPlayer.filterAll", "Tous")} (${counts.all})` },
@@ -217,7 +235,7 @@ export const ServesSidebar = React.memo(function ServesSidebar({
               type="button"
               onClick={() => setFilter(item.id)}
               className={cn(
-                "flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium transition-colors border",
+                "flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium transition-colors border whitespace-nowrap shrink-0",
                 filter === item.id
                   ? "bg-primary text-primary-foreground border-primary shadow-sm"
                   : "bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground border-transparent"
@@ -229,8 +247,8 @@ export const ServesSidebar = React.memo(function ServesSidebar({
           ))}
         </div>
 
-        {/* Clip Padding Quick Setting */}
-        <div className="flex items-center justify-between gap-2 pt-0.5 text-[11px]">
+        {/* Clip Padding Quick Setting (Desktop / Tablet row) */}
+        <div className="hidden sm:flex items-center justify-between gap-2 pt-0.5 text-[11px]">
           <span className="text-muted-foreground flex items-center gap-1">
             <Scissors className="h-3 w-3 text-primary" />
             {t("modals.videoPlayer.clipMargin", "Marge clip rapide")} :
@@ -373,7 +391,7 @@ export const ServesSidebar = React.memo(function ServesSidebar({
                         clipPaddingSec === 0 ? "Exact" : `±${clipPaddingSec}s`
                       })`}
                       className={cn(
-                        "h-7 px-2 text-[11px] gap-1 text-foreground",
+                        "h-8 sm:h-7 px-2.5 sm:px-2 text-[11px] gap-1 text-foreground",
                         status === "created" &&
                           "text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10"
                       )}

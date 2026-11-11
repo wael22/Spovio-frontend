@@ -323,7 +323,7 @@ export function SegmentedSeekbar({
         onPointerLeave={() => {
           if (!isDragging) setHoverInfo(null);
         }}
-        className="group relative flex items-center h-5 cursor-pointer touch-none"
+        className="group relative flex items-center h-6 sm:h-5 cursor-pointer touch-none"
         role="slider"
         aria-label="Timeline"
         aria-valuemin={0}
@@ -434,17 +434,19 @@ export function SegmentedSeekbar({
         />
       </div>
 
-      {/* Separated Labeled Serve Sections Strip ("Serve 1", "Serve 2", ...) */}
+      {/* Separated Labeled Serve Sections Strip ("Serve 1", "Serve 2", ...) — hidden on <sm where the open feed sits below */}
       {showChapterStrip && serves.length > 0 && (
-        <ChapterStrip
-          serves={serves}
-          activeServeNum={activeServeNum}
-          onSelectServe={onSelectServe}
-          onHoverServe={setStripHoveredServeNum}
-          teamNearLabel={teamNearLabel}
-          teamFarLabel={teamFarLabel}
-          breakLabel={breakLabel}
-        />
+        <div className="hidden sm:block">
+          <ChapterStrip
+            serves={serves}
+            activeServeNum={activeServeNum}
+            onSelectServe={onSelectServe}
+            onHoverServe={setStripHoveredServeNum}
+            teamNearLabel={teamNearLabel}
+            teamFarLabel={teamFarLabel}
+            breakLabel={breakLabel}
+          />
+        </div>
       )}
     </div>
   );

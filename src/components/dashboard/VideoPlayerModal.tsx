@@ -1,4 +1,12 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import Hls from "hls.js";
 import { Button } from "@/components/ui/button";
@@ -22,6 +30,7 @@ import {
   RotateCcw,
   RotateCw,
   Check,
+  MoreHorizontal,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { VideoClipEditor } from "./VideoClipEditor";
@@ -822,159 +831,274 @@ export function VideoPlayerModal({
       <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
         <DialogContent
           className={cn(
-            "flex flex-col gap-0 p-0 overflow-hidden max-h-[92vh] w-[calc(100%-1.5rem)]",
+            "flex flex-col gap-0 p-0 overflow-hidden",
+            hasServes
+              ? "w-screen max-w-none h-[100dvh] max-h-[100dvh] rounded-none sm:w-[calc(100%-2rem)] sm:h-[90vh] sm:max-h-[92vh] sm:rounded-xl lg:h-auto"
+              : "max-h-[92vh] w-[calc(100%-1.5rem)] rounded-xl",
             hasServes && sidebarOpen ? "sm:max-w-6xl xl:max-w-7xl" : "sm:max-w-4xl md:max-w-5xl"
           )}
         >
-          {/* Modal Top Header */}
-          <div className="shrink-0 p-3 sm:p-4 border-b border-border space-y-2.5 bg-card dark:bg-background">
-            <div className="pr-9 flex items-center gap-2 flex-wrap">
-              <h3 className="font-semibold text-base sm:text-lg text-foreground leading-snug break-words">
-                {displayTitle}
-              </h3>
-              {hasServes && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold tabular-nums">
-                  {t("modals.videoPlayer.servesPanel", {
-                    count: serves.length,
-                    defaultValue: `${serves.length} services`,
-                  })}
-                </span>
-              )}
-              {segmentsLoading && !hasServes && (
-                <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
-              )}
-            </div>
+          {/* Modal Top Header — Slim 1-line Mobile Bar (<sm) | Full Actions Toolbar (sm+) */}
+          <div className="shrink-0 px-3 py-2.5 pr-11 sm:p-4 sm:pr-12 border-b border-border bg-card dark:bg-background">
+            {/* Compact Mobile Top Bar (<sm) */}
+            <div className="flex sm:hidden items-center justify-between gap-2 min-h-[28px]">
+              <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                <h3 className="font-semibold text-sm text-foreground truncate">
+                  {displayTitle}
+                </h3>
+                {segmentsLoading && !hasServes && (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground shrink-0" />
+                )}
+              </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pt-0.5">
-              {isMultiAngle ? (
-                <div className="flex items-center gap-1.5 bg-muted/80 dark:bg-muted/40 p-1 rounded-lg w-fit max-w-full overflow-x-auto shrink-0">
-                  {companionVideos.map((cVid) => {
-                    const isSelected = cVid.id === currentVideo.id;
-                    const angleNum = cVid.camera_index || 1;
-                    return (
-                      <Button
-                        key={cVid.id}
-                        variant={isSelected ? "default" : "ghost"}
-                        size="sm"
-                        onClick={() => handleSwitchAngle(cVid)}
-                        className={cn(
-                          "h-7 sm:h-8 text-xs sm:text-sm px-2.5 sm:px-3 font-medium gap-1.5 shrink-0",
-                          isSelected && "shadow-sm font-semibold"
-                        )}
-                      >
-                        <VideoIcon className="h-3.5 w-3.5" />
-                        <span>
-                          {t("modals.videoPlayer.angle", {
-                            angle: angleNum,
-                            defaultValue: `Angle ${angleNum}`,
-                          })}
-                        </span>
-                      </Button>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="hidden sm:block" />
-              )}
-
-              {/* Header Action Buttons */}
-              <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
-                {hasServes && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
                   <Button
                     type="button"
-                    variant={sidebarOpen ? "secondary" : "outline"}
-                    size="sm"
-                    onClick={() => {
-                      userToggledSidebarRef.current = true;
-                      setSidebarOpen((v) => !v);
-                    }}
-                    className="gap-1.5 h-8 sm:h-9 text-xs sm:text-sm px-2.5 sm:px-3"
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 shrink-0 text-foreground"
+                    aria-label="Options"
                   >
-                    {sidebarOpen ? (
-                      <PanelRightClose className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary shrink-0" />
-                    ) : (
-                      <PanelRightOpen className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
-                    )}
-                    <span className="tabular-nums">
-                      {t("modals.videoPlayer.servesPanel", {
-                        count: serves.length,
-                        defaultValue: `Services (${serves.length})`,
-                      })}
-                    </span>
+                    <MoreHorizontal className="h-4 w-4" />
                   </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 z-[60]">
+                  {!isClip && (
+                    <DropdownMenuItem onClick={handleOpenFreeClipEditor} className="gap-2">
+                      <Scissors className="h-4 w-4 text-primary" />
+                      <span>
+                        {activeServe
+                          ? `${t("modals.videoPlayer.createClip", { defaultValue: "Créer un clip" })} (S${activeServe.num})`
+                          : t("modals.videoPlayer.createClip", { defaultValue: "Créer un clip" })}
+                      </span>
+                    </DropdownMenuItem>
+                  )}
+
+                  <DropdownMenuItem
+                    onClick={handleDownloadCurrent}
+                    disabled={
+                      currentVideo.is_expired ||
+                      (currentVideo.processing_status && currentVideo.processing_status !== "ready")
+                    }
+                    className="gap-2"
+                  >
+                    <Download className="h-4 w-4" />
+                    <span>
+                      {isMultiAngle
+                        ? t("modals.videoPlayer.downloadAngle", {
+                            angle: currentVideo.camera_index || 1,
+                            defaultValue: `Télécharger Angle ${currentVideo.camera_index || 1}`,
+                          })
+                        : t("modals.videoPlayer.download", { defaultValue: "Télécharger" })}
+                    </span>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem onClick={toggleMute} className="gap-2">
+                    {isMuted || volume === 0 ? (
+                      <VolumeX className="h-4 w-4 text-rose-500" />
+                    ) : (
+                      <Volume2 className="h-4 w-4" />
+                    )}
+                    <span>{isMuted || volume === 0 ? "Activer le son" : "Couper le son"}</span>
+                  </DropdownMenuItem>
+
+                  {isMultiAngle && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuLabel className="text-xs text-muted-foreground">
+                        Angles caméra
+                      </DropdownMenuLabel>
+                      {companionVideos.map((cVid) => {
+                        const isSelected = cVid.id === currentVideo.id;
+                        const angleNum = cVid.camera_index || 1;
+                        return (
+                          <DropdownMenuItem
+                            key={cVid.id}
+                            onClick={() => handleSwitchAngle(cVid)}
+                            className="gap-2 justify-between"
+                          >
+                            <span className="flex items-center gap-2">
+                              <VideoIcon className="h-4 w-4" />
+                              {t("modals.videoPlayer.angle", {
+                                angle: angleNum,
+                                defaultValue: `Angle ${angleNum}`,
+                              })}
+                            </span>
+                            {isSelected && <Check className="h-4 w-4 text-primary" />}
+                          </DropdownMenuItem>
+                        );
+                      })}
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
+            {/* Tablet / Desktop Full Header (sm+) */}
+            <div className="hidden sm:block space-y-2.5">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="font-semibold text-base sm:text-lg text-foreground leading-snug break-words">
+                  {displayTitle}
+                </h3>
+                {hasServes && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold tabular-nums">
+                    {t("modals.videoPlayer.servesPanel", {
+                      count: serves.length,
+                      defaultValue: `${serves.length} services`,
+                    })}
+                  </span>
+                )}
+                {segmentsLoading && !hasServes && (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+                )}
+              </div>
+
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pt-0.5">
+                {isMultiAngle ? (
+                  <div className="flex items-center gap-1.5 bg-muted/80 dark:bg-muted/40 p-1 rounded-lg w-fit max-w-full overflow-x-auto shrink-0">
+                    {companionVideos.map((cVid) => {
+                      const isSelected = cVid.id === currentVideo.id;
+                      const angleNum = cVid.camera_index || 1;
+                      return (
+                        <Button
+                          key={cVid.id}
+                          variant={isSelected ? "default" : "ghost"}
+                          size="sm"
+                          onClick={() => handleSwitchAngle(cVid)}
+                          className={cn(
+                            "h-8 text-sm px-3 font-medium gap-1.5 shrink-0",
+                            isSelected && "shadow-sm font-semibold"
+                          )}
+                        >
+                          <VideoIcon className="h-3.5 w-3.5" />
+                          <span>
+                            {t("modals.videoPlayer.angle", {
+                              angle: angleNum,
+                              defaultValue: `Angle ${angleNum}`,
+                            })}
+                          </span>
+                        </Button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="hidden sm:block" />
                 )}
 
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleDownloadCurrent}
-                  className="flex-1 sm:flex-none justify-center gap-1.5 h-8 sm:h-9 text-xs sm:text-sm px-2.5 sm:px-3 min-w-0"
-                  disabled={
-                    currentVideo.is_expired ||
-                    (currentVideo.processing_status && currentVideo.processing_status !== "ready")
-                  }
-                >
-                  <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
-                  <span className="truncate">
-                    {isMultiAngle
-                      ? t("modals.videoPlayer.downloadAngle", {
-                          angle: currentVideo.camera_index || 1,
-                          defaultValue: `Télécharger Angle ${currentVideo.camera_index || 1}`,
-                        })
-                      : t("modals.videoPlayer.download", { defaultValue: "Télécharger" })}
-                  </span>
-                </Button>
+                {/* Header Action Buttons */}
+                <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
+                  {hasServes && (
+                    <Button
+                      type="button"
+                      variant={sidebarOpen ? "secondary" : "outline"}
+                      size="sm"
+                      onClick={() => {
+                        userToggledSidebarRef.current = true;
+                        setSidebarOpen((v) => !v);
+                      }}
+                      className="hidden lg:inline-flex gap-1.5 h-9 text-sm px-3"
+                    >
+                      {sidebarOpen ? (
+                        <PanelRightClose className="h-4 w-4 text-primary shrink-0" />
+                      ) : (
+                        <PanelRightOpen className="h-4 w-4 shrink-0" />
+                      )}
+                      <span className="tabular-nums">
+                        {t("modals.videoPlayer.servesPanel", {
+                          count: serves.length,
+                          defaultValue: `Services (${serves.length})`,
+                        })}
+                      </span>
+                    </Button>
+                  )}
 
-                {!isClip && (
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={handleOpenFreeClipEditor}
-                    className="flex-1 sm:flex-none justify-center gap-1.5 h-8 sm:h-9 text-xs sm:text-sm px-2.5 sm:px-3 min-w-0"
+                    onClick={handleDownloadCurrent}
+                    className="gap-1.5 h-9 text-sm px-3 min-w-0"
+                    disabled={
+                      currentVideo.is_expired ||
+                      (currentVideo.processing_status && currentVideo.processing_status !== "ready")
+                    }
                   >
-                    <Scissors className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                    <Download className="h-4 w-4 shrink-0" />
                     <span className="truncate">
-                      {activeServe
-                        ? `${t("modals.videoPlayer.createClip", { defaultValue: "Créer un clip" })} (S${activeServe.num})`
-                        : isMultiAngle
-                          ? t("modals.videoPlayer.createClipAngle", {
-                              angle: currentVideo.camera_index || 1,
-                              defaultValue: `Créer clip (Angle ${currentVideo.camera_index || 1})`,
-                            })
-                          : t("modals.videoPlayer.createClip", { defaultValue: "Créer un clip" })}
+                      {isMultiAngle
+                        ? t("modals.videoPlayer.downloadAngle", {
+                            angle: currentVideo.camera_index || 1,
+                            defaultValue: `Télécharger Angle ${currentVideo.camera_index || 1}`,
+                          })
+                        : t("modals.videoPlayer.download", { defaultValue: "Télécharger" })}
                     </span>
                   </Button>
-                )}
+
+                  {!isClip && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleOpenFreeClipEditor}
+                      className="gap-1.5 h-9 text-sm px-3 min-w-0"
+                    >
+                      <Scissors className="h-4 w-4 shrink-0" />
+                      <span className="truncate">
+                        {activeServe
+                          ? `${t("modals.videoPlayer.createClip", { defaultValue: "Créer un clip" })} (S${activeServe.num})`
+                          : isMultiAngle
+                            ? t("modals.videoPlayer.createClipAngle", {
+                                angle: currentVideo.camera_index || 1,
+                                defaultValue: `Créer clip (Angle ${currentVideo.camera_index || 1})`,
+                              })
+                            : t("modals.videoPlayer.createClip", { defaultValue: "Créer un clip" })}
+                      </span>
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Player Studio Workspace (Video + Custom Segmented Dock | Collapsible Serves Sidebar) */}
+          {/* Player Studio Workspace (Sticky Video + Dock on Mobile/Tablet | Split Pane on Desktop) */}
           <div
             ref={playerContainerRef}
             className={cn(
               "flex-1 min-h-0 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden bg-background text-foreground dark:bg-black",
-              isFullscreen && "w-screen h-screen"
+              isFullscreen && "w-screen h-screen overflow-hidden"
             )}
           >
             {/* Video Stage + Custom Control Dock */}
-            <div className="flex-1 min-w-0 flex flex-col bg-background dark:bg-black relative min-h-0">
+            <div
+              className={cn(
+                "flex flex-col bg-background dark:bg-black relative",
+                isFullscreen || !hasServes
+                  ? "flex-1 min-w-0 min-h-0"
+                  : "shrink-0 lg:shrink lg:flex-1 lg:min-w-0 lg:min-h-0"
+              )}
+            >
               {/* Video Viewport */}
               <div
                 onClick={togglePlay}
                 onDoubleClick={toggleFullscreen}
                 className={cn(
-                  "relative flex-1 min-h-0 flex items-center justify-center bg-black cursor-pointer select-none overflow-hidden",
-                  !isFullscreen && "aspect-video lg:aspect-auto lg:min-h-[340px]"
+                  "relative flex items-center justify-center bg-black cursor-pointer select-none overflow-hidden",
+                  isFullscreen
+                    ? "flex-1 min-h-0"
+                    : hasServes
+                      ? "aspect-video max-h-[34dvh] sm:max-h-[42vh] lg:flex-1 lg:aspect-auto lg:min-h-[340px] lg:max-h-none"
+                      : "flex-1 min-h-0 aspect-video lg:aspect-auto lg:min-h-[340px]"
                 )}
               >
                 <video
                   ref={videoCallbackRef}
                   className={cn(
                     "w-full h-full object-contain",
-                    !isFullscreen && "max-h-[55vh] lg:max-h-[60vh]"
+                    !isFullscreen &&
+                      (hasServes
+                        ? "max-h-[34dvh] sm:max-h-[42vh] lg:max-h-[60vh]"
+                        : "max-h-[55vh] lg:max-h-[60vh]")
                   )}
                   playsInline
                   preload="metadata"
@@ -1004,7 +1128,7 @@ export function VideoPlayerModal({
                 {activeServe && (
                   <div
                     onClick={(e) => e.stopPropagation()}
-                    className="absolute top-3 left-3 z-20 flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/90 text-slate-900 border border-black/10 dark:bg-black/75 dark:text-white dark:border-white/15 backdrop-blur-md text-xs shadow-lg pointer-events-none"
+                    className="absolute top-2.5 left-2.5 sm:top-3 sm:left-3 z-20 flex items-center gap-1.5 sm:gap-2 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full bg-white/90 text-slate-900 border border-black/10 dark:bg-black/75 dark:text-white dark:border-white/15 backdrop-blur-md text-[11px] sm:text-xs shadow-lg pointer-events-none"
                   >
                     <span
                       className={cn(
@@ -1026,7 +1150,7 @@ export function VideoPlayerModal({
 
                 {/* Skip Dead Time Ephemeral Jump Pill */}
                 {skipNotice && (
-                  <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 px-3 py-1 rounded-full bg-amber-500/95 text-slate-950 font-semibold text-xs shadow-lg backdrop-blur-md pointer-events-none animate-in fade-in zoom-in-95 duration-150">
+                  <div className="absolute top-2.5 sm:top-3 left-1/2 -translate-x-1/2 z-20 px-2.5 sm:px-3 py-1 rounded-full bg-amber-500/95 text-slate-950 font-semibold text-[11px] sm:text-xs shadow-lg backdrop-blur-md pointer-events-none animate-in fade-in zoom-in-95 duration-150">
                     {skipNotice}
                   </div>
                 )}
@@ -1034,15 +1158,15 @@ export function VideoPlayerModal({
                 {/* Buffering Spinner */}
                 {isBuffering && (
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none bg-black/20">
-                    <Loader2 className="h-10 w-10 text-white animate-spin drop-shadow-lg" />
+                    <Loader2 className="h-9 w-9 sm:h-10 sm:w-10 text-white animate-spin drop-shadow-lg" />
                   </div>
                 )}
 
                 {/* Center Play Overlay When Paused */}
                 {!isPlaying && !isBuffering && (
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white/90 text-slate-900 border border-black/10 dark:bg-black/60 dark:text-white dark:border-white/25 backdrop-blur-md flex items-center justify-center shadow-2xl transition-transform hover:scale-105">
-                      <Play className="h-6 w-6 sm:h-7 sm:w-7 fill-current ml-0.5" />
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-white/90 text-slate-900 border border-black/10 dark:bg-black/60 dark:text-white dark:border-white/25 backdrop-blur-md flex items-center justify-center shadow-2xl transition-transform hover:scale-105">
+                      <Play className="h-5 w-5 sm:h-7 sm:w-7 fill-current ml-0.5" />
                     </div>
                   </div>
                 )}
@@ -1051,7 +1175,7 @@ export function VideoPlayerModal({
               {/* Bottom Custom Seekbar & Pro Control Dock */}
               <div
                 onClick={(e) => e.stopPropagation()}
-                className="shrink-0 px-3 sm:px-4 pt-2.5 pb-3 space-y-2 border-t transition-colors bg-card dark:bg-slate-950/95 border-border dark:border-white/10 text-foreground dark:text-white"
+                className="shrink-0 px-2.5 sm:px-4 pt-2 pb-2 sm:pt-2.5 sm:pb-3 space-y-1.5 sm:space-y-2 border-t transition-colors bg-card dark:bg-slate-950/95 border-border dark:border-white/10 text-foreground dark:text-white"
               >
                 {/* Segmented Seekbar + Separated "Serve 1", "Serve 2" Chapter Strip */}
                 <SegmentedSeekbar
@@ -1068,14 +1192,14 @@ export function VideoPlayerModal({
                   showChapterStrip={hasServes}
                 />
 
-                {/* Transport & Serve Navigation Toolbar */}
-                <div className="flex flex-wrap items-center justify-between gap-2 pt-0.5">
+                {/* Transport & Serve Navigation Toolbar — Single crisp row on Mobile, full controls on sm+ */}
+                <div className="flex items-center justify-between gap-1 sm:gap-2 flex-nowrap sm:flex-wrap pt-0.5">
                   {/* Left: Play, +/-5s, Volume, Time */}
-                  <div className="flex items-center gap-1 sm:gap-1.5">
+                  <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
                     <button
                       type="button"
                       onClick={togglePlay}
-                      className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm transition-all active:scale-95"
+                      className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm transition-all active:scale-95 shrink-0"
                       aria-label={isPlaying ? "Pause" : "Play"}
                     >
                       {isPlaying ? (
@@ -1105,7 +1229,12 @@ export function VideoPlayerModal({
                       <span>5</span>
                     </button>
 
-                    <div className="flex items-center gap-1.5 pl-0.5">
+                    <div
+                      className={cn(
+                        "items-center gap-1.5 pl-0.5",
+                        isFullscreen ? "flex" : "hidden sm:flex"
+                      )}
+                    >
                       <button
                         type="button"
                         onClick={toggleMute}
@@ -1134,12 +1263,14 @@ export function VideoPlayerModal({
                       />
                     </div>
 
-                    <div className="pl-1.5 text-xs font-mono tabular-nums">
+                    <div className="pl-1 sm:pl-1.5 text-[11px] sm:text-xs font-mono tabular-nums whitespace-nowrap">
                       <span className="font-semibold text-foreground dark:text-white/90">
                         {formatMatchTime(currentTime)}
                       </span>
-                      <span className="text-muted-foreground/50 dark:text-white/40 mx-1">/</span>
-                      <span className="text-muted-foreground dark:text-white/60">
+                      <span className="hidden sm:inline text-muted-foreground/50 dark:text-white/40 mx-1">
+                        /
+                      </span>
+                      <span className="hidden sm:inline text-muted-foreground dark:text-white/60">
                         {formatMatchTime(duration)}
                       </span>
                     </div>
@@ -1147,20 +1278,21 @@ export function VideoPlayerModal({
 
                   {/* Center: Prev/Next Serve Pill + Rallies-Only + Active Serve Quick Clip */}
                   {hasServes && (
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <div className="flex items-center bg-muted/70 border border-border dark:bg-white/[0.08] dark:border-white/10 rounded-lg p-0.5">
+                    <div className="flex items-center gap-1 sm:gap-1.5 min-w-0">
+                      <div className="flex items-center bg-muted/70 border border-border dark:bg-white/[0.08] dark:border-white/10 rounded-lg p-0.5 shrink-0">
                         <button
                           type="button"
                           onClick={jumpPrevServe}
                           title={`${t("modals.videoPlayer.prevServe", "Service préc.")} (↑)`}
-                          className="flex items-center justify-center h-7 w-7 rounded-md hover:bg-background text-muted-foreground hover:text-foreground dark:hover:bg-white/15 dark:text-white/85 dark:hover:text-white transition-colors"
+                          className="flex items-center justify-center h-7 w-6 sm:w-7 rounded-md hover:bg-background text-muted-foreground hover:text-foreground dark:hover:bg-white/15 dark:text-white/85 dark:hover:text-white transition-colors"
                         >
                           <ChevronLeft className="h-4 w-4" />
                         </button>
 
                         {activeServe ? (
-                          <span className="px-2 text-xs font-semibold tabular-nums text-foreground dark:text-white whitespace-nowrap">
-                            {`Serve ${activeServe.num}`}
+                          <span className="px-1.5 sm:px-2 text-[11px] sm:text-xs font-semibold tabular-nums text-foreground dark:text-white whitespace-nowrap">
+                            <span className="sm:hidden">{`S${activeServe.num}`}</span>
+                            <span className="hidden sm:inline">{`Serve ${activeServe.num}`}</span>
                             <span className="text-muted-foreground dark:text-white/45 font-normal">
                               {` / ${serves.length}`}
                             </span>
@@ -1169,12 +1301,13 @@ export function VideoPlayerModal({
                           <button
                             type="button"
                             onClick={() => handleSelectServe(upcomingServe)}
-                            className="px-2 text-xs font-semibold tabular-nums text-amber-600 hover:text-amber-700 dark:text-amber-300 dark:hover:text-amber-200 whitespace-nowrap"
+                            className="px-1.5 sm:px-2 text-[11px] sm:text-xs font-semibold tabular-nums text-amber-600 hover:text-amber-700 dark:text-amber-300 dark:hover:text-amber-200 whitespace-nowrap"
                           >
-                            {`→ Serve ${upcomingServe.num}`}
+                            <span className="sm:hidden">{`→ S${upcomingServe.num}`}</span>
+                            <span className="hidden sm:inline">{`→ Serve ${upcomingServe.num}`}</span>
                           </button>
                         ) : (
-                          <span className="px-2 text-xs text-muted-foreground dark:text-white/60 tabular-nums">
+                          <span className="px-1.5 sm:px-2 text-[11px] sm:text-xs text-muted-foreground dark:text-white/60 tabular-nums whitespace-nowrap">
                             {`-- / ${serves.length}`}
                           </span>
                         )}
@@ -1184,7 +1317,7 @@ export function VideoPlayerModal({
                           onClick={jumpNextServe}
                           disabled={!upcomingServe}
                           title={`${t("modals.videoPlayer.nextServe", "Service suiv.")} (↓)`}
-                          className="flex items-center justify-center h-7 w-7 rounded-md hover:bg-background disabled:opacity-35 text-muted-foreground hover:text-foreground dark:hover:bg-white/15 dark:text-white/85 dark:hover:text-white transition-colors"
+                          className="flex items-center justify-center h-7 w-6 sm:w-7 rounded-md hover:bg-background disabled:opacity-35 text-muted-foreground hover:text-foreground dark:hover:bg-white/15 dark:text-white/85 dark:hover:text-white transition-colors"
                         >
                           <ChevronRight className="h-4 w-4" />
                         </button>
@@ -1199,7 +1332,7 @@ export function VideoPlayerModal({
                           "Sauter automatiquement les temps morts et changements de côté"
                         )}
                         className={cn(
-                          "flex items-center gap-1 h-8 px-2.5 rounded-lg text-xs font-medium border transition-all",
+                          "flex items-center justify-center gap-1 h-8 px-2 sm:px-2.5 rounded-lg text-xs font-medium border transition-all shrink-0",
                           skipDeadTime
                             ? "bg-amber-50 border-amber-300 text-amber-800 shadow-sm dark:bg-amber-500/25 dark:border-amber-400/70 dark:text-amber-200 dark:shadow-[0_0_10px_rgba(251,191,36,0.2)]"
                             : "bg-muted/60 hover:bg-muted border-border text-foreground/80 hover:text-foreground dark:bg-white/[0.06] dark:hover:bg-white/15 dark:border-white/10 dark:text-white/80 dark:hover:text-white"
@@ -1218,7 +1351,7 @@ export function VideoPlayerModal({
 
                       {/* Direct Quick Clip from Active Serve */}
                       {activeServe && !isClip && (
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1 shrink-0">
                           <button
                             type="button"
                             onClick={() => handleQuickClipServe(activeServe)}
@@ -1227,7 +1360,7 @@ export function VideoPlayerModal({
                               clipPaddingSec === 0 ? "Exact" : `±${clipPaddingSec}s`
                             })`}
                             className={cn(
-                              "flex items-center gap-1 h-8 px-2.5 rounded-lg text-xs font-semibold border transition-colors",
+                              "flex items-center justify-center gap-1 h-8 px-2 sm:px-2.5 rounded-lg text-xs font-semibold border transition-colors",
                               activeClipStatus === "created"
                                 ? "bg-emerald-50 border-emerald-300 text-emerald-700 dark:bg-emerald-500/20 dark:border-emerald-400/60 dark:text-emerald-300"
                                 : "bg-sky-50 hover:bg-sky-100 border-sky-300 text-sky-700 dark:bg-sky-500/20 dark:hover:bg-sky-500/35 dark:border-sky-400/60 dark:text-sky-200"
@@ -1240,14 +1373,14 @@ export function VideoPlayerModal({
                             ) : (
                               <Scissors className="h-3.5 w-3.5" />
                             )}
-                            <span>{`Clip S${activeServe.num}`}</span>
+                            <span className="hidden sm:inline">{`Clip S${activeServe.num}`}</span>
                           </button>
 
                           <button
                             type="button"
                             onClick={() => handleEditClipServe(activeServe)}
                             title={t("modals.videoPlayer.editClip", "Ajuster")}
-                            className="flex items-center justify-center h-8 w-8 rounded-lg bg-muted/60 hover:bg-muted border border-border text-muted-foreground hover:text-foreground dark:bg-white/[0.06] dark:hover:bg-white/15 dark:border-white/10 dark:text-white/80 dark:hover:text-white transition-colors"
+                            className="hidden sm:flex items-center justify-center h-8 w-8 rounded-lg bg-muted/60 hover:bg-muted border border-border text-muted-foreground hover:text-foreground dark:bg-white/[0.06] dark:hover:bg-white/15 dark:border-white/10 dark:text-white/80 dark:hover:text-white transition-colors"
                           >
                             <SlidersHorizontal className="h-3.5 w-3.5" />
                           </button>
@@ -1257,7 +1390,7 @@ export function VideoPlayerModal({
                   )}
 
                   {/* Right: Speed, Sidebar toggle (when fullscreen), Fullscreen */}
-                  <div className="flex items-center gap-1.5 relative">
+                  <div className="flex items-center gap-1 sm:gap-1.5 relative shrink-0">
                     <div ref={speedMenuRef} className="relative">
                       <button
                         type="button"
@@ -1331,17 +1464,20 @@ export function VideoPlayerModal({
               </div>
             </div>
 
-            {/* Collapsible AI Serves Sidebar */}
-            {hasServes && sidebarOpen && (
+            {/* Collapsible AI Serves Sidebar (Always open below player on <lg mobile/tablet, toggleable right column on Desktop lg+) */}
+            {hasServes && (sidebarOpen || !isFullscreen) && (
               <div
                 className={cn(
-                  "shrink-0 min-h-0 lg:relative",
+                  "min-h-0 flex flex-col",
                   isFullscreen
-                    ? "w-full lg:w-[370px] h-[38vh] lg:h-full"
-                    : "w-full lg:w-[360px] xl:w-[390px] h-[38vh] min-h-[260px] lg:h-auto"
+                    ? "shrink-0 w-full lg:w-[370px] h-[38vh] lg:h-full lg:relative"
+                    : cn(
+                        "flex-1 min-h-[220px] lg:min-h-0 lg:flex-none lg:w-[360px] xl:w-[390px] lg:h-auto lg:relative",
+                        !sidebarOpen && "lg:hidden"
+                      )
                 )}
               >
-                <div className="h-full lg:absolute lg:inset-0">
+                <div className="flex-1 min-h-0 h-full lg:absolute lg:inset-0">
                   <ServesSidebar
                     serves={serves}
                     summary={segmentsSummary}
