@@ -131,9 +131,9 @@ export const ServesSidebar = React.memo(function ServesSidebar({
   const teamFarLabel = t("modals.videoPlayer.teamFar", "Loin");
 
   return (
-    <aside className="flex flex-col h-full bg-background/95 dark:bg-slate-950/90 border-t lg:border-t-0 lg:border-l border-border/60 min-h-0">
+    <aside className="flex flex-col h-full bg-background dark:bg-slate-950/95 border-t lg:border-t-0 lg:border-l border-border min-h-0">
       {/* Sidebar Header & Quick Stats */}
-      <div className="p-3 border-b border-border/60 space-y-2.5 shrink-0">
+      <div className="p-3 border-b border-border space-y-2.5 shrink-0 bg-card/60 dark:bg-transparent">
         <div className="flex items-center justify-between gap-2">
           <div className="min-w-0">
             <h4 className="text-sm font-semibold text-foreground flex items-center gap-1.5">
@@ -297,16 +297,16 @@ export const ServesSidebar = React.memo(function ServesSidebar({
                     "group/row relative flex items-center justify-between gap-2 p-2.5 rounded-xl border transition-all cursor-pointer select-none",
                     isActive
                       ? isNear
-                        ? "bg-sky-500/12 border-sky-500/60 shadow-sm ring-1 ring-sky-500/30"
-                        : "bg-emerald-500/12 border-emerald-500/60 shadow-sm ring-1 ring-emerald-500/30"
-                      : "bg-card/50 hover:bg-muted/70 border-border/50 hover:border-border"
+                        ? "bg-sky-50 border-sky-400 shadow-sm ring-1 ring-sky-400/30 dark:bg-sky-500/15 dark:border-sky-500/60 dark:ring-sky-500/30"
+                        : "bg-emerald-50 border-emerald-400 shadow-sm ring-1 ring-emerald-400/30 dark:bg-emerald-500/15 dark:border-emerald-500/60 dark:ring-emerald-500/30"
+                      : "bg-card hover:bg-muted/60 border-border/70 hover:border-border shadow-[0_1px_2px_rgba(0,0,0,0.03)] dark:bg-card/50 dark:hover:bg-muted/70 dark:border-border/50 dark:shadow-none"
                   )}
                 >
                   {/* Left color accent strip */}
                   <div
                     className={cn(
                       "w-1 self-stretch rounded-full shrink-0",
-                      isNear ? "bg-sky-400" : "bg-emerald-400"
+                      isNear ? "bg-sky-500 dark:bg-sky-400" : "bg-emerald-500 dark:bg-emerald-400"
                     )}
                   />
 
@@ -319,10 +319,10 @@ export const ServesSidebar = React.memo(function ServesSidebar({
 
                       <span
                         className={cn(
-                          "text-[10px] font-medium px-1.5 py-0.2 rounded-full",
+                          "text-[10px] font-medium px-1.5 py-0.5 rounded-full",
                           isNear
-                            ? "bg-sky-500/15 text-sky-600 dark:text-sky-300"
-                            : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-300"
+                            ? "bg-sky-500/15 text-sky-700 dark:text-sky-300"
+                            : "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
                         )}
                       >
                         {isNear ? teamNearLabel : teamFarLabel}
@@ -331,7 +331,7 @@ export const ServesSidebar = React.memo(function ServesSidebar({
                       {isLong && (
                         <span
                           title="Échange long (≥ 30s)"
-                          className="inline-flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.2 rounded-full bg-orange-500/15 text-orange-600 dark:text-orange-300"
+                          className="inline-flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-orange-500/15 text-orange-700 dark:text-orange-300"
                         >
                           <Flame className="h-2.5 w-2.5" />
                           {serve.duration_s}s

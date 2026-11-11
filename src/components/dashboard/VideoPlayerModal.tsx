@@ -75,6 +75,7 @@ export function VideoPlayerModal({
   const autoStopTriggeredRef = useRef(false);
   const skipNoticeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const userToggledSidebarRef = useRef(false);
+  const speedMenuRef = useRef<HTMLDivElement>(null);
 
   const [videoElement, setVideoElement] = useState<HTMLVideoElement | null>(null);
   const [currentVideo, setCurrentVideo] = useState<any>(video);
@@ -176,6 +177,18 @@ export function VideoPlayerModal({
     document.addEventListener("fullscreenchange", onFsChange);
     return () => document.removeEventListener("fullscreenchange", onFsChange);
   }, []);
+
+  // Close speed menu on outside click
+  useEffect(() => {
+    if (!speedMenuOpen) return;
+    const onPointerDown = (e: PointerEvent) => {
+      if (speedMenuRef.current && !speedMenuRef.current.contains(e.target as Node)) {
+        setSpeedMenuOpen(false);
+      }
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [speedMenuOpen]);
 
   // Load AI serve segments cleanly (never for clips to avoid ID collision)
   useEffect(() => {
@@ -814,13 +827,13 @@ export function VideoPlayerModal({
           )}
         >
           {/* Modal Top Header */}
-          <div className="shrink-0 p-3 sm:p-4 border-b space-y-2.5 bg-background">
+          <div className="shrink-0 p-3 sm:p-4 border-b border-border space-y-2.5 bg-card dark:bg-background">
             <div className="pr-9 flex items-center gap-2 flex-wrap">
               <h3 className="font-semibold text-base sm:text-lg text-foreground leading-snug break-words">
                 {displayTitle}
               </h3>
               {hasServes && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/12 text-primary text-xs font-semibold tabular-nums">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold tabular-nums">
                   {t("modals.videoPlayer.servesPanel", {
                     count: serves.length,
                     defaultValue: `${serves.length} services`,
@@ -942,12 +955,12 @@ export function VideoPlayerModal({
           <div
             ref={playerContainerRef}
             className={cn(
-              "flex-1 min-h-0 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden bg-black",
-              isFullscreen && "w-screen h-screen bg-black"
+              "flex-1 min-h-0 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden bg-background dark:bg-black",
+              isFullscreen && "dark w-screen h-screen bg-black"
             )}
           >
             {/* Video Stage + Custom Control Dock */}
-            <div className="flex-1 min-w-0 flex flex-col bg-black relative min-h-0">
+            <div className="flex-1 min-w-0 flex flex-col bg-background dark:bg-black relative min-h-0">
               {/* Video Viewport */}
               <div
                 onClick={togglePlay}
@@ -991,25 +1004,29 @@ export function VideoPlayerModal({
                 {activeServe && (
                   <div
                     onClick={(e) => e.stopPropagation()}
-                    className="absolute top-3 left-3 z-20 flex items-center gap-2 px-2.5 py-1 rounded-full bg-black/70 border border-white/15 backdrop-blur-md text-white text-xs shadow-lg pointer-events-none"
+                    className="absolute top-3 left-3 z-20 flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/90 text-slate-900 border border-black/10 dark:bg-black/75 dark:text-white dark:border-white/15 backdrop-blur-md text-xs shadow-lg pointer-events-none"
                   >
                     <span
                       className={cn(
                         "w-2 h-2 rounded-full",
-                        activeServe.team === "near" ? "bg-sky-400" : "bg-emerald-400"
+                        activeServe.team === "near"
+                          ? "bg-sky-500 dark:bg-sky-400"
+                          : "bg-emerald-500 dark:bg-emerald-400"
                       )}
                     />
                     <span className="font-bold">{`Serve ${activeServe.num}`}</span>
-                    <span className="text-white/70">
+                    <span className="text-slate-600 dark:text-white/70">
                       {activeServe.team === "near" ? teamNearLabel : teamFarLabel}
                     </span>
-                    <span className="text-white/50 tabular-nums">{activeServe.duration_s}s</span>
+                    <span className="text-slate-500 dark:text-white/50 tabular-nums">
+                      {activeServe.duration_s}s
+                    </span>
                   </div>
                 )}
 
                 {/* Skip Dead Time Ephemeral Jump Pill */}
                 {skipNotice && (
-                  <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 px-3 py-1 rounded-full bg-amber-500/90 text-slate-950 font-semibold text-xs shadow-lg backdrop-blur-md pointer-events-none animate-in fade-in zoom-in-95 duration-150">
+                  <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 px-3 py-1 rounded-full bg-amber-500/95 text-slate-950 font-semibold text-xs shadow-lg backdrop-blur-md pointer-events-none animate-in fade-in zoom-in-95 duration-150">
                     {skipNotice}
                   </div>
                 )}
@@ -1024,7 +1041,7 @@ export function VideoPlayerModal({
                 {/* Center Play Overlay When Paused */}
                 {!isPlaying && !isBuffering && (
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-black/60 border border-white/25 backdrop-blur-md flex items-center justify-center text-white shadow-2xl transition-transform hover:scale-105">
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white/90 text-slate-900 border border-black/10 dark:bg-black/60 dark:text-white dark:border-white/25 backdrop-blur-md flex items-center justify-center shadow-2xl transition-transform hover:scale-105">
                       <Play className="h-6 w-6 sm:h-7 sm:w-7 fill-current ml-0.5" />
                     </div>
                   </div>
@@ -1035,9 +1052,10 @@ export function VideoPlayerModal({
               <div
                 onClick={(e) => e.stopPropagation()}
                 className={cn(
-                  "shrink-0 bg-slate-950/95 border-t border-white/10 px-3 sm:px-4 pt-2 pb-2.5 space-y-2 text-white",
-                  isFullscreen &&
-                    "bg-gradient-to-t from-black via-black/90 to-black/75 border-white/10"
+                  "shrink-0 px-3 sm:px-4 pt-2.5 pb-3 space-y-2 border-t transition-colors",
+                  isFullscreen
+                    ? "bg-gradient-to-t from-black/95 via-black/90 to-black/75 border-white/10 text-white backdrop-blur-md"
+                    : "bg-card dark:bg-slate-950/95 border-border dark:border-white/10 text-foreground dark:text-white"
                 )}
               >
                 {/* Segmented Seekbar + Separated "Serve 1", "Serve 2" Chapter Strip */}
@@ -1062,7 +1080,7 @@ export function VideoPlayerModal({
                     <button
                       type="button"
                       onClick={togglePlay}
-                      className="flex items-center justify-center h-8 w-8 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
+                      className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm transition-all active:scale-95"
                       aria-label={isPlaying ? "Pause" : "Play"}
                     >
                       {isPlaying ? (
@@ -1076,7 +1094,7 @@ export function VideoPlayerModal({
                       type="button"
                       onClick={() => handleSeek((videoRef.current?.currentTime || 0) - 5)}
                       title="-5s (J / ←)"
-                      className="hidden sm:flex items-center justify-center h-8 px-1.5 rounded-lg hover:bg-white/10 text-white/80 hover:text-white transition-colors text-[11px] font-medium gap-0.5"
+                      className="hidden sm:flex items-center justify-center h-8 px-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground dark:hover:bg-white/10 dark:text-white/80 dark:hover:text-white transition-colors text-[11px] font-medium gap-0.5"
                     >
                       <RotateCcw className="h-3.5 w-3.5" />
                       <span>5</span>
@@ -1086,7 +1104,7 @@ export function VideoPlayerModal({
                       type="button"
                       onClick={() => handleSeek((videoRef.current?.currentTime || 0) + 5)}
                       title="+5s (L / →)"
-                      className="hidden sm:flex items-center justify-center h-8 px-1.5 rounded-lg hover:bg-white/10 text-white/80 hover:text-white transition-colors text-[11px] font-medium gap-0.5"
+                      className="hidden sm:flex items-center justify-center h-8 px-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground dark:hover:bg-white/10 dark:text-white/80 dark:hover:text-white transition-colors text-[11px] font-medium gap-0.5"
                     >
                       <RotateCw className="h-3.5 w-3.5" />
                       <span>5</span>
@@ -1097,10 +1115,10 @@ export function VideoPlayerModal({
                         type="button"
                         onClick={toggleMute}
                         title="Mute (M)"
-                        className="flex items-center justify-center h-8 w-8 rounded-lg hover:bg-white/10 text-white/85 hover:text-white transition-colors"
+                        className="flex items-center justify-center h-8 w-8 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground dark:hover:bg-white/10 dark:text-white/85 dark:hover:text-white transition-colors"
                       >
                         {isMuted || volume === 0 ? (
-                          <VolumeX className="h-4 w-4 text-rose-400" />
+                          <VolumeX className="h-4 w-4 text-rose-500 dark:text-rose-400" />
                         ) : (
                           <Volume2 className="h-4 w-4" />
                         )}
@@ -1117,45 +1135,51 @@ export function VideoPlayerModal({
                           if (v > 0 && isMuted) setIsMuted(false);
                         }}
                         aria-label="Volume"
-                        className="hidden md:block w-16 accent-sky-400 cursor-pointer h-1"
+                        className="hidden md:block w-16 accent-primary cursor-pointer h-1"
                       />
                     </div>
 
-                    <div className="pl-1.5 text-xs font-mono tabular-nums text-white/85">
-                      <span>{formatMatchTime(currentTime)}</span>
-                      <span className="text-white/40 mx-1">/</span>
-                      <span className="text-white/60">{formatMatchTime(duration)}</span>
+                    <div className="pl-1.5 text-xs font-mono tabular-nums">
+                      <span className="font-semibold text-foreground dark:text-white/90">
+                        {formatMatchTime(currentTime)}
+                      </span>
+                      <span className="text-muted-foreground/50 dark:text-white/40 mx-1">/</span>
+                      <span className="text-muted-foreground dark:text-white/60">
+                        {formatMatchTime(duration)}
+                      </span>
                     </div>
                   </div>
 
                   {/* Center: Prev/Next Serve Pill + Rallies-Only + Active Serve Quick Clip */}
                   {hasServes && (
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <div className="flex items-center bg-white/[0.08] border border-white/10 rounded-lg p-0.5">
+                      <div className="flex items-center bg-muted/70 border border-border dark:bg-white/[0.08] dark:border-white/10 rounded-lg p-0.5">
                         <button
                           type="button"
                           onClick={jumpPrevServe}
                           title={`${t("modals.videoPlayer.prevServe", "Service préc.")} (↑)`}
-                          className="flex items-center justify-center h-7 w-7 rounded-md hover:bg-white/15 text-white/85 hover:text-white transition-colors"
+                          className="flex items-center justify-center h-7 w-7 rounded-md hover:bg-background text-muted-foreground hover:text-foreground dark:hover:bg-white/15 dark:text-white/85 dark:hover:text-white transition-colors"
                         >
                           <ChevronLeft className="h-4 w-4" />
                         </button>
 
                         {activeServe ? (
-                          <span className="px-2 text-xs font-semibold tabular-nums text-white whitespace-nowrap">
+                          <span className="px-2 text-xs font-semibold tabular-nums text-foreground dark:text-white whitespace-nowrap">
                             {`Serve ${activeServe.num}`}
-                            <span className="text-white/45 font-normal">{` / ${serves.length}`}</span>
+                            <span className="text-muted-foreground dark:text-white/45 font-normal">
+                              {` / ${serves.length}`}
+                            </span>
                           </span>
                         ) : upcomingServe ? (
                           <button
                             type="button"
                             onClick={() => handleSelectServe(upcomingServe)}
-                            className="px-2 text-xs font-medium tabular-nums text-amber-300 hover:text-amber-200 whitespace-nowrap"
+                            className="px-2 text-xs font-semibold tabular-nums text-amber-600 hover:text-amber-700 dark:text-amber-300 dark:hover:text-amber-200 whitespace-nowrap"
                           >
                             {`→ Serve ${upcomingServe.num}`}
                           </button>
                         ) : (
-                          <span className="px-2 text-xs text-white/60 tabular-nums">
+                          <span className="px-2 text-xs text-muted-foreground dark:text-white/60 tabular-nums">
                             {`-- / ${serves.length}`}
                           </span>
                         )}
@@ -1165,7 +1189,7 @@ export function VideoPlayerModal({
                           onClick={jumpNextServe}
                           disabled={!upcomingServe}
                           title={`${t("modals.videoPlayer.nextServe", "Service suiv.")} (↓)`}
-                          className="flex items-center justify-center h-7 w-7 rounded-md hover:bg-white/15 disabled:opacity-35 text-white/85 hover:text-white transition-colors"
+                          className="flex items-center justify-center h-7 w-7 rounded-md hover:bg-background disabled:opacity-35 text-muted-foreground hover:text-foreground dark:hover:bg-white/15 dark:text-white/85 dark:hover:text-white transition-colors"
                         >
                           <ChevronRight className="h-4 w-4" />
                         </button>
@@ -1182,11 +1206,16 @@ export function VideoPlayerModal({
                         className={cn(
                           "flex items-center gap-1 h-8 px-2.5 rounded-lg text-xs font-medium border transition-all",
                           skipDeadTime
-                            ? "bg-amber-500/25 border-amber-400/70 text-amber-200 shadow-[0_0_10px_rgba(251,191,36,0.2)]"
-                            : "bg-white/[0.06] hover:bg-white/15 border-white/10 text-white/80 hover:text-white"
+                            ? "bg-amber-50 border-amber-300 text-amber-800 shadow-sm dark:bg-amber-500/25 dark:border-amber-400/70 dark:text-amber-200 dark:shadow-[0_0_10px_rgba(251,191,36,0.2)]"
+                            : "bg-muted/60 hover:bg-muted border-border text-foreground/80 hover:text-foreground dark:bg-white/[0.06] dark:hover:bg-white/15 dark:border-white/10 dark:text-white/80 dark:hover:text-white"
                         )}
                       >
-                        <Zap className={cn("h-3.5 w-3.5", skipDeadTime && "fill-amber-300")} />
+                        <Zap
+                          className={cn(
+                            "h-3.5 w-3.5",
+                            skipDeadTime && "fill-amber-500 text-amber-600 dark:fill-amber-300 dark:text-amber-300"
+                          )}
+                        />
                         <span className="hidden sm:inline">
                           {t("modals.videoPlayer.skipDeadTime", "Échanges seuls")}
                         </span>
@@ -1205,8 +1234,8 @@ export function VideoPlayerModal({
                             className={cn(
                               "flex items-center gap-1 h-8 px-2.5 rounded-lg text-xs font-semibold border transition-colors",
                               activeClipStatus === "created"
-                                ? "bg-emerald-500/20 border-emerald-400/60 text-emerald-300"
-                                : "bg-sky-500/20 hover:bg-sky-500/35 border-sky-400/60 text-sky-200"
+                                ? "bg-emerald-50 border-emerald-300 text-emerald-700 dark:bg-emerald-500/20 dark:border-emerald-400/60 dark:text-emerald-300"
+                                : "bg-sky-50 hover:bg-sky-100 border-sky-300 text-sky-700 dark:bg-sky-500/20 dark:hover:bg-sky-500/35 dark:border-sky-400/60 dark:text-sky-200"
                             )}
                           >
                             {activeClipStatus === "creating" ? (
@@ -1223,7 +1252,7 @@ export function VideoPlayerModal({
                             type="button"
                             onClick={() => handleEditClipServe(activeServe)}
                             title={t("modals.videoPlayer.editClip", "Ajuster")}
-                            className="flex items-center justify-center h-8 w-8 rounded-lg bg-white/[0.06] hover:bg-white/15 border border-white/10 text-white/80 hover:text-white transition-colors"
+                            className="flex items-center justify-center h-8 w-8 rounded-lg bg-muted/60 hover:bg-muted border border-border text-muted-foreground hover:text-foreground dark:bg-white/[0.06] dark:hover:bg-white/15 dark:border-white/10 dark:text-white/80 dark:hover:text-white transition-colors"
                           >
                             <SlidersHorizontal className="h-3.5 w-3.5" />
                           </button>
@@ -1234,18 +1263,18 @@ export function VideoPlayerModal({
 
                   {/* Right: Speed, Sidebar toggle (when fullscreen), Fullscreen */}
                   <div className="flex items-center gap-1.5 relative">
-                    <div className="relative">
+                    <div ref={speedMenuRef} className="relative">
                       <button
                         type="button"
                         onClick={() => setSpeedMenuOpen((v) => !v)}
                         title={t("modals.videoPlayer.playbackSpeed", "Vitesse de lecture")}
-                        className="flex items-center justify-center h-8 px-2 rounded-lg bg-white/[0.08] hover:bg-white/15 text-xs font-semibold tabular-nums text-white/90"
+                        className="flex items-center justify-center h-8 px-2 rounded-lg bg-muted/70 hover:bg-muted border border-border text-xs font-semibold tabular-nums text-foreground dark:bg-white/[0.08] dark:hover:bg-white/15 dark:border-white/10 dark:text-white/90 transition-colors"
                       >
                         {`${playbackRate}x`}
                       </button>
 
                       {speedMenuOpen && (
-                        <div className="absolute bottom-full right-0 mb-1.5 py-1 rounded-lg bg-slate-900 border border-white/15 shadow-xl z-40 min-w-[74px]">
+                        <div className="absolute bottom-full right-0 mb-1.5 py-1 rounded-lg bg-popover text-popover-foreground border border-border dark:bg-slate-900 dark:border-white/15 shadow-xl z-40 min-w-[78px]">
                           {PLAYBACK_RATES.map((rate) => (
                             <button
                               key={rate}
@@ -1257,8 +1286,8 @@ export function VideoPlayerModal({
                               className={cn(
                                 "w-full text-left px-3 py-1.5 text-xs tabular-nums transition-colors flex items-center justify-between",
                                 playbackRate === rate
-                                  ? "bg-sky-500/25 text-sky-300 font-semibold"
-                                  : "text-white/80 hover:bg-white/10"
+                                  ? "bg-primary/10 text-primary dark:bg-sky-500/25 dark:text-sky-300 font-semibold"
+                                  : "text-foreground/80 hover:bg-muted dark:text-white/80 dark:hover:bg-white/10"
                               )}
                             >
                               <span>{`${rate}x`}</span>
@@ -1276,10 +1305,10 @@ export function VideoPlayerModal({
                           userToggledSidebarRef.current = true;
                           setSidebarOpen((v) => !v);
                         }}
-                        className="flex items-center justify-center h-8 px-2 rounded-lg bg-white/[0.08] hover:bg-white/15 text-xs font-medium gap-1 text-white/90"
+                        className="flex items-center justify-center h-8 px-2 rounded-lg bg-muted/70 hover:bg-muted border border-border text-xs font-medium gap-1 text-foreground dark:bg-white/[0.08] dark:hover:bg-white/15 dark:border-white/10 dark:text-white/90"
                       >
                         {sidebarOpen ? (
-                          <PanelRightClose className="h-4 w-4 text-sky-400" />
+                          <PanelRightClose className="h-4 w-4 text-primary dark:text-sky-400" />
                         ) : (
                           <PanelRightOpen className="h-4 w-4" />
                         )}
@@ -1294,7 +1323,7 @@ export function VideoPlayerModal({
                           ? t("modals.videoPlayer.exitFullscreen", "Quitter le plein écran")
                           : `${t("modals.videoPlayer.fullscreen", "Plein écran")} (F)`
                       }
-                      className="flex items-center justify-center h-8 w-8 rounded-lg hover:bg-white/15 text-white/85 hover:text-white transition-colors"
+                      className="flex items-center justify-center h-8 w-8 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground dark:hover:bg-white/15 dark:text-white/85 dark:hover:text-white transition-colors"
                     >
                       {isFullscreen ? (
                         <Minimize className="h-4 w-4" />

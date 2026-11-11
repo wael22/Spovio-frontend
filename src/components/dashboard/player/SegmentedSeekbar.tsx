@@ -61,18 +61,18 @@ const TimelineBlocks = React.memo(function TimelineBlocks({
               width: `${b.widthPct}%`,
             }}
             className={cn(
-              "absolute top-0 bottom-0 transition-opacity duration-150 border-r border-black/60",
+              "absolute top-0 bottom-0 transition-opacity duration-150 border-r border-white/80 dark:border-black/60",
               isActive
                 ? isNear
-                  ? "bg-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.9)] z-10"
-                  : "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)] z-10"
+                  ? "bg-sky-500 dark:bg-sky-400 shadow-[0_0_8px_rgba(14,165,233,0.75)] dark:shadow-[0_0_8px_rgba(56,189,248,0.9)] z-10"
+                  : "bg-emerald-500 dark:bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.75)] dark:shadow-[0_0_8px_rgba(52,211,153,0.9)] z-10"
                 : isHovered
                   ? isNear
-                    ? "bg-sky-300 z-10"
-                    : "bg-emerald-300 z-10"
+                    ? "bg-sky-400 dark:bg-sky-300 z-10"
+                    : "bg-emerald-400 dark:bg-emerald-300 z-10"
                   : isNear
-                    ? "bg-sky-500/80"
-                    : "bg-emerald-500/80"
+                    ? "bg-sky-500/75 dark:bg-sky-500/80"
+                    : "bg-emerald-500/75 dark:bg-emerald-500/80"
             )}
           />
         );
@@ -142,7 +142,7 @@ const ChapterStrip = React.memo(function ChapterStrip({
       <button
         type="button"
         onClick={() => scrollStripBy(-260)}
-        className="hidden sm:flex items-center justify-center h-7 w-6 rounded-md bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-colors shrink-0"
+        className="hidden sm:flex items-center justify-center h-7 w-6 rounded-md bg-muted/80 hover:bg-muted border border-border/80 text-muted-foreground hover:text-foreground dark:bg-white/10 dark:hover:bg-white/20 dark:border-white/10 dark:text-white/80 dark:hover:text-white transition-colors shrink-0"
         aria-label="Scroll serves left"
       >
         <ChevronLeft className="h-3.5 w-3.5" />
@@ -175,19 +175,19 @@ const ChapterStrip = React.memo(function ChapterStrip({
                   "group/chip relative flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium whitespace-nowrap shrink-0 transition-all border cursor-pointer select-none",
                   isActive
                     ? isNear
-                      ? "bg-sky-500/25 border-sky-400 text-white shadow-[0_0_12px_rgba(56,189,248,0.35)]"
-                      : "bg-emerald-500/25 border-emerald-400 text-white shadow-[0_0_12px_rgba(52,211,153,0.35)]"
-                    : "bg-white/[0.06] hover:bg-white/[0.14] border-white/10 hover:border-white/25 text-white/80 hover:text-white"
+                      ? "bg-sky-50 border-sky-400 text-sky-900 shadow-sm ring-1 ring-sky-400/30 dark:bg-sky-500/25 dark:border-sky-400 dark:text-white dark:ring-0 dark:shadow-[0_0_12px_rgba(56,189,248,0.35)]"
+                      : "bg-emerald-50 border-emerald-400 text-emerald-900 shadow-sm ring-1 ring-emerald-400/30 dark:bg-emerald-500/25 dark:border-emerald-400 dark:text-white dark:ring-0 dark:shadow-[0_0_12px_rgba(52,211,153,0.35)]"
+                    : "bg-muted/50 hover:bg-muted border-border/80 hover:border-border text-foreground/85 hover:text-foreground dark:bg-white/[0.06] dark:hover:bg-white/[0.14] dark:border-white/10 dark:hover:border-white/25 dark:text-white/80 dark:hover:text-white"
                 )}
               >
                 <span
                   className={cn(
                     "w-1.5 h-1.5 rounded-full shrink-0",
-                    isNear ? "bg-sky-400" : "bg-emerald-400"
+                    isNear ? "bg-sky-500 dark:bg-sky-400" : "bg-emerald-500 dark:bg-emerald-400"
                   )}
                 />
                 <span className="font-semibold tracking-tight">{`Serve ${serve.num}`}</span>
-                <span className="text-[10px] text-white/55 tabular-nums">
+                <span className="text-[10px] text-muted-foreground dark:text-white/55 tabular-nums">
                   {serve.duration_s}s
                 </span>
               </button>
@@ -195,7 +195,7 @@ const ChapterStrip = React.memo(function ChapterStrip({
               {hasBreakAfter && (
                 <div
                   title={`${breakLabel} (~${formatGapDuration(gapSec)})`}
-                  className="flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-amber-500/15 border border-amber-400/25 text-[10px] text-amber-300 shrink-0 select-none"
+                  className="flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-amber-50 border border-amber-200 text-[10px] text-amber-700 dark:bg-amber-500/15 dark:border-amber-400/25 dark:text-amber-300 shrink-0 select-none"
                 >
                   <PauseCircle className="h-2.5 w-2.5" />
                   <span className="tabular-nums">{formatGapDuration(gapSec)}</span>
@@ -209,7 +209,7 @@ const ChapterStrip = React.memo(function ChapterStrip({
       <button
         type="button"
         onClick={() => scrollStripBy(260)}
-        className="hidden sm:flex items-center justify-center h-7 w-6 rounded-md bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-colors shrink-0"
+        className="hidden sm:flex items-center justify-center h-7 w-6 rounded-md bg-muted/80 hover:bg-muted border border-border/80 text-muted-foreground hover:text-foreground dark:bg-white/10 dark:hover:bg-white/20 dark:border-white/10 dark:text-white/80 dark:hover:text-white transition-colors shrink-0"
         aria-label="Scroll serves right"
       >
         <ChevronRight className="h-3.5 w-3.5" />
@@ -333,7 +333,7 @@ export function SegmentedSeekbar({
         {/* Floating Rich Chapter Tooltip */}
         {hoverInfo && safeDuration > 0 && (
           <div
-            className="absolute bottom-6 -translate-x-1/2 z-30 pointer-events-none px-2.5 py-1.5 rounded-lg bg-slate-950/95 border border-white/15 shadow-xl text-white text-xs whitespace-nowrap backdrop-blur-md"
+            className="absolute bottom-6 -translate-x-1/2 z-30 pointer-events-none px-2.5 py-1.5 rounded-lg bg-popover/95 border border-border shadow-xl text-popover-foreground dark:bg-slate-950/95 dark:border-white/15 dark:text-white text-xs whitespace-nowrap backdrop-blur-md"
             style={{
               left: `${Math.max(8, Math.min(92, hoverInfo.pct))}%`,
             }}
@@ -344,24 +344,28 @@ export function SegmentedSeekbar({
                   <span
                     className={cn(
                       "w-2 h-2 rounded-full",
-                      hoverInfo.serve.team === "near" ? "bg-sky-400" : "bg-emerald-400"
+                      hoverInfo.serve.team === "near"
+                        ? "bg-sky-500 dark:bg-sky-400"
+                        : "bg-emerald-500 dark:bg-emerald-400"
                     )}
                   />
                   <span className="font-bold">{`Serve ${hoverInfo.serve.num}`}</span>
-                  <span className="px-1.5 py-0.2 rounded bg-white/10 text-[10px] text-white/80">
+                  <span className="px-1.5 py-0.5 rounded bg-muted text-[10px] text-muted-foreground dark:bg-white/10 dark:text-white/80">
                     {hoverInfo.serve.team === "near" ? teamNearLabel : teamFarLabel}
                   </span>
-                  <span className="text-sky-300 font-semibold tabular-nums">
+                  <span className="text-sky-600 dark:text-sky-300 font-semibold tabular-nums">
                     {hoverInfo.serve.duration_s}s
                   </span>
                 </div>
-                <div className="text-[10px] text-white/65 tabular-nums flex items-center gap-1.5">
+                <div className="text-[10px] text-muted-foreground dark:text-white/65 tabular-nums flex items-center gap-1.5">
                   <span>
                     {formatMatchTime(hoverInfo.serve.start_sec)} –{" "}
                     {formatMatchTime(hoverInfo.serve.end_sec)}
                   </span>
                   <span>•</span>
-                  <span className="text-white/90">{formatMatchTime(hoverInfo.timeSec)}</span>
+                  <span className="text-foreground dark:text-white/90 font-medium">
+                    {formatMatchTime(hoverInfo.timeSec)}
+                  </span>
                 </div>
               </div>
             ) : (
@@ -370,7 +374,7 @@ export function SegmentedSeekbar({
                   {formatMatchTime(hoverInfo.timeSec)}
                 </span>
                 {serves.length > 0 && hoverInfo.nextServe && (
-                  <span className="text-[10px] text-amber-300/90">
+                  <span className="text-[10px] text-amber-600 dark:text-amber-300/90 font-medium">
                     • {`→ Serve ${hoverInfo.nextServe.num}`}
                   </span>
                 )}
@@ -382,13 +386,13 @@ export function SegmentedSeekbar({
         {/* Rail background */}
         <div
           className={cn(
-            "relative w-full rounded-full bg-white/20 transition-all duration-150 overflow-hidden",
+            "relative w-full rounded-full bg-slate-200 dark:bg-white/20 transition-all duration-150 overflow-hidden",
             isDragging ? "h-3" : "h-2 group-hover:h-3"
           )}
         >
           {/* Buffered progress */}
           <div
-            className="absolute top-0 bottom-0 left-0 bg-white/25 transition-[width] duration-200 pointer-events-none"
+            className="absolute top-0 bottom-0 left-0 bg-slate-300/90 dark:bg-white/25 transition-[width] duration-200 pointer-events-none"
             style={{ width: `${bufferedPct}%` }}
           />
 
@@ -406,7 +410,7 @@ export function SegmentedSeekbar({
           <div
             className={cn(
               "absolute top-0 bottom-0 left-0 pointer-events-none",
-              serves.length > 0 ? "bg-white/35" : "bg-primary"
+              serves.length > 0 ? "bg-slate-900/20 dark:bg-white/35" : "bg-primary"
             )}
             style={{ width: `${progressPct}%` }}
           />
@@ -415,7 +419,7 @@ export function SegmentedSeekbar({
         {/* Hover vertical indicator line */}
         {hoverInfo && (
           <div
-            className="absolute top-1 bottom-1 w-0.5 bg-white/70 pointer-events-none rounded-full"
+            className="absolute top-1 bottom-1 w-0.5 bg-slate-900/60 dark:bg-white/70 pointer-events-none rounded-full"
             style={{ left: `${hoverInfo.pct}%` }}
           />
         )}
@@ -423,7 +427,7 @@ export function SegmentedSeekbar({
         {/* Playhead scrubber knob */}
         <div
           className={cn(
-            "absolute top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-[0_0_8px_rgba(0,0,0,0.8)] border-2 border-primary pointer-events-none transition-transform duration-100",
+            "absolute top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-[0_1px_5px_rgba(0,0,0,0.35)] dark:shadow-[0_0_8px_rgba(0,0,0,0.8)] border-2 border-primary pointer-events-none transition-transform duration-100",
             isDragging ? "w-4 h-4 scale-110" : "w-3 h-3 group-hover:w-3.5 group-hover:h-3.5"
           )}
           style={{ left: `${progressPct}%` }}
