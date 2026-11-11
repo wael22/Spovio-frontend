@@ -955,8 +955,8 @@ export function VideoPlayerModal({
           <div
             ref={playerContainerRef}
             className={cn(
-              "flex-1 min-h-0 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden bg-background dark:bg-black",
-              isFullscreen && "dark w-screen h-screen bg-black"
+              "flex-1 min-h-0 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden bg-background text-foreground dark:bg-black",
+              isFullscreen && "w-screen h-screen"
             )}
           >
             {/* Video Stage + Custom Control Dock */}
@@ -1051,12 +1051,7 @@ export function VideoPlayerModal({
               {/* Bottom Custom Seekbar & Pro Control Dock */}
               <div
                 onClick={(e) => e.stopPropagation()}
-                className={cn(
-                  "shrink-0 px-3 sm:px-4 pt-2.5 pb-3 space-y-2 border-t transition-colors",
-                  isFullscreen
-                    ? "bg-gradient-to-t from-black/95 via-black/90 to-black/75 border-white/10 text-white backdrop-blur-md"
-                    : "bg-card dark:bg-slate-950/95 border-border dark:border-white/10 text-foreground dark:text-white"
-                )}
+                className="shrink-0 px-3 sm:px-4 pt-2.5 pb-3 space-y-2 border-t transition-colors bg-card dark:bg-slate-950/95 border-border dark:border-white/10 text-foreground dark:text-white"
               >
                 {/* Segmented Seekbar + Separated "Serve 1", "Serve 2" Chapter Strip */}
                 <SegmentedSeekbar

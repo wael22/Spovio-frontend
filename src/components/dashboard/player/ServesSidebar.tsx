@@ -131,7 +131,7 @@ export const ServesSidebar = React.memo(function ServesSidebar({
   const teamFarLabel = t("modals.videoPlayer.teamFar", "Loin");
 
   return (
-    <aside className="flex flex-col h-full bg-background dark:bg-slate-950/95 border-t lg:border-t-0 lg:border-l border-border min-h-0">
+    <aside className="flex flex-col h-full bg-background dark:bg-slate-950/95 text-foreground border-t lg:border-t-0 lg:border-l border-border min-h-0">
       {/* Sidebar Header & Quick Stats */}
       <div className="p-3 border-b border-border space-y-2.5 shrink-0 bg-card/60 dark:bg-transparent">
         <div className="flex items-center justify-between gap-2">
@@ -373,7 +373,7 @@ export const ServesSidebar = React.memo(function ServesSidebar({
                         clipPaddingSec === 0 ? "Exact" : `±${clipPaddingSec}s`
                       })`}
                       className={cn(
-                        "h-7 px-2 text-[11px] gap-1",
+                        "h-7 px-2 text-[11px] gap-1 text-foreground",
                         status === "created" &&
                           "text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10"
                       )}
