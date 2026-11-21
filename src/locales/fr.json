@@ -8,7 +8,7 @@
     "signup": "Inscription",
     "dashboard": "Tableau de bord",
     "myVideos": "Mes Vidéos",
-    "myClips": "Mes Highlights",
+    "myClips": "Highlights",
     "clubs": "Clubs",
     "credits": "Crédits",
     "profile": "Profil",
@@ -38,7 +38,7 @@
     }
   },
   "myClips": {
-    "title": "Mes Highlights",
+    "title": "Highlights",
     "subtitle": "Tes meilleurs moments en un clic",
     "searchPlaceholder": "Rechercher un highlight...",
     "createClip": "Créer un highlight",
@@ -221,7 +221,7 @@
       "editClip": "Ajuster le highlight",
       "creatingClip": "Envoi...",
       "clipQueued": "Highlight envoyé ✓",
-      "clipStartedToast": "Highlight \"{{title}}\" lancé ! Retrouvez-le dans Mes Highlights.",
+      "clipStartedToast": "Highlight \"{{title}}\" lancé ! Retrouvez-le dans Highlights.",
       "clipErrorToast": "Impossible de lancer la création du highlight.",
       "prevServe": "Service préc.",
       "nextServe": "Service suiv.",

@@ -606,7 +606,7 @@ export function VideoPlayerModal({
         toast.success(
           t("modals.videoPlayer.clipStartedToast", {
             title: `Serve ${serve.num}`,
-            defaultValue: `Clip "Serve ${serve.num}" lancé ! Retrouvez-le dans Mes Clips.`,
+            defaultValue: `Highlight "Serve ${serve.num}" lancé ! Retrouvez-le dans Highlights.`,
           })
         );
         onClipCreated?.(resp.data?.clip);

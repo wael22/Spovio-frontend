@@ -8,7 +8,7 @@
     "signup": "Sign Up",
     "dashboard": "Dashboard",
     "myVideos": "My Videos",
-    "myClips": "My Highlights",
+    "myClips": "Highlights",
     "clubs": "Clubs",
     "credits": "Credits",
     "profile": "Profile",
@@ -38,7 +38,7 @@
     }
   },
   "myClips": {
-    "title": "My Highlights",
+    "title": "Highlights",
     "subtitle": "Your best moments in one click",
     "searchPlaceholder": "Search for a highlight...",
     "createClip": "Create a Highlight",
@@ -221,7 +221,7 @@
       "editClip": "Trim & edit highlight",
       "creatingClip": "Sending...",
       "clipQueued": "Highlight queued ✓",
-      "clipStartedToast": "Highlight \"{{title}}\" started! Check My Highlights shortly.",
+      "clipStartedToast": "Highlight \"{{title}}\" started! Check Highlights shortly.",
       "clipErrorToast": "Failed to start highlight creation.",
       "prevServe": "Previous serve",
       "nextServe": "Next serve",

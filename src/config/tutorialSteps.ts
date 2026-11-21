@@ -28,7 +28,7 @@ export const tutorialSteps: TutorialStep[] = [
         position: 'top',
     },
 
-    // Étape 2 - Onglet "Mes Clips"
+    // Étape 2 - Onglet "Highlights"
     {
         id: 2,
         message: 'tutorial.steps.step2.message',
