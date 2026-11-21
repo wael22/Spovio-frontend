@@ -815,27 +815,6 @@ export function VideoClipEditor({
                             </div>
                         </div>
                     </div>
-                                <Button
-                                    type="button"
-                                    size="sm"
-                                    onClick={handleTogglePreview}
-                                    className="h-7 px-3 text-xs gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-sm"
-                                >
-                                    {isPreviewing ? (
-                                        <>
-                                            <Pause className="h-3.5 w-3.5 fill-current" />
-                                            {t('components.clipEditor.pausePreview', 'Pause')}
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Play className="h-3.5 w-3.5 fill-current" />
-                                            {t('components.clipEditor.preview', 'Aperçu')}
-                                        </>
-                                    )}
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
 
                     {/* Metadata: Title & Description */}
                     <div className="space-y-4">
