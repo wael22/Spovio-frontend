@@ -5,16 +5,10 @@ import {
   MoreVertical,
   Share2,
   Trash2,
-  Scissors,
   Clock,
   MapPin,
-  Edit,
-  Download,
   Lock,
-  AlertTriangle,
-  Loader2,
   Video,
-  Cpu,
   Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -216,19 +210,6 @@ export function VideoCardModern({
               <Play className="h-4 w-4 mr-2" />
               {isExpired ? t('components.videoCard.menu.playExpired') : t('components.videoCard.menu.play')}
             </DropdownMenuItem>
-
-            {onTriggerAI && !isExpired && (
-              <DropdownMenuItem
-                onClick={() => onTriggerAI(id)}
-                disabled={aiStatus === 'processing'}
-                className="text-purple-600 dark:text-purple-400 font-medium cursor-pointer"
-              >
-                <Cpu className="h-4 w-4 mr-2 text-purple-600 dark:text-purple-400" />
-                {aiStatus === 'completed'
-                  ? t('components.videoCard.menu.rerunAi', "Relancer l'analyse IA")
-                  : t('components.videoCard.menu.runAi', "Lancer l'analyse IA")}
-              </DropdownMenuItem>
-            )}
 
             <DropdownMenuItem onClick={onShare} disabled={isExpired}>
               <Share2 className="h-4 w-4 mr-2" />
