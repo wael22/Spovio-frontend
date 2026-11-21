@@ -255,7 +255,7 @@ const AdminDashboard: React.FC = () => {
                             </span>
                         </TabsTrigger>
                         <TabsTrigger value="shared">Partages</TabsTrigger>
-                        <TabsTrigger value="clips">Clips</TabsTrigger>
+                        <TabsTrigger value="clips">Highlights</TabsTrigger>
                         <TabsTrigger value="configuration">
                             <span className="inline-flex items-center gap-1">
                                 <Settings className="h-4 w-4" />Configuration

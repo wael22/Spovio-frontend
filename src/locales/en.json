@@ -8,7 +8,7 @@
     "signup": "Sign Up",
     "dashboard": "Dashboard",
     "myVideos": "My Videos",
-    "myClips": "My Clips",
+    "myClips": "My Highlights",
     "clubs": "Clubs",
     "credits": "Credits",
     "profile": "Profile",
@@ -32,19 +32,19 @@
     "createFirstVideo": "Create your first video",
     "stats": {
       "videos": "Videos",
-      "clips": "Clips",
+      "clips": "Highlights",
       "credits": "Credits",
       "shared": "Shared"
     }
   },
   "myClips": {
-    "title": "My Clips",
+    "title": "My Highlights",
     "subtitle": "Your best moments in one click",
-    "searchPlaceholder": "Search for a clip...",
-    "createClip": "Create a Clip",
-    "noClips": "No clips found",
-    "noClipsMatch": "No clips match your search",
-    "createFirstClip": "Create your first clip from a Video",
+    "searchPlaceholder": "Search for a highlight...",
+    "createClip": "Create a Highlight",
+    "noClips": "No highlights found",
+    "noClipsMatch": "No highlights match your search",
+    "createFirstClip": "Create your first highlight from a Video",
     "viewVideos": "View my Videos"
   },
   "common": {
@@ -102,7 +102,9 @@
         "qrRequired": "Court QR code is required",
         "qrMismatch": "QR code does not match selected court",
         "credits": "Insufficient credits"
-      }
+      },
+      "aiAnalysisTitle": "AI Match Analysis",
+      "aiAnalysisDescription": "Find every point and serve in one click on the video."
     },
     "directRecording": {
       "titleScan": "Scan QR Code",
@@ -117,7 +119,9 @@
       "manualInstruction": "Or enter the court code or share link:",
       "manualPlaceholder": "Ex: A1B2 or link...",
       "validate": "Validate",
-      "shareClaimSuccess": "Shared video \"{{title}}\" added to your videos!"
+      "shareClaimSuccess": "Shared video \"{{title}}\" added to your videos!",
+      "aiAnalysisTitle": "AI Match Analysis",
+      "aiAnalysisDescription": "Find every point and serve in one click on the video."
     },
     "reportIssue": {
       "title": "Report Video Issue",
@@ -176,7 +180,7 @@
       "codeLabel": "Court Code"
     },
     "shareClip": {
-      "title": "Share Clip",
+      "title": "Share Highlight",
       "description": "Share \"{{title}}\" on your social networks or copy the link.",
       "socialLabel": "Share on social networks",
       "qualityLabel": "Video Quality",
@@ -193,8 +197,8 @@
     },
     "videoPlayer": {
       "title": "Video Player",
-      "createClip": "Create Clip",
-      "createClipAngle": "Create Clip (Angle {{angle}})",
+      "createClip": "Create Highlight",
+      "createClipAngle": "Create Highlight (Angle {{angle}})",
       "download": "Download",
       "downloadAngle": "Download Angle {{angle}}",
       "angle": "Angle {{angle}}",
@@ -212,13 +216,13 @@
       "skipDeadTime": "Rallies only",
       "skipDeadTimeTooltip": "Automatically skip dead time and changeovers between rallies",
       "autoFollow": "Follow",
-      "clipMargin": "Clip margin",
-      "quickClip": "Quick clip",
-      "editClip": "Trim & edit",
+      "clipMargin": "Highlight margin",
+      "quickClip": "Quick highlight",
+      "editClip": "Trim & edit highlight",
       "creatingClip": "Sending...",
-      "clipQueued": "Clip queued ✓",
-      "clipStartedToast": "Clip \"{{title}}\" started! Check My Clips shortly.",
-      "clipErrorToast": "Failed to start clip creation.",
+      "clipQueued": "Highlight queued ✓",
+      "clipStartedToast": "Highlight \"{{title}}\" started! Check My Highlights shortly.",
+      "clipErrorToast": "Failed to start highlight creation.",
       "prevServe": "Previous serve",
       "nextServe": "Next serve",
       "breakLabel": "Changeover / Break",
@@ -590,8 +594,8 @@
       "menu": {
         "play": "Play",
         "playExpired": "Video expired",
-        "createClip": "Create a clip",
-        "createClipUnavailable": "Clip unavailable",
+        "createClip": "Create a highlight",
+        "createClipUnavailable": "Highlight unavailable",
         "editTitle": "Edit title",
         "share": "Share",
         "download": "Download MP4",
@@ -614,7 +618,7 @@
       }
     },
     "clipEditor": {
-      "title": "Create a Clip",
+      "title": "Create a Highlight",
       "subtitle": "Select a segment and create your best moment",
       "videoLabel": "Video",
       "unsupported": "Your browser does not support video playback.",
@@ -629,15 +633,15 @@
       "descriptionLabel": "Description",
       "descriptionPlaceholder": "Optional description...",
       "cancel": "Cancel",
-      "create": "Create Clip",
+      "create": "Create Highlight",
       "processing": "Processing...",
-      "uploading": "Creating clip...",
-      "success": "Clip created successfully!",
-      "error": "Error creating clip",
+      "uploading": "Creating highlight...",
+      "success": "Highlight created successfully!",
+      "error": "Error creating highlight",
       "errors": {
         "titleRequired": "Please enter a title",
-        "minDuration": "Clip must be at least 1 second",
-        "maxDuration": "Clip cannot exceed 180 seconds (3 min)",
+        "minDuration": "Highlight must be at least 1 second",
+        "maxDuration": "Highlight cannot exceed 180 seconds (3 min)",
         "noVideo": "No video selected"
       }
     }
@@ -649,8 +653,8 @@
     "updateError": "Error updating notifications",
     "videoReady": "🎬 Your video is ready!",
     "videoReadyMsg": "The video '{{title}}' has been successfully processed.",
-    "clipReady": "🎬 Your clip is ready!",
-    "clipReadyMsg": "The clip '{{title}}' is ready.",
+    "clipReady": "🎬 Your highlight is ready!",
+    "clipReadyMsg": "The highlight '{{title}}' is ready.",
     "recordingStarted": {
       "title": "⏺️ Recording started",
       "msg": "Recording has started on {{courtName}}."

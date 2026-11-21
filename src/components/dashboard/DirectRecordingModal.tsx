@@ -419,10 +419,10 @@ const DirectRecordingModal = ({ isOpen, onClose, onRecordingStarted, onVideoClai
                                         <div className="space-y-0.5">
                                             <Label htmlFor="direct-ai-toggle" className="text-sm font-medium flex items-center gap-1.5 cursor-pointer text-purple-400">
                                                 <Sparkles className="w-4 h-4 text-purple-400" />
-                                                Analyse de match par IA
+                                                {t('modals.directRecording.aiAnalysisTitle', 'Analyse de match par IA')}
                                             </Label>
                                             <p className="text-xs text-muted-foreground">
-                                                Génération des temps forts et statistiques de match par GPU EC2
+                                                {t('modals.directRecording.aiAnalysisDescription', 'Retrouvez chaque point et service en un clic sur la vidéo.')}
                                             </p>
                                         </div>
                                         <Switch

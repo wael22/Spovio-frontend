@@ -485,7 +485,7 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ onStatsUpdate }) => {
                                                         <div className="flex-1">
                                                             <div>⚡ Lancer l'Analyse IA</div>
                                                             <div className="text-xs text-muted-foreground">
-                                                                {video.ai_status === 'completed' ? 'Relancer le calcul des stats' : 'Démarrer worker GPU EC2'}
+                                                                {video.ai_status === 'completed' ? 'Relancer le calcul des stats' : 'Démarrer le calcul IA'}
                                                             </div>
                                                         </div>
                                                     </DropdownMenuItem>

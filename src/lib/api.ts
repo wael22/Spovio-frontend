@@ -516,7 +516,7 @@ export const recoveryService = {
     getRequests: () => api.get('/recovery/requests'), // Admin only endpoint, but grouped here for context or can stay in adminService
 };
 
-// 🆕 AI Match Analysis Service (EC2 Worker & Papermill)
+// 🆕 AI Match Analysis Service (AI Worker)
 export interface AIMatchAnalysis {
     id: number;
     match_id: string;

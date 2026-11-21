@@ -618,7 +618,7 @@ export function VideoPlayerModal({
         }));
         const msg =
           err?.response?.data?.error ||
-          t("modals.videoPlayer.clipErrorToast", "Impossible de lancer la création du clip.");
+          t("modals.videoPlayer.clipErrorToast", "Impossible de lancer la création du highlight.");
         toast.error(msg);
       }
     },
@@ -869,8 +869,8 @@ export function VideoPlayerModal({
                       <Scissors className="h-4 w-4 text-primary" />
                       <span>
                         {activeServe
-                          ? `${t("modals.videoPlayer.createClip", { defaultValue: "Créer un clip" })} (S${activeServe.num})`
-                          : t("modals.videoPlayer.createClip", { defaultValue: "Créer un clip" })}
+                          ? `${t("modals.videoPlayer.createClip", { defaultValue: "Créer un highlight" })} (S${activeServe.num})`
+                          : t("modals.videoPlayer.createClip", { defaultValue: "Créer un highlight" })}
                       </span>
                     </DropdownMenuItem>
                   )}
@@ -1046,13 +1046,13 @@ export function VideoPlayerModal({
                       <Scissors className="h-4 w-4 shrink-0" />
                       <span className="truncate">
                         {activeServe
-                          ? `${t("modals.videoPlayer.createClip", { defaultValue: "Créer un clip" })} (S${activeServe.num})`
+                          ? `${t("modals.videoPlayer.createClip", { defaultValue: "Créer un highlight" })} (S${activeServe.num})`
                           : isMultiAngle
                             ? t("modals.videoPlayer.createClipAngle", {
                                 angle: currentVideo.camera_index || 1,
-                                defaultValue: `Créer clip (Angle ${currentVideo.camera_index || 1})`,
+                                defaultValue: `Créer highlight (Angle ${currentVideo.camera_index || 1})`,
                               })
-                            : t("modals.videoPlayer.createClip", { defaultValue: "Créer un clip" })}
+                            : t("modals.videoPlayer.createClip", { defaultValue: "Créer un highlight" })}
                       </span>
                     </Button>
                   )}
@@ -1356,7 +1356,7 @@ export function VideoPlayerModal({
                             type="button"
                             onClick={() => handleQuickClipServe(activeServe)}
                             disabled={activeClipStatus === "creating"}
-                            title={`${t("modals.videoPlayer.quickClip", "Clip rapide")} Serve ${activeServe.num} (${
+                            title={`${t("modals.videoPlayer.quickClip", "Highlight rapide")} Serve ${activeServe.num} (${
                               clipPaddingSec === 0 ? "Exact" : `±${clipPaddingSec}s`
                             })`}
                             className={cn(

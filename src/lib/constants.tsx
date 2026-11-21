@@ -214,8 +214,8 @@ export const HOW_IT_WORKS_STEPS = [
         key: "watchClip",
         number: "04",
         icon: Film,
-        title: "Regarder & Clipper",
-        description: "Revoyez tout votre match, créez des clips de vos meilleures actions et marquez les points clés.",
+        title: "Regarder & Créer des Highlights",
+        description: "Revoyez tout votre match, créez des highlights de vos meilleures actions et marquez les points clés.",
         color: "primary",
     },
     {

@@ -409,7 +409,7 @@ const Dashboard = () => {
       toast.loading("Lancement de l'analyse IA...", { id: `ai-${videoId}` });
       const resp = await aiAnalysisService.analyzeVideo(videoId);
       if (resp.data.success) {
-        toast.success(resp.data.message || "Analyse IA programmée sur le GPU EC2 !", { id: `ai-${videoId}` });
+        toast.success(resp.data.message || "Analyse IA programmée avec succès !", { id: `ai-${videoId}` });
         loadVideos();
       } else {
         toast.error(resp.data.message || "Échec", { id: `ai-${videoId}` });

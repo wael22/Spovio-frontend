@@ -57,7 +57,7 @@ const ClipsManagement: React.FC = () => {
             const response = await adminService.getAllClips();
             setClips(response.data.clips);
         } catch (error) {
-            setError('Erreur lors du chargement des clips');
+            setError('Erreur lors du chargement des highlights');
         } finally {
             setLoading(false);
         }
@@ -65,7 +65,7 @@ const ClipsManagement: React.FC = () => {
 
     const handleRetry = async (clipId: number) => {
         try {
-            toast.info('Relance du traitement du clip en streaming...');
+            toast.info('Relance du traitement du highlight en streaming...');
             await adminService.retryClip(clipId);
             toast.success('Traitement relancé avec succès');
             setTimeout(loadClips, 1500);
@@ -78,9 +78,9 @@ const ClipsManagement: React.FC = () => {
     const handleReprocessStuck = async () => {
         try {
             setReprocessing(true);
-            toast.info('Relance de tous les clips bloqués en streaming...');
+            toast.info('Relance de tous les highlights bloqués en streaming...');
             const response = await adminService.reprocessStuckClips();
-            toast.success(response.data.message || 'Clips bloqués relancés');
+            toast.success(response.data.message || 'Highlights bloqués relancés');
             setTimeout(() => {
                 loadClips();
             }, 3000);
@@ -93,17 +93,17 @@ const ClipsManagement: React.FC = () => {
     };
 
     const handleDelete = async (id: number) => {
-        if (!window.confirm('Êtes-vous sûr de vouloir supprimer ce clip définitivement (y compris sur le CDN Bunny) ?')) {
+        if (!window.confirm('Êtes-vous sûr de vouloir supprimer ce highlight définitivement (y compris sur le CDN Bunny) ?')) {
             return;
         }
 
         try {
             await adminService.deleteClip(id);
-            toast.success('Clip supprimé avec succès');
+            toast.success('Highlight supprimé avec succès');
             setClips(clips.filter(clip => clip.id !== id));
         } catch (error) {
             toast.error('Erreur lors de la suppression');
-            setError('Erreur lors de la suppression du clip');
+            setError('Erreur lors de la suppression du highlight');
         }
     };
 
@@ -130,7 +130,7 @@ const ClipsManagement: React.FC = () => {
                 file_url: editForm.file_url || undefined,
                 storage_download_url: editForm.storage_download_url || undefined
             });
-            toast.success('Clip mis à jour avec succès');
+            toast.success('Highlight mis à jour avec succès');
             setShowEditDialog(false);
             loadClips();
         } catch (error: any) {
@@ -181,8 +181,8 @@ const ClipsManagement: React.FC = () => {
                 <CardHeader>
                     <div className="flex items-center justify-between">
                         <div>
-                            <CardTitle>Clips Créés</CardTitle>
-                            <CardDescription>Visualisez tous les clips créés par les utilisateurs</CardDescription>
+                            <CardTitle>Highlights Créés</CardTitle>
+                            <CardDescription>Visualisez tous les highlights créés par les utilisateurs</CardDescription>
                         </div>
                         <div className="flex items-center space-x-2">
                             <Button
@@ -197,7 +197,7 @@ const ClipsManagement: React.FC = () => {
                                 ) : (
                                     <RotateCw className="h-4 w-4 mr-2" />
                                 )}
-                                <span>Relancer clips bloqués</span>
+                                <span>Relancer highlights bloqués</span>
                             </Button>
                             <Button
                                 variant="outline"
@@ -218,15 +218,15 @@ const ClipsManagement: React.FC = () => {
                     ) : clips.length === 0 ? (
                         <div className="text-center py-8">
                             <Scissors className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                            <h3 className="text-lg font-medium mb-2">Aucun clip enregistré</h3>
-                            <p className="text-gray-600 dark:text-gray-400">Les clips créés par les utilisateurs apparaîtront ici.</p>
+                            <h3 className="text-lg font-medium mb-2">Aucun highlight enregistré</h3>
+                            <p className="text-gray-600 dark:text-gray-400">Les highlights créés par les utilisateurs apparaîtront ici.</p>
                         </div>
                     ) : (
                         <Table>
                             <TableHeader>
                                 <TableRow>
                                     <TableHead className="w-16">#</TableHead>
-                                    <TableHead>Titre du Clip</TableHead>
+                                    <TableHead>Titre du Highlight</TableHead>
                                     <TableHead>Créateur</TableHead>
                                     <TableHead>Vidéo d'origine</TableHead>
                                     <TableHead>Extrait</TableHead>
@@ -340,7 +340,7 @@ const ClipsManagement: React.FC = () => {
             <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
                 <DialogContent className="sm:max-w-[500px]">
                     <DialogHeader>
-                        <DialogTitle>✍️ Modifier Infos Clip / Bunny CDN</DialogTitle>
+                        <DialogTitle>✍️ Modifier Infos Highlight / Bunny CDN</DialogTitle>
                         <DialogDescription>
                             Modifiez les métadonnées et les liaisons Bunny Stream de ce clip.
                         </DialogDescription>

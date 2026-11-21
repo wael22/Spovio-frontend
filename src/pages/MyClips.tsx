@@ -63,7 +63,7 @@ const MyClips = () => {
       } catch (error: any) {
         console.error('Failed to load clips:', error);
         if (error.response?.status !== 401) {
-          toast.error('Impossible de charger les clips');
+          toast.error('Impossible de charger les highlights');
         }
       } finally {
         setLoading(false);
@@ -114,17 +114,17 @@ const MyClips = () => {
   }, [clips]); // Dependencies: clips (re-run effect when clips change)
 
   const handleDeleteClip = async (clipId: string) => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer ce clip ?')) {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce highlight ?')) {
       return;
     }
 
     try {
       await clipService.deleteClip(clipId);
       setClips(clips.filter(c => c.id !== clipId));
-      toast.success('Clip supprimé avec succès');
+      toast.success('Highlight supprimé avec succès');
     } catch (error) {
       console.error('Failed to delete clip:', error);
-      toast.error('Erreur lors de la suppression du clip');
+      toast.error('Erreur lors de la suppression du highlight');
     }
   };
 
@@ -140,7 +140,7 @@ const MyClips = () => {
   const handlePlayClip = (clip: any) => {
     // If pending/processing, show info instead of playing
     if (clip.status !== 'completed') {
-      toast.info('Ce clip est en cours de traitement. Veuillez patienter.');
+      toast.info('Ce highlight est en cours de traitement. Veuillez patienter.');
       return;
     }
 
@@ -156,13 +156,13 @@ const MyClips = () => {
   const handleDownloadClip = async (clip: any) => {
     // Check if clip  is ready
     if (clip.status !== 'completed') {
-      toast.error('Ce clip n\'est pas encore prêt pour téléchargement');
+      toast.error('Ce highlight n\'est pas encore prêt pour téléchargement');
       return;
     }
 
     // Check if clip has bunny_video_id (required for MP4 download)
     if (!clip.bunny_video_id) {
-      toast.error('Ce clip n\'a pas été uploadé sur Bunny Stream');
+      toast.error('Ce highlight n\'a pas été uploadé sur Bunny Stream');
       return;
     }
 

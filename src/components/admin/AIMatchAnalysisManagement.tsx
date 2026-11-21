@@ -160,7 +160,7 @@ export const AIMatchAnalysisManagement: React.FC = () => {
                         Analyse IA des Matchs (Padel Pipeline)
                     </h2>
                     <p className="text-sm text-muted-foreground mt-1">
-                        Pipeline cloud automatisé : S3 4K &rarr; Worker AWS EC2 GPU &rarr; Notebook Papermill &rarr; Statistiques.
+                        Pipeline cloud automatisé : S3 4K &rarr; Worker IA GPU &rarr; Pipeline Padel &rarr; Statistiques.
                     </p>
                 </div>
 
@@ -415,7 +415,7 @@ export const AIMatchAnalysisManagement: React.FC = () => {
                             Lancer un Test d'Analyse IA
                         </DialogTitle>
                         <DialogDescription>
-                            Crée une entrée en attente et tente de réveiller automatiquement l'instance AWS EC2 GPU (<code className="text-xs">i-0e27083bd63c3d0d4</code>).
+                            Crée une entrée en attente et tente de réveiller automatiquement le serveur de calcul IA (<code className="text-xs">i-0e27083bd63c3d0d4</code>).
                         </DialogDescription>
                     </DialogHeader>
 
@@ -456,8 +456,8 @@ export const AIMatchAnalysisManagement: React.FC = () => {
                             <p className="font-semibold text-foreground">💡 Comment le test se déroule :</p>
                             <ul className="list-disc pl-4 space-y-0.5 text-muted-foreground">
                                 <li>L'entrée est enregistrée avec le statut <code>pending</code>.</li>
-                                <li>L'API envoie l'ordre de démarrage à l'instance EC2.</li>
-                                <li>L'EC2 s'allume en ~30s, exécute le notebook Papermill, poste les stats ici, et s'éteint toute seule.</li>
+                                <li>L'API envoie l'ordre de démarrage au serveur de calcul IA.</li>
+                                <li>Le serveur IA démarre en ~30s, exécute le pipeline, poste les stats ici, et s'éteint automatiquement.</li>
                             </ul>
                         </div>
                     </div>

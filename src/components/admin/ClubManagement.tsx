@@ -789,7 +789,7 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                             />
                             <label htmlFor="has-ai" className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer flex items-center gap-1.5">
                                 <Sparkles className="h-4 w-4 text-purple-500" />
-                                Terrain équipé pour l'analyse IA (GPU EC2)
+                                Terrain équipé pour l'analyse IA
                             </label>
                         </div>
 
@@ -971,7 +971,7 @@ const ClubManagement: React.FC<ClubManagementProps> = ({ onStatsUpdate, onDataCh
                             />
                             <label htmlFor="edit-has-ai" className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer flex items-center gap-1.5">
                                 <Sparkles className="h-4 w-4 text-purple-500" />
-                                Terrain équipé pour l'analyse IA (GPU EC2)
+                                Terrain équipé pour l'analyse IA
                             </label>
                         </div>
 

@@ -8,7 +8,7 @@
     "signup": "Inscription",
     "dashboard": "Tableau de bord",
     "myVideos": "Mes Vidéos",
-    "myClips": "Mes Clips",
+    "myClips": "Mes Highlights",
     "clubs": "Clubs",
     "credits": "Crédits",
     "profile": "Profil",
@@ -32,19 +32,19 @@
     "createFirstVideo": "Créer votre première vidéo",
     "stats": {
       "videos": "Vidéos",
-      "clips": "Clips",
+      "clips": "Highlights",
       "credits": "Crédits",
       "shared": "Partagées"
     }
   },
   "myClips": {
-    "title": "Mes Clips",
+    "title": "Mes Highlights",
     "subtitle": "Tes meilleurs moments en un clic",
-    "searchPlaceholder": "Rechercher un clip...",
-    "createClip": "Créer un clip",
-    "noClips": "Aucun clip trouvé",
-    "noClipsMatch": "Aucun clip ne correspond à ta recherche",
-    "createFirstClip": "Crée ton premier clip à partir d'une Vidéo",
+    "searchPlaceholder": "Rechercher un highlight...",
+    "createClip": "Créer un highlight",
+    "noClips": "Aucun highlight trouvé",
+    "noClipsMatch": "Aucun highlight ne correspond à ta recherche",
+    "createFirstClip": "Crée ton premier highlight à partir d'une Vidéo",
     "viewVideos": "Voir mes Vidéos"
   },
   "common": {
@@ -102,7 +102,9 @@
         "qrRequired": "Le code QR du terrain est requis",
         "qrMismatch": "Le code QR ne correspond pas au terrain sélectionné",
         "credits": "Crédit insuffisant"
-      }
+      },
+      "aiAnalysisTitle": "Analyse de match par IA",
+      "aiAnalysisDescription": "Retrouvez chaque point et service en un clic sur la vidéo."
     },
     "directRecording": {
       "titleScan": "Scanner QR Code",
@@ -117,7 +119,9 @@
       "manualInstruction": "Ou entrez le code du terrain ou lien de partage :",
       "manualPlaceholder": "Ex: A1B2 ou lien...",
       "validate": "Valider",
-      "shareClaimSuccess": "Vidéo partagée \"{{title}}\" ajoutée à vos vidéos !"
+      "shareClaimSuccess": "Vidéo partagée \"{{title}}\" ajoutée à vos vidéos !",
+      "aiAnalysisTitle": "Analyse de match par IA",
+      "aiAnalysisDescription": "Retrouvez chaque point et service en un clic sur la vidéo."
     },
     "reportIssue": {
       "title": "Signaler un problème vidéo",
@@ -176,7 +180,7 @@
       "codeLabel": "Code du terrain"
     },
     "shareClip": {
-      "title": "Partager le clip",
+      "title": "Partager le highlight",
       "description": "Partagez \"{{title}}\" sur vos réseaux sociaux ou copiez le lien.",
       "socialLabel": "Partager sur les réseaux",
       "qualityLabel": "Qualité de la vidéo",
@@ -193,8 +197,8 @@
     },
     "videoPlayer": {
       "title": "Lecteur vidéo",
-      "createClip": "Créer un clip",
-      "createClipAngle": "Créer clip (Angle {{angle}})",
+      "createClip": "Créer un highlight",
+      "createClipAngle": "Créer highlight (Angle {{angle}})",
       "download": "Télécharger",
       "downloadAngle": "Télécharger Angle {{angle}}",
       "angle": "Angle {{angle}}",
@@ -212,13 +216,13 @@
       "skipDeadTime": "Échanges seuls",
       "skipDeadTimeTooltip": "Sauter automatiquement les temps morts et changements de côté",
       "autoFollow": "Suivre",
-      "clipMargin": "Marge clip",
-      "quickClip": "Clip rapide",
-      "editClip": "Ajuster",
+      "clipMargin": "Marge highlight",
+      "quickClip": "Highlight rapide",
+      "editClip": "Ajuster le highlight",
       "creatingClip": "Envoi...",
-      "clipQueued": "Clip envoyé ✓",
-      "clipStartedToast": "Clip \"{{title}}\" lancé ! Retrouvez-le dans Mes Clips.",
-      "clipErrorToast": "Impossible de lancer la création du clip.",
+      "clipQueued": "Highlight envoyé ✓",
+      "clipStartedToast": "Highlight \"{{title}}\" lancé ! Retrouvez-le dans Mes Highlights.",
+      "clipErrorToast": "Impossible de lancer la création du highlight.",
       "prevServe": "Service préc.",
       "nextServe": "Service suiv.",
       "breakLabel": "Changement de côté / Pause",
@@ -594,8 +598,8 @@
       "menu": {
         "play": "Lire",
         "playExpired": "Vidéo expirée",
-        "createClip": "Créer un clip",
-        "createClipUnavailable": "Clip non disponible",
+        "createClip": "Créer un highlight",
+        "createClipUnavailable": "Highlight non disponible",
         "editTitle": "Modifier le titre",
         "share": "Partager",
         "download": "Télécharger MP4",
@@ -618,7 +622,7 @@
       }
     },
     "clipEditor": {
-      "title": "Créer un Clip",
+      "title": "Créer un Highlight",
       "subtitle": "Sélectionnez un segment et créez votre meilleur moment",
       "videoLabel": "Vidéo",
       "unsupported": "Votre navigateur ne supporte pas la lecture vidéo.",
@@ -633,15 +637,15 @@
       "descriptionLabel": "Description",
       "descriptionPlaceholder": "Description optionnelle...",
       "cancel": "Annuler",
-      "create": "Créer le Clip",
+      "create": "Créer le Highlight",
       "processing": "Traitement...",
-      "uploading": "Création du clip...",
-      "success": "Clip créé avec succès !",
-      "error": "Erreur lors de la création du clip",
+      "uploading": "Création du highlight...",
+      "success": "Highlight créé avec succès !",
+      "error": "Erreur lors de la création du highlight",
       "errors": {
         "titleRequired": "Veuillez entrer un titre",
-        "minDuration": "Le clip doit durer au moins 1 seconde",
-        "maxDuration": "Le clip ne peut pas durer plus de 180 secondes (3 min)",
+        "minDuration": "Le highlight doit durer au moins 1 seconde",
+        "maxDuration": "Le highlight ne peut pas durer plus de 180 secondes (3 min)",
         "noVideo": "Aucune vidéo sélectionnée"
       }
     }
@@ -653,8 +657,8 @@
     "updateError": "Erreur lors de la mise à jour",
     "videoReady": "🎬 Votre vidéo est prête !",
     "videoReadyMsg": "La vidéo '{{title}}' a été traitée avec succès.",
-    "clipReady": "🎬 Votre clip est prêt !",
-    "clipReadyMsg": "Le clip '{{title}}' est prêt.",
+    "clipReady": "🎬 Votre highlight est prêt !",
+    "clipReadyMsg": "Le highlight '{{title}}' est prêt.",
     "recordingStarted": {
       "title": "⏺️ Enregistrement démarré",
       "msg": "L'enregistrement a commencé sur {{courtName}}."

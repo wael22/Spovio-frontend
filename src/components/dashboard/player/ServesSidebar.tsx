@@ -164,7 +164,7 @@ export const ServesSidebar = React.memo(function ServesSidebar({
               variant="outline"
               size="sm"
               onClick={() => onChangeClipPadding((clipPaddingSec + 1) % 3)}
-              title={t("modals.videoPlayer.clipMargin", "Marge clip rapide")}
+              title={t("modals.videoPlayer.clipMargin", "Marge highlight")}
               className="sm:hidden h-7 px-2 text-[11px] gap-1 text-foreground tabular-nums"
             >
               <Scissors className="h-3 w-3 text-primary" />
@@ -251,7 +251,7 @@ export const ServesSidebar = React.memo(function ServesSidebar({
         <div className="hidden sm:flex items-center justify-between gap-2 pt-0.5 text-[11px]">
           <span className="text-muted-foreground flex items-center gap-1">
             <Scissors className="h-3 w-3 text-primary" />
-            {t("modals.videoPlayer.clipMargin", "Marge clip rapide")} :
+            {t("modals.videoPlayer.clipMargin", "Marge highlight")} :
           </span>
           <div className="flex items-center gap-1 bg-muted/60 p-0.5 rounded-md">
             {[0, 1, 2].map((pad) => (
@@ -387,7 +387,7 @@ export const ServesSidebar = React.memo(function ServesSidebar({
                       variant={status === "created" ? "secondary" : "outline"}
                       disabled={status === "creating"}
                       onClick={() => onQuickClipServe(serve)}
-                      title={`${t("modals.videoPlayer.quickClip", "Clip rapide")} (${
+                      title={`${t("modals.videoPlayer.quickClip", "Highlight rapide")} (${
                         clipPaddingSec === 0 ? "Exact" : `±${clipPaddingSec}s`
                       })`}
                       className={cn(
@@ -407,8 +407,8 @@ export const ServesSidebar = React.memo(function ServesSidebar({
                         {status === "creating"
                           ? t("modals.videoPlayer.creatingClip", "Envoi...")
                           : status === "created"
-                            ? t("modals.videoPlayer.clipQueued", "Clip ✓")
-                            : "Clip"}
+                            ? t("modals.videoPlayer.clipQueued", "Highlight ✓")
+                            : "Highlight"}
                       </span>
                     </Button>
 
@@ -417,7 +417,7 @@ export const ServesSidebar = React.memo(function ServesSidebar({
                       size="icon"
                       variant="ghost"
                       onClick={() => onEditClipServe(serve)}
-                      title={t("modals.videoPlayer.editClip", "Ajuster dans l'éditeur de clip")}
+                      title={t("modals.videoPlayer.editClip", "Ajuster dans l'éditeur de highlight")}
                       className="h-7 w-7 text-muted-foreground hover:text-foreground"
                     >
                       <SlidersHorizontal className="h-3.5 w-3.5" />
