@@ -1,7 +1,8 @@
 /**
  * Video Clip Editor Component
- * Ergonomic Filmstrip / Reel Clip Trimmer with resizable selection width (3s to 60s max),
- * full Light/Dark mode support, live video synchronization, and instant presets.
+ * High-performance Reel / Filmstrip trimmer with True Moving Backline (60fps),
+ * custom resizable width (3s to 60s max), Light/Dark theme compatibility,
+ * and seamless full-match slider navigation.
  */
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
@@ -27,8 +28,7 @@ import {
     CheckCircle2,
     AlertCircle,
     Sparkles,
-    Clock,
-    RotateCcw
+    Clock
 } from 'lucide-react';
 import { clipService } from '@/lib/api';
 import { getPreferredPlaybackUrl } from '@/lib/bunnyVideoHelper';
@@ -55,9 +55,9 @@ interface VideoClipEditorProps {
 
 type ProcessingStep = 'upload' | '';
 
-const VIEW_WINDOW_SPAN = 150; // 2.5 minutes local focus span for effortless trimming on long matches (120min+)
 const MIN_DURATION = 3;       // Minimum clip duration in seconds
 const MAX_DURATION = 60;      // Maximum clip duration in seconds
+const PIXELS_PER_SEC = 5;     // 5 pixels per second for tactile precision (60s = 300px)
 
 export function VideoClipEditor({
     isOpen,
@@ -84,26 +84,58 @@ export function VideoClipEditor({
     const [duration, setDuration] = useState(0);
     const [isPreviewing, setIsPreviewing] = useState(false);
 
+    // RAF Video seek throttle to prevent browser media stalls & dropped frames
+    const rafSeekId = useRef<number | null>(null);
+    const targetSeekTime = useRef<number | null>(null);
+
+    const smoothSeekVideo = useCallback((time: number) => {
+        targetSeekTime.current = time;
+        if (rafSeekId.current === null) {
+            rafSeekId.current = requestAnimationFrame(() => {
+                if (videoRef.current && targetSeekTime.current !== null) {
+                    videoRef.current.currentTime = targetSeekTime.current;
+                }
+                rafSeekId.current = null;
+            });
+        }
+    }, []);
+
+    useEffect(() => {
+        return () => {
+            if (rafSeekId.current !== null) {
+                cancelAnimationFrame(rafSeekId.current);
+            }
+        };
+    }, []);
+
     // Selection states (absolute seconds)
-    const hasInitialRange =
-        typeof initialStartTime === 'number' &&
-        typeof initialEndTime === 'number' &&
-        initialEndTime > initialStartTime;
-
     const [startTime, setStartTime] = useState(initialStartTime ?? 0);
-    const [endTime, setEndTime] = useState(initialEndTime ?? 25);
+    const [clipDuration, setClipDuration] = useState(25);
 
-    // View window start (absolute seconds)
-    const [viewStart, setViewStart] = useState(0);
+    // Track viewport measurement
+    const trackRef = useRef<HTMLDivElement>(null);
+    const [trackWidth, setTrackWidth] = useState(500);
 
-    // Clip metadata
+    // Metadata
     const [title, setTitle] = useState(initialTitle ?? '');
     const [description, setDescription] = useState(initialDescription ?? '');
 
-    // Drag interaction state & ref
-    const trackRef = useRef<HTMLDivElement>(null);
+    // Drag interaction ref & state
     const [activeDrag, setActiveDrag] = useState<'box' | 'left' | 'right' | null>(null);
-    const dragDataRef = useRef<{ clientX: number; initialStart: number; initialEnd: number } | null>(null);
+    const dragDataRef = useRef<{ clientX: number; initialStart: number; initialDuration: number } | null>(null);
+
+    // Keep trackWidth measured on mount and resize
+    useEffect(() => {
+        if (!isOpen) return;
+        const updateWidth = () => {
+            if (trackRef.current) {
+                setTrackWidth(trackRef.current.clientWidth || 500);
+            }
+        };
+        updateWidth();
+        window.addEventListener('resize', updateWidth);
+        return () => window.removeEventListener('resize', updateWidth);
+    }, [isOpen]);
 
     // Sync initial values whenever editor opens
     useEffect(() => {
@@ -111,42 +143,19 @@ export function VideoClipEditor({
         setError('');
         setSuccess(false);
         setProcessingStep('');
+
         const s = typeof initialStartTime === 'number' ? Math.max(0, initialStartTime) : 0;
         const dur = video?.duration || 120;
-        const e =
-            typeof initialEndTime === 'number' && initialEndTime > s
-                ? Math.min(s + MAX_DURATION, initialEndTime)
-                : Math.min(s + 25, dur);
+        let cDur = 25;
+        if (typeof initialEndTime === 'number' && initialEndTime > s) {
+            cDur = Math.max(MIN_DURATION, Math.min(MAX_DURATION, initialEndTime - s));
+        }
 
-        const cleanStart = Number(s.toFixed(1));
-        const cleanEnd = Number(e.toFixed(1));
-        setStartTime(cleanStart);
-        setEndTime(cleanEnd);
+        setStartTime(Number(s.toFixed(1)));
+        setClipDuration(Number(cDur.toFixed(1)));
         setTitle(initialTitle ?? '');
         setDescription(initialDescription ?? '');
-
-        // Center view window around the selection
-        if (dur <= VIEW_WINDOW_SPAN) {
-            setViewStart(0);
-        } else {
-            const ideal = Math.max(0, cleanStart - 15);
-            const maxStart = Math.max(0, dur - VIEW_WINDOW_SPAN);
-            setViewStart(Math.min(ideal, maxStart));
-        }
     }, [isOpen, initialStartTime, initialEndTime, initialTitle, initialDescription, video?.id, video?.duration]);
-
-    // Keep view window encompassing the current selection
-    useEffect(() => {
-        const totalDur = duration || video?.duration || 0;
-        if (totalDur <= VIEW_WINDOW_SPAN) return;
-
-        if (startTime < viewStart) {
-            setViewStart(Math.max(0, startTime - 10));
-        } else if (endTime > viewStart + VIEW_WINDOW_SPAN) {
-            const maxStart = Math.max(0, totalDur - VIEW_WINDOW_SPAN);
-            setViewStart(Math.min(maxStart, endTime - VIEW_WINDOW_SPAN + 10));
-        }
-    }, [startTime, endTime, duration, video?.duration, viewStart]);
 
     const videoRef = useRef<HTMLVideoElement>(null);
     const hlsRef = useRef<Hls | null>(null);
@@ -226,17 +235,13 @@ export function VideoClipEditor({
         if (videoRef.current) {
             const videoDuration = videoRef.current.duration || video?.duration || 0;
             setDuration(videoDuration);
-            if (hasInitialRange && typeof initialStartTime === 'number' && typeof initialEndTime === 'number') {
-                const clampedStart = Math.max(0, Math.min(initialStartTime, Math.max(0, videoDuration - 1)));
-                const clampedEnd = Math.min(videoDuration, Math.max(clampedStart + 1, Math.min(clampedStart + MAX_DURATION, initialEndTime)));
-                setStartTime(Number(clampedStart.toFixed(1)));
-                setEndTime(Number(clampedEnd.toFixed(1)));
-                videoRef.current.currentTime = clampedStart;
-            } else {
-                setEndTime(Number(Math.min(25, videoDuration).toFixed(1)));
+            if (videoRef.current.currentTime !== startTime) {
+                videoRef.current.currentTime = startTime;
             }
         }
     };
+
+    const endTime = Number((startTime + clipDuration).toFixed(1));
 
     const handleTimeUpdate = () => {
         if (videoRef.current) {
@@ -282,66 +287,81 @@ export function VideoClipEditor({
         }
     };
 
-    // Quick presets (change width to 15s, 30s, 45s, 60s)
+    // Quick presets (Change width to 15s, 30s, 45s, 60s)
     const handleSetPresetDuration = (presetSec: number) => {
         const totalDur = duration || video?.duration || 0;
-        const dur = Math.min(MAX_DURATION, presetSec);
-        let newEnd = startTime + dur;
+        const newDur = Math.max(MIN_DURATION, Math.min(MAX_DURATION, presetSec));
         let newStart = startTime;
 
-        if (totalDur > 0 && newEnd > totalDur) {
-            newEnd = totalDur;
-            newStart = Math.max(0, totalDur - dur);
+        if (totalDur > 0 && newStart + newDur > totalDur) {
+            newStart = Math.max(0, totalDur - newDur);
         }
 
-        const cleanStart = Number(newStart.toFixed(1));
-        const cleanEnd = Number(newEnd.toFixed(1));
-        setStartTime(cleanStart);
-        setEndTime(cleanEnd);
-
-        if (videoRef.current) {
-            videoRef.current.currentTime = cleanStart;
-        }
+        setStartTime(Number(newStart.toFixed(1)));
+        setClipDuration(Number(newDur.toFixed(1)));
+        smoothSeekVideo(newStart);
     };
 
     // Nudge entire selection by +/- seconds
     const handleNudge = (deltaSeconds: number) => {
         const totalDur = duration || video?.duration || 0;
-        const clipDur = endTime - startTime;
         let newStart = startTime + deltaSeconds;
-        let newEnd = endTime + deltaSeconds;
 
-        if (newStart < 0) {
-            newStart = 0;
-            newEnd = clipDur;
-        }
-        if (totalDur > 0 && newEnd > totalDur) {
-            newEnd = totalDur;
-            newStart = Math.max(0, totalDur - clipDur);
+        if (newStart < 0) newStart = 0;
+        if (totalDur > 0 && newStart + clipDuration > totalDur) {
+            newStart = Math.max(0, totalDur - clipDuration);
         }
 
-        const cleanStart = Number(newStart.toFixed(1));
-        const cleanEnd = Number(newEnd.toFixed(1));
-        setStartTime(cleanStart);
-        setEndTime(cleanEnd);
-
-        if (videoRef.current) {
-            videoRef.current.currentTime = cleanStart;
-        }
+        newStart = Number(newStart.toFixed(1));
+        setStartTime(newStart);
+        smoothSeekVideo(newStart);
     };
 
-    // Effective span calculations
+    // Total effective match duration
     const totalVideoDuration = duration || video?.duration || 0;
-    const effectiveSpan = totalVideoDuration > 0 ? Math.min(VIEW_WINDOW_SPAN, totalVideoDuration) : VIEW_WINDOW_SPAN;
-    const viewEnd = Math.min(totalVideoDuration || viewStart + effectiveSpan, viewStart + effectiveSpan);
 
-    // Drag Handlers (Left Handle, Right Handle, Center Frame)
-    const startDrag = (type: 'box' | 'left' | 'right', clientX: number) => {
+    // --- REEL GEOMETRY & MOVING BACKLINE CALCULATION ---
+    // The selection box width is directly proportional to clip duration:
+    const boxWidth = Math.max(20, clipDuration * PIXELS_PER_SEC);
+    // Center the selection box horizontally in the track viewport:
+    const boxLeft = Math.max(0, (trackWidth - boxWidth) / 2);
+
+    // The center point in seconds of the current selection:
+    const centerSec = startTime + clipDuration / 2;
+
+    // Build the dynamic moving ruler tape around the current center point:
+    // We generate ticks every 2 seconds (10px apart). Absolutely positioned so there is ZERO modulo jump, ZERO flexbox jumping.
+    const rulerTicks = useMemo(() => {
+        const ticks: { sec: number; isMajor: boolean; isMid: boolean; label?: string }[] = [];
+        const TICK_INTERVAL = 2;
+        const halfSpanSec = Math.ceil((trackWidth / 2) / PIXELS_PER_SEC) + 20;
+        const minSec = Math.max(0, Math.floor((centerSec - halfSpanSec) / TICK_INTERVAL) * TICK_INTERVAL);
+        const maxSec = Math.min(
+            totalVideoDuration > 0 ? totalVideoDuration : centerSec + halfSpanSec,
+            Math.ceil((centerSec + halfSpanSec) / TICK_INTERVAL) * TICK_INTERVAL
+        );
+
+        for (let s = minSec; s <= maxSec; s += TICK_INTERVAL) {
+            const isMid = s % 30 === 0;
+            const isMajor = s % 10 === 0;
+            let label: string | undefined;
+            if (isMajor) {
+                const m = Math.floor(s / 60);
+                const sec = s % 60;
+                label = `${m}:${String(sec).padStart(2, '0')}`;
+            }
+            ticks.push({ sec: s, isMajor, isMid, label });
+        }
+        return ticks;
+    }, [centerSec, totalVideoDuration, trackWidth]);
+
+    // Drag Handlers (Left Handle = Resize Start, Right Handle = Resize End, Center = Slide Match)
+    const handleStartDrag = (type: 'box' | 'left' | 'right', clientX: number) => {
         setActiveDrag(type);
         dragDataRef.current = {
             clientX,
             initialStart: startTime,
-            initialEnd: endTime,
+            initialDuration: clipDuration,
         };
     };
 
@@ -349,65 +369,46 @@ export function VideoClipEditor({
         if (!activeDrag) return;
 
         const handlePointerMove = (e: MouseEvent | TouchEvent) => {
-            if (!activeDrag || !dragDataRef.current || !trackRef.current) return;
+            if (!activeDrag || !dragDataRef.current) return;
             const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-            const rect = trackRef.current.getBoundingClientRect();
-            if (rect.width <= 0) return;
+            const deltaPx = clientX - dragDataRef.current.clientX;
+            const deltaSec = deltaPx / PIXELS_PER_SEC;
 
-            const totalDur = duration || video?.duration || 0;
-            const currentSpan = totalDur > 0 ? Math.min(VIEW_WINDOW_SPAN, totalDur) : VIEW_WINDOW_SPAN;
-            const deltaX = clientX - dragDataRef.current.clientX;
-            const deltaSec = (deltaX / rect.width) * currentSpan;
-
-            const { initialStart, initialEnd } = dragDataRef.current;
-            const clipDur = initialEnd - initialStart;
+            const { initialStart, initialDuration } = dragDataRef.current;
+            const totalDur = duration || video?.duration || Infinity;
 
             if (activeDrag === 'box') {
-                // Drag entire frame (constant width)
-                let newStart = initialStart + deltaSec;
-                let newEnd = initialEnd + deltaSec;
-
+                // Dragging the filmstrip moves the match under the frame (natural touch inertia)
+                let newStart = initialStart - deltaSec;
+                if (newStart < 0) newStart = 0;
+                if (totalDur > 0 && newStart + initialDuration > totalDur) {
+                    newStart = Math.max(0, totalDur - initialDuration);
+                }
+                newStart = Number(newStart.toFixed(1));
+                setStartTime(newStart);
+                smoothSeekVideo(newStart);
+            } else if (activeDrag === 'right') {
+                // Dragging Right Handle directly changes width / duration
+                const newDuration = Math.max(MIN_DURATION, Math.min(MAX_DURATION, initialDuration + deltaSec));
+                const cleanDur = Number(newDuration.toFixed(1));
+                if (totalDur > 0 && initialStart + cleanDur > totalDur) {
+                    return;
+                }
+                setClipDuration(cleanDur);
+                smoothSeekVideo(initialStart + cleanDur);
+            } else if (activeDrag === 'left') {
+                // Dragging Left Handle directly changes width and start time
+                const newDuration = Math.max(MIN_DURATION, Math.min(MAX_DURATION, initialDuration - deltaSec));
+                const actualDelta = initialDuration - newDuration;
+                let newStart = initialStart + actualDelta;
                 if (newStart < 0) {
                     newStart = 0;
-                    newEnd = clipDur;
                 }
-                if (totalDur > 0 && newEnd > totalDur) {
-                    newEnd = totalDur;
-                    newStart = Math.max(0, totalDur - clipDur);
-                }
-
-                newStart = Number(newStart.toFixed(1));
-                newEnd = Number(newEnd.toFixed(1));
-                setStartTime(newStart);
-                setEndTime(newEnd);
-
-                if (videoRef.current) {
-                    videoRef.current.currentTime = newStart;
-                }
-            } else if (activeDrag === 'left') {
-                // Resize Left Handle (Change Start Time & Width)
-                const timeAtCursor = viewStart + ((clientX - rect.left) / rect.width) * currentSpan;
-                const minPossibleStart = Math.max(0, endTime - MAX_DURATION);
-                const maxPossibleStart = Math.max(0, endTime - MIN_DURATION);
-
-                const newStart = Number(Math.max(minPossibleStart, Math.min(maxPossibleStart, timeAtCursor)).toFixed(1));
-                setStartTime(newStart);
-
-                if (videoRef.current) {
-                    videoRef.current.currentTime = newStart;
-                }
-            } else if (activeDrag === 'right') {
-                // Resize Right Handle (Change End Time & Width)
-                const timeAtCursor = viewStart + ((clientX - rect.left) / rect.width) * currentSpan;
-                const minPossibleEnd = startTime + MIN_DURATION;
-                const maxPossibleEnd = Math.min(totalDur || Infinity, startTime + MAX_DURATION);
-
-                const newEnd = Number(Math.max(minPossibleEnd, Math.min(maxPossibleEnd, timeAtCursor)).toFixed(1));
-                setEndTime(newEnd);
-
-                if (videoRef.current) {
-                    videoRef.current.currentTime = newEnd;
-                }
+                const cleanStart = Number(newStart.toFixed(1));
+                const cleanDur = Number(newDuration.toFixed(1));
+                setStartTime(cleanStart);
+                setClipDuration(cleanDur);
+                smoothSeekVideo(cleanStart);
             }
         };
 
@@ -427,28 +428,9 @@ export function VideoClipEditor({
             window.removeEventListener('touchmove', handlePointerMove);
             window.removeEventListener('touchend', handlePointerEnd);
         };
-    }, [activeDrag, duration, video?.duration, viewStart, startTime, endTime]);
+    }, [activeDrag, duration, video?.duration, smoothSeekVideo]);
 
-    // Relative percentages within visible track
-    const relStart = Math.max(0, startTime - viewStart);
-    const relEnd = Math.max(relStart + 0.5, endTime - viewStart);
-    const leftPercent = Math.max(0, Math.min(100, (relStart / effectiveSpan) * 100));
-    const widthPercent = Math.max(2, Math.min(100 - leftPercent, ((relEnd - relStart) / effectiveSpan) * 100));
-
-    const playheadRel = currentTime - viewStart;
-    const playheadPercent = Math.max(0, Math.min(100, (playheadRel / effectiveSpan) * 100));
-    const isPlayheadVisible = currentTime >= viewStart && currentTime <= viewEnd;
-
-    const clipDuration = Number((endTime - startTime).toFixed(1));
     const isMaxReached = clipDuration >= MAX_DURATION - 0.2;
-
-    // Fixed waveform pattern
-    const waveformBars = useMemo(() => {
-        return Array.from({ length: 48 }, (_, i) => {
-            const h = Math.sin(i * 0.42) * 35 + Math.cos(i * 0.85) * 20 + 45;
-            return Math.max(18, Math.min(90, Math.round(h)));
-        });
-    }, []);
 
     /**
      * Submit clip creation
@@ -459,12 +441,12 @@ export function VideoClipEditor({
             return;
         }
 
-        if (endTime - startTime < MIN_DURATION) {
+        if (clipDuration < MIN_DURATION) {
             setError(t('components.clipEditor.errors.minDuration'));
             return;
         }
 
-        if (endTime - startTime > MAX_DURATION) {
+        if (clipDuration > MAX_DURATION) {
             setError(t('components.clipEditor.errors.maxDuration'));
             return;
         }
@@ -572,7 +554,7 @@ export function VideoClipEditor({
                         </div>
                     </div>
 
-                    {/* Filmstrip / Reel Trimmer Section (Matches Light & Dark theme) */}
+                    {/* True Moving Backline Reel Trimmer Section */}
                     <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-3.5">
                         {/* Header: Title & Dynamic Live Duration Pill */}
                         <div className="flex items-center justify-between gap-2">
@@ -604,7 +586,7 @@ export function VideoClipEditor({
                                 <span className="font-sans text-[11px]">{t('components.clipEditor.startTime', 'Début')} :</span>
                                 <span className="text-primary font-bold">{formatTimeWithTenths(startTime)}</span>
                             </div>
-                            <div className="text-[11px] font-sans font-semibold text-primary/80 bg-primary/10 px-2 py-0.5 rounded-md">
+                            <div className="text-[11px] font-sans font-semibold text-primary/80 bg-primary/10 px-2.5 py-0.5 rounded-md">
                                 {clipDuration}s
                             </div>
                             <div className="flex items-center gap-1 text-muted-foreground">
@@ -616,44 +598,70 @@ export function VideoClipEditor({
                         {/* Interactive Reel Track Container */}
                         <div
                             ref={trackRef}
-                            className="relative h-14 bg-white dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden cursor-pointer select-none touch-none shadow-inner"
+                            className="relative h-20 bg-slate-100 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden select-none touch-none shadow-inner"
                         >
-                            {/* Inactive Waveform Simulation (Light / Dark responsive) */}
-                            <div className="absolute inset-0 flex items-center justify-between px-2 pointer-events-none opacity-30 dark:opacity-20">
-                                {waveformBars.map((h, i) => (
+                            {/* THE MOVING BACKLINE TAPE: Physical ruler with ticks and labels translating smoothly at 60fps */}
+                            <div
+                                className="absolute top-0 bottom-0 pointer-events-none will-change-transform"
+                                style={{
+                                    left: `${trackWidth / 2}px`,
+                                    transform: `translate3d(${-centerSec * PIXELS_PER_SEC}px, 0, 0)`,
+                                }}
+                            >
+                                {rulerTicks.map((t) => (
                                     <div
-                                        key={`bg-tick-${i}`}
-                                        className="w-1 bg-slate-400 dark:bg-slate-600 rounded-full"
-                                        style={{ height: `${h}%` }}
-                                    />
+                                        key={`tick-${t.sec}`}
+                                        className="absolute top-0 bottom-0 flex flex-col items-center justify-end pb-1 select-none pointer-events-none"
+                                        style={{
+                                            left: `${t.sec * PIXELS_PER_SEC}px`,
+                                            transform: 'translateX(-50%)',
+                                            width: '24px',
+                                        }}
+                                    >
+                                        <div
+                                            className={`rounded-full transition-all ${
+                                                t.isMid
+                                                    ? 'w-1 bg-primary dark:bg-cyan-400 h-8 shadow-[0_0_8px_rgba(6,182,212,0.6)]'
+                                                    : t.isMajor
+                                                    ? 'w-1 bg-slate-400 dark:bg-slate-500 h-6'
+                                                    : 'w-0.5 bg-slate-300 dark:bg-slate-800 h-3.5'
+                                            }`}
+                                        />
+                                        {t.label && (
+                                            <span className="text-[9px] font-mono text-muted-foreground select-none pt-1">
+                                                {t.label}
+                                            </span>
+                                        )}
+                                    </div>
                                 ))}
                             </div>
 
-                            {/* Active Resizable Selection Frame (Spovio Neon Gradient) */}
+                            {/* Left Dimmed Overlay Curtain (Instagram style outside darkened area) */}
                             <div
-                                className="absolute top-0 bottom-0 rounded-xl p-[2px] bg-gradient-to-r from-sky-400 via-primary to-purple-500 shadow-md shadow-primary/20 cursor-grab active:cursor-grabbing z-20"
+                                className="absolute top-0 bottom-0 left-0 bg-slate-900/35 dark:bg-black/65 backdrop-blur-[0.5px] pointer-events-none z-10"
+                                style={{ width: `${boxLeft}px` }}
+                            />
+
+                            {/* Right Dimmed Overlay Curtain (Instagram style outside darkened area) */}
+                            <div
+                                className="absolute top-0 bottom-0 right-0 bg-slate-900/35 dark:bg-black/65 backdrop-blur-[0.5px] pointer-events-none z-10"
+                                style={{ left: `${boxLeft + boxWidth}px` }}
+                            />
+
+                            {/* Active Resizable Selection Frame (Custom Width Drag) */}
+                            <div
+                                className="absolute top-1 bottom-1 rounded-xl p-[2px] bg-gradient-to-r from-sky-400 via-primary to-purple-500 shadow-xl shadow-primary/25 cursor-grab active:cursor-grabbing z-20"
                                 style={{
-                                    left: `${leftPercent}%`,
-                                    width: `${widthPercent}%`,
+                                    left: `${boxLeft}px`,
+                                    width: `${boxWidth}px`,
                                 }}
-                                onMouseDown={(e) => startDrag('box', e.clientX)}
-                                onTouchStart={(e) => startDrag('box', e.touches[0].clientX)}
+                                onMouseDown={(e) => handleStartDrag('box', e.clientX)}
+                                onTouchStart={(e) => handleStartDrag('box', e.touches[0].clientX)}
                             >
                                 {/* Inner illuminated window */}
-                                <div className="w-full h-full bg-slate-50/90 dark:bg-slate-950/85 rounded-[10px] relative overflow-hidden flex items-center justify-center">
-                                    {/* Active Highlighted Ticks Inside Selection */}
-                                    <div className="absolute inset-0 flex items-center justify-between px-1 pointer-events-none opacity-85">
-                                        {waveformBars.slice(0, 16).map((h, i) => (
-                                            <div
-                                                key={`fg-tick-${i}`}
-                                                className="w-1 bg-gradient-to-t from-sky-500 to-purple-500 rounded-full"
-                                                style={{ height: `${Math.max(25, h)}%` }}
-                                            />
-                                        ))}
-                                    </div>
-
-                                    {/* Center Width/Duration Pill */}
-                                    <div className="z-10 flex items-center gap-1 pointer-events-none bg-white/95 dark:bg-black/80 px-2 py-0.5 rounded-full border border-slate-200 dark:border-white/10 shadow-sm">
+                                <div className="w-full h-full bg-primary/5 dark:bg-primary/10 rounded-[10px] relative overflow-hidden flex items-center justify-center border border-white/20 dark:border-white/10 pointer-events-none">
+                                    {/* Center Duration Grip Pill */}
+                                    <div className="z-10 flex items-center gap-1 bg-white/95 dark:bg-black/90 px-2 py-0.5 rounded-full border border-slate-200 dark:border-white/10 shadow-sm">
                                         <span className="text-[11px] font-mono font-bold text-slate-900 dark:text-white tracking-wider">
                                             {Math.round(clipDuration)}s
                                         </span>
@@ -666,14 +674,14 @@ export function VideoClipEditor({
                                     title="Ajuster le début (élargir/réduire)"
                                     onMouseDown={(e) => {
                                         e.stopPropagation();
-                                        startDrag('left', e.clientX);
+                                        handleStartDrag('left', e.clientX);
                                     }}
                                     onTouchStart={(e) => {
                                         e.stopPropagation();
-                                        startDrag('left', e.touches[0].clientX);
+                                        handleStartDrag('left', e.touches[0].clientX);
                                     }}
                                 >
-                                    <div className="w-3 h-8 bg-gradient-to-b from-sky-400 to-sky-600 rounded-full shadow-md border border-white/60 group-hover:scale-110 group-active:scale-95 transition-transform flex items-center justify-center">
+                                    <div className="w-3.5 h-9 bg-gradient-to-b from-sky-400 to-sky-600 rounded-full shadow-lg border-2 border-white group-hover:scale-110 group-active:scale-95 transition-transform flex items-center justify-center">
                                         <div className="w-[1.5px] h-3.5 bg-white rounded-full"></div>
                                     </div>
                                 </div>
@@ -684,31 +692,24 @@ export function VideoClipEditor({
                                     title="Ajuster la fin (élargir/réduire)"
                                     onMouseDown={(e) => {
                                         e.stopPropagation();
-                                        startDrag('right', e.clientX);
+                                        handleStartDrag('right', e.clientX);
                                     }}
                                     onTouchStart={(e) => {
                                         e.stopPropagation();
-                                        startDrag('right', e.touches[0].clientX);
+                                        handleStartDrag('right', e.touches[0].clientX);
                                     }}
                                 >
-                                    <div className="w-3 h-8 bg-gradient-to-b from-purple-400 to-purple-600 rounded-full shadow-md border border-white/60 group-hover:scale-110 group-active:scale-95 transition-transform flex items-center justify-center">
+                                    <div className="w-3.5 h-9 bg-gradient-to-b from-purple-400 to-purple-600 rounded-full shadow-lg border-2 border-white group-hover:scale-110 group-active:scale-95 transition-transform flex items-center justify-center">
                                         <div className="w-[1.5px] h-3.5 bg-white rounded-full"></div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Playhead Indicator */}
-                            {isPlayheadVisible && (
-                                <div
-                                    className="absolute top-0 bottom-0 w-[2px] bg-slate-900 dark:bg-white z-30 pointer-events-none shadow-sm"
-                                    style={{ left: `${playheadPercent}%` }}
-                                >
-                                    <div className="absolute -top-1 -left-1 w-2.5 h-2.5 bg-slate-900 dark:bg-white rounded-full"></div>
-                                </div>
-                            )}
+                            {/* Center Needle Indicator */}
+                            <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[2px] bg-primary z-30 pointer-events-none shadow-[0_0_8px_rgba(6,182,212,0.8)] opacity-60"></div>
                         </div>
 
-                        {/* Faire défiler le match : Slider (Macro Match Navigation) */}
+                        {/* Faire défiler le match : Slider (Full Match Macro Navigation) */}
                         {totalVideoDuration > 0 && (
                             <div className="flex items-center gap-3 pt-1 px-1">
                                 <span className="text-[11px] sm:text-xs font-medium text-muted-foreground whitespace-nowrap">
@@ -722,14 +723,9 @@ export function VideoClipEditor({
                                     value={Math.min(startTime, Math.max(0, totalVideoDuration - clipDuration))}
                                     onChange={(e) => {
                                         const newStart = parseFloat(e.target.value);
-                                        const newEnd = Math.min(totalVideoDuration, newStart + clipDuration);
                                         const cleanStart = Number(newStart.toFixed(1));
-                                        const cleanEnd = Number(newEnd.toFixed(1));
                                         setStartTime(cleanStart);
-                                        setEndTime(cleanEnd);
-                                        if (videoRef.current) {
-                                            videoRef.current.currentTime = cleanStart;
-                                        }
+                                        smoothSeekVideo(cleanStart);
                                     }}
                                     className="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-primary"
                                 />
