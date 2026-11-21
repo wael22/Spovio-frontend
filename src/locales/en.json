@@ -632,6 +632,7 @@
       "unsupported": "Your browser does not support video playback.",
       "selection": "Selection",
       "preview": "Preview",
+      "pausePreview": "Pause",
       "startTime": "Start",
       "endTime": "End",
       "goToStart": "Go to start",
@@ -646,10 +647,14 @@
       "uploading": "Creating highlight...",
       "success": "Highlight created successfully!",
       "error": "Error creating highlight",
+      "presets": "Presets:",
+      "max60s": "Max 60s",
+      "trimWindow": "Window:",
+      "dragTip": "Drag frame or resize handles (max 60s)",
       "errors": {
         "titleRequired": "Please enter a title",
-        "minDuration": "Highlight must be at least 1 second",
-        "maxDuration": "Highlight cannot exceed 180 seconds (3 min)",
+        "minDuration": "Highlight must be at least 3 seconds",
+        "maxDuration": "Highlight cannot exceed 60 seconds (1 min)",
         "noVideo": "No video selected"
       }
     }

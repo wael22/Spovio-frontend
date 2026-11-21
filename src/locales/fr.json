@@ -636,6 +636,7 @@
       "unsupported": "Votre navigateur ne supporte pas la lecture vidéo.",
       "selection": "Sélection",
       "preview": "Prévisualiser",
+      "pausePreview": "Pause",
       "startTime": "Début",
       "endTime": "Fin",
       "goToStart": "Aller au début",
@@ -650,10 +651,14 @@
       "uploading": "Création du highlight...",
       "success": "Highlight créé avec succès !",
       "error": "Erreur lors de la création du highlight",
+      "presets": "Raccourcis :",
+      "max60s": "Max 60s",
+      "trimWindow": "Fenêtre :",
+      "dragTip": "Glissez le cadre ou étirez les poignées (max 60s)",
       "errors": {
         "titleRequired": "Veuillez entrer un titre",
-        "minDuration": "Le highlight doit durer au moins 1 seconde",
-        "maxDuration": "Le highlight ne peut pas durer plus de 180 secondes (3 min)",
+        "minDuration": "Le highlight doit durer au moins 3 secondes",
+        "maxDuration": "Le highlight ne peut pas durer plus de 60 secondes (1 min)",
         "noVideo": "Aucune vidéo sélectionnée"
       }
     }
