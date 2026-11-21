@@ -652,6 +652,7 @@
       "success": "Highlight créé avec succès !",
       "error": "Erreur lors de la création du highlight",
       "presets": "Raccourcis :",
+      "scrollMatch": "Faire défiler le match :",
       "max60s": "Max 60s",
       "trimWindow": "Fenêtre :",
       "dragTip": "Glissez le cadre ou étirez les poignées (max 60s)",

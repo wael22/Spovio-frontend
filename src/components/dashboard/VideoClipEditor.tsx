@@ -708,6 +708,37 @@ export function VideoClipEditor({
                             )}
                         </div>
 
+                        {/* Faire défiler le match : Slider (Macro Match Navigation) */}
+                        {totalVideoDuration > 0 && (
+                            <div className="flex items-center gap-3 pt-1 px-1">
+                                <span className="text-[11px] sm:text-xs font-medium text-muted-foreground whitespace-nowrap">
+                                    {t('components.clipEditor.scrollMatch', 'Faire défiler le match :')}
+                                </span>
+                                <input
+                                    type="range"
+                                    min={0}
+                                    max={Math.max(0, totalVideoDuration - clipDuration)}
+                                    step={0.5}
+                                    value={Math.min(startTime, Math.max(0, totalVideoDuration - clipDuration))}
+                                    onChange={(e) => {
+                                        const newStart = parseFloat(e.target.value);
+                                        const newEnd = Math.min(totalVideoDuration, newStart + clipDuration);
+                                        const cleanStart = Number(newStart.toFixed(1));
+                                        const cleanEnd = Number(newEnd.toFixed(1));
+                                        setStartTime(cleanStart);
+                                        setEndTime(cleanEnd);
+                                        if (videoRef.current) {
+                                            videoRef.current.currentTime = cleanStart;
+                                        }
+                                    }}
+                                    className="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-primary"
+                                />
+                                <span className="text-[11px] font-mono font-bold text-primary whitespace-nowrap">
+                                    {formatMatchTime(startTime)}
+                                </span>
+                            </div>
+                        )}
+
                         {/* Bottom Row: Quick Preset Width Chips & Preview Button */}
                         <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-200 dark:border-slate-800">
                             {/* Width Presets (Snap width to 15s, 30s, 45s, 60s) */}
