@@ -591,7 +591,8 @@
         "expired": "Expired",
         "failed": "⚠️ Failed",
         "processing": "⚙️ Processing...",
-        "pending": "⏳ Pending..."
+        "pending": "⏳ Pending...",
+        "aiReady": "Rally Index"
       },
       "menu": {
         "play": "Play",

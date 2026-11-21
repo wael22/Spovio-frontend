@@ -145,7 +145,7 @@ export function VideoCardModern({
         {aiStatus === 'completed' && !isExpired && (
           <div className="absolute top-3 left-3 z-10 flex items-center gap-1 px-2 py-0.5 rounded-full bg-purple-600/80 backdrop-blur-sm text-[11px] font-medium text-white shadow-sm">
             <Sparkles className="h-3 w-3" />
-            IA Prête
+            {t('components.videoCard.badges.aiReady', 'Index Échanges')}
           </div>
         )}
 

@@ -595,7 +595,8 @@
         "expired": "Expirée",
         "failed": "⚠️ Échec",
         "processing": "⚙️ Traitement...",
-        "pending": "⏳ En attente..."
+        "pending": "⏳ En attente...",
+        "aiReady": "Index Échanges"
       },
       "menu": {
         "play": "Lire",

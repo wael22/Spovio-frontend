@@ -443,7 +443,7 @@ const VideoManagement: React.FC<VideoManagementProps> = ({ onStatsUpdate }) => {
                                                 {getStatusBadge(video)}
                                                 {video.ai_status === 'completed' && (
                                                     <Badge className="bg-purple-500/15 text-purple-400 border-purple-500/30 text-[10px] gap-1 px-1.5 py-0">
-                                                        <Sparkles className="w-2.5 h-2.5" /> IA Prête
+                                                        <Sparkles className="w-2.5 h-2.5" /> Index Échanges
                                                     </Badge>
                                                 )}
                                                 {video.ai_status === 'processing' && (
