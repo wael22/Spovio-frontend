@@ -234,6 +234,13 @@
       "noMatchingServes": "Aucun service ne correspond à ce filtre",
       "endOfRallies": "Fin des échanges",
       "playbackSpeed": "Vitesse de lecture",
+      "confirmClipTitle": "Créer un highlight",
+      "confirmClipDescription": "Confirmez-vous la création de ce highlight ?",
+      "confirmClipRally": "Échange #{{num}}",
+      "confirmClipDuration": "Durée : {{duration}}s",
+      "confirmClipInfo": "Le highlight sera généré en haute définition et disponible dans l'onglet Highlights d'ici quelques instants.",
+      "confirmClipBtn": "Créer le highlight",
+      "confirmClipCancel": "Annuler",
       "fullscreen": "Plein écran",
       "exitFullscreen": "Quitter le plein écran"
     }
@@ -601,12 +608,9 @@
       "menu": {
         "play": "Lire",
         "playExpired": "Vidéo expirée",
-        "createClip": "Créer un highlight",
-        "createClipUnavailable": "Highlight non disponible",
-        "editTitle": "Modifier le titre",
+        "runAi": "Lancer l'analyse IA",
+        "rerunAi": "Relancer l'analyse IA",
         "share": "Partager",
-        "download": "Télécharger MP4",
-        "downloadUnavailable": "Téléchargement non disponible",
         "delete": "Supprimer"
       }
     },

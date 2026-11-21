@@ -234,6 +234,13 @@
       "noMatchingServes": "No serves match this filter",
       "endOfRallies": "End of rallies",
       "playbackSpeed": "Playback speed",
+      "confirmClipTitle": "Create Highlight",
+      "confirmClipDescription": "Do you want to create a highlight for this rally?",
+      "confirmClipRally": "Rally #{{num}}",
+      "confirmClipDuration": "Duration: {{duration}}s",
+      "confirmClipInfo": "The highlight will be processed in high definition and available in the Highlights tab shortly.",
+      "confirmClipBtn": "Create Highlight",
+      "confirmClipCancel": "Cancel",
       "fullscreen": "Fullscreen",
       "exitFullscreen": "Exit fullscreen"
     }
@@ -597,12 +604,9 @@
       "menu": {
         "play": "Play",
         "playExpired": "Video expired",
-        "createClip": "Create a highlight",
-        "createClipUnavailable": "Highlight unavailable",
-        "editTitle": "Edit title",
+        "runAi": "Run AI Analysis",
+        "rerunAi": "Rerun AI Analysis",
         "share": "Share",
-        "download": "Download MP4",
-        "downloadUnavailable": "Download unavailable",
         "delete": "Delete"
       }
     },

@@ -1,4 +1,12 @@
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,6 +39,8 @@ import {
   RotateCw,
   Check,
   MoreHorizontal,
+  Sparkles,
+  Clock,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { VideoClipEditor } from "./VideoClipEditor";
@@ -564,76 +574,93 @@ export function VideoPlayerModal({
     [clipStatusesByVideo, currentVideoKey]
   );
 
-  // 1-Click Direct Clip from Serve Section
+  // State for Clip Confirmation Popup
+  const [confirmClipServe, setConfirmClipServe] = useState<ServeSegment | null>(null);
+  const [isSubmittingClip, setIsSubmittingClip] = useState(false);
+
+  // 1-Click Direct Clip from Serve Section -> Opens Confirmation Dialog
   const handleQuickClipServe = useCallback(
-    async (serve: ServeSegment) => {
+    (serve: ServeSegment) => {
       if (!currentVideo?.id) return;
       const vKey = String(currentVideo.id);
       if (clipStatusesByVideo[vKey]?.[serve.num] === "creating") return;
+      setConfirmClipServe(serve);
+    },
+    [currentVideo?.id, clipStatusesByVideo]
+  );
 
-      const bounds = computePaddedClipBounds(
-        serve,
-        clipPaddingSec,
-        durationRef.current || currentVideo.duration
-      );
-      const sideText = serve.team === "near" ? teamNearLabel : teamFarLabel;
-      const baseTitle = displayTitle || "Match";
-      const rawClipTitle = `Serve ${serve.num} (${sideText}) - ${baseTitle}`;
-      const clipTitle = rawClipTitle.slice(0, 180);
-      const clipDescription = `${formatMatchTime(bounds.startTime)} - ${formatMatchTime(
-        bounds.endTime
-      )} • Serve ${serve.num} (${serve.duration_s}s)`;
+  // Execute Clip Creation upon Dialog Confirmation
+  const handleConfirmCreateClip = useCallback(async () => {
+    if (!currentVideo?.id || !confirmClipServe) return;
+    const serve = confirmClipServe;
+    const vKey = String(currentVideo.id);
+    setIsSubmittingClip(true);
+
+    const bounds = computePaddedClipBounds(
+      serve,
+      clipPaddingSec,
+      durationRef.current || currentVideo.duration
+    );
+    const sideText = serve.team === "near" ? teamNearLabel : teamFarLabel;
+    const baseTitle = displayTitle || "Match";
+    const rawClipTitle = `Serve ${serve.num} (${sideText}) - ${baseTitle}`;
+    const clipTitle = rawClipTitle.slice(0, 180);
+    const clipDescription = `${formatMatchTime(bounds.startTime)} - ${formatMatchTime(
+      bounds.endTime
+    )} • Serve ${serve.num} (${serve.duration_s}s)`;
+
+    setClipStatusesByVideo((prev) => ({
+      ...prev,
+      [vKey]: { ...(prev[vKey] || {}), [serve.num]: "creating" },
+    }));
+
+    try {
+      const resp = await clipService.createClip({
+        video_id: String(currentVideo.id),
+        start_time: bounds.startTime,
+        end_time: bounds.endTime,
+        title: clipTitle,
+        description: clipDescription,
+      });
 
       setClipStatusesByVideo((prev) => ({
         ...prev,
-        [vKey]: { ...(prev[vKey] || {}), [serve.num]: "creating" },
+        [vKey]: { ...(prev[vKey] || {}), [serve.num]: "created" },
       }));
 
-      try {
-        const resp = await clipService.createClip({
-          video_id: String(currentVideo.id),
-          start_time: bounds.startTime,
-          end_time: bounds.endTime,
-          title: clipTitle,
-          description: clipDescription,
-        });
-
-        setClipStatusesByVideo((prev) => ({
-          ...prev,
-          [vKey]: { ...(prev[vKey] || {}), [serve.num]: "created" },
-        }));
-
-        toast.success(
-          t("modals.videoPlayer.clipStartedToast", {
-            title: `Serve ${serve.num}`,
-            defaultValue: `Highlight "Serve ${serve.num}" lancé ! Retrouvez-le dans Highlights.`,
-          })
-        );
-        onClipCreated?.(resp.data?.clip);
-      } catch (err: any) {
-        console.error("[VideoPlayer] Quick clip error:", err);
-        setClipStatusesByVideo((prev) => ({
-          ...prev,
-          [vKey]: { ...(prev[vKey] || {}), [serve.num]: "error" },
-        }));
-        const msg =
-          err?.response?.data?.error ||
-          t("modals.videoPlayer.clipErrorToast", "Impossible de lancer la création du highlight.");
-        toast.error(msg);
-      }
-    },
-    [
-      currentVideo?.id,
-      currentVideo?.duration,
-      clipStatusesByVideo,
-      clipPaddingSec,
-      teamNearLabel,
-      teamFarLabel,
-      displayTitle,
-      t,
-      onClipCreated,
-    ]
-  );
+      toast.success(
+        t("modals.videoPlayer.clipStartedToast", {
+          title: `Serve ${serve.num}`,
+          defaultValue: `Highlight "Serve ${serve.num}" lancé ! Retrouvez-le dans Highlights.`,
+        })
+      );
+      onClipCreated?.(resp.data?.clip);
+    } catch (err: any) {
+      console.error("[VideoPlayer] Quick clip error:", err);
+      setClipStatusesByVideo((prev) => ({
+        ...prev,
+        [vKey]: { ...(prev[vKey] || {}), [serve.num]: "error" },
+      }));
+      const msg =
+        err?.response?.data?.error ||
+        t("modals.videoPlayer.clipErrorToast", "Impossible de lancer la création du highlight.");
+      toast.error(msg);
+    } finally {
+      setIsSubmittingClip(false);
+      setConfirmClipServe(null);
+    }
+  }, [
+    confirmClipServe,
+    currentVideo?.id,
+    currentVideo?.duration,
+    clipStatusesByVideo,
+    clipPaddingSec,
+    teamNearLabel,
+    teamFarLabel,
+    displayTitle,
+    t,
+    onClipCreated,
+  ]);
 
   // Open pre-populated VideoClipEditor for fine trim / title
   const openEditorWithDraft = useCallback(
@@ -1493,6 +1520,123 @@ export function VideoPlayerModal({
               </div>
             )}
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirmation Dialog for Clip Creation */}
+      <Dialog
+        open={!!confirmClipServe}
+        onOpenChange={(open) => {
+          if (!open && !isSubmittingClip) setConfirmClipServe(null);
+        }}
+      >
+        <DialogContent className="max-w-[92vw] sm:max-w-md p-6 rounded-2xl bg-background/95 backdrop-blur-xl border border-border shadow-2xl z-[70]">
+          <DialogHeader className="space-y-2 text-left">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-500 border border-purple-500/20">
+                <Scissors className="h-5 w-5" />
+              </div>
+              <div>
+                <DialogTitle className="text-lg font-bold">
+                  {t("modals.videoPlayer.confirmClipTitle", "Créer un highlight")}
+                </DialogTitle>
+                <DialogDescription className="text-xs text-muted-foreground">
+                  {t("modals.videoPlayer.confirmClipDescription", "Confirmez-vous la création de ce highlight ?")}
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+
+          {confirmClipServe && (() => {
+            const bounds = computePaddedClipBounds(
+              confirmClipServe,
+              clipPaddingSec,
+              durationRef.current || currentVideo?.duration
+            );
+            const sideText = confirmClipServe.team === "near" ? teamNearLabel : teamFarLabel;
+            const clipDuration = Math.max(1, Math.round(bounds.endTime - bounds.startTime));
+
+            return (
+              <div className="space-y-4 my-2">
+                <div className="p-3.5 rounded-xl border border-purple-500/20 bg-purple-500/5 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-sm flex items-center gap-1.5 text-foreground">
+                      <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                      {t("modals.videoPlayer.confirmClipRally", {
+                        num: confirmClipServe.num,
+                        defaultValue: `Échange #${confirmClipServe.num}`,
+                      })}
+                    </span>
+                    <Badge variant="secondary" className="text-xs font-medium">
+                      {sideText}
+                    </Badge>
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-purple-500/10">
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-3 h-3 text-muted-foreground" />
+                      {formatMatchTime(bounds.startTime)} → {formatMatchTime(bounds.endTime)}
+                    </span>
+                    <span className="font-medium text-foreground">
+                      {t("modals.videoPlayer.confirmClipDuration", {
+                        duration: clipDuration,
+                        defaultValue: `Durée : ${clipDuration}s`,
+                      })}
+                    </span>
+                  </div>
+
+                  {isMultiAngle && currentVideo?.camera_index && (
+                    <div className="text-[11px] text-muted-foreground flex items-center gap-1">
+                      <VideoIcon className="w-3 h-3" />
+                      <span>
+                        {t("modals.videoPlayer.angle", {
+                          angle: currentVideo.camera_index,
+                          defaultValue: `Angle ${currentVideo.camera_index}`,
+                        })}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  {t(
+                    "modals.videoPlayer.confirmClipInfo",
+                    "Le highlight sera généré en haute définition et disponible dans l'onglet Highlights d'ici quelques instants."
+                  )}
+                </p>
+              </div>
+            );
+          })()}
+
+          <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2 pt-2 sm:justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isSubmittingClip}
+              onClick={() => setConfirmClipServe(null)}
+              className="w-full sm:w-auto text-xs sm:text-sm h-9"
+            >
+              {t("modals.videoPlayer.confirmClipCancel", "Annuler")}
+            </Button>
+            <Button
+              type="button"
+              disabled={isSubmittingClip}
+              onClick={handleConfirmCreateClip}
+              className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs sm:text-sm h-9 gap-1.5 shadow-md"
+            >
+              {isSubmittingClip ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin mr-1.5" />
+                  {t("modals.videoPlayer.creatingClip", "Création...")}
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4 mr-1" />
+                  {t("modals.videoPlayer.confirmClipBtn", "Créer le highlight")}
+                </>
+              )}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 

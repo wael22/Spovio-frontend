@@ -217,24 +217,6 @@ export function VideoCardModern({
               {isExpired ? t('components.videoCard.menu.playExpired') : t('components.videoCard.menu.play')}
             </DropdownMenuItem>
 
-            {companionVideos && companionVideos.length > 1 ? (
-              companionVideos.map((cVid) => (
-                <DropdownMenuItem
-                  key={`clip-${cVid.id}`}
-                  onClick={() => onCreateClip?.(cVid)}
-                  disabled={isExpired}
-                >
-                  <Scissors className="h-4 w-4 mr-2" />
-                  {`Créer clip (Angle ${cVid.camera_index || 1})`}
-                </DropdownMenuItem>
-              ))
-            ) : (
-              <DropdownMenuItem onClick={() => onCreateClip?.()} disabled={isExpired}>
-                <Scissors className="h-4 w-4 mr-2" />
-                {isExpired ? t('components.videoCard.menu.createClipUnavailable') : t('components.videoCard.menu.createClip')}
-              </DropdownMenuItem>
-            )}
-
             {onTriggerAI && !isExpired && (
               <DropdownMenuItem
                 onClick={() => onTriggerAI(id)}
@@ -242,36 +224,16 @@ export function VideoCardModern({
                 className="text-purple-600 dark:text-purple-400 font-medium cursor-pointer"
               >
                 <Cpu className="h-4 w-4 mr-2 text-purple-600 dark:text-purple-400" />
-                {aiStatus === 'completed' ? "Relancer l'Analyse IA" : "Lancer l'Analyse IA"}
+                {aiStatus === 'completed'
+                  ? t('components.videoCard.menu.rerunAi', "Relancer l'analyse IA")
+                  : t('components.videoCard.menu.runAi', "Lancer l'analyse IA")}
               </DropdownMenuItem>
             )}
 
-            <DropdownMenuItem onClick={onEdit} disabled={isExpired}>
-              <Edit className="h-4 w-4 mr-2" />
-              {t('components.videoCard.menu.editTitle')}
-            </DropdownMenuItem>
             <DropdownMenuItem onClick={onShare} disabled={isExpired}>
               <Share2 className="h-4 w-4 mr-2" />
               {t('components.videoCard.menu.share')}
             </DropdownMenuItem>
-
-            {companionVideos && companionVideos.length > 1 ? (
-              companionVideos.map((cVid) => (
-                <DropdownMenuItem
-                  key={`dl-${cVid.id}`}
-                  onClick={() => onDownload?.(cVid)}
-                  disabled={isExpired}
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  {`Télécharger Angle ${cVid.camera_index || 1}`}
-                </DropdownMenuItem>
-              ))
-            ) : (
-              <DropdownMenuItem onClick={() => onDownload?.()} disabled={isExpired}>
-                <Download className="h-4 w-4 mr-2" />
-                {isExpired ? t('components.videoCard.menu.downloadUnavailable') : t('components.videoCard.menu.download')}
-              </DropdownMenuItem>
-            )}
 
             <DropdownMenuSeparator />
             <DropdownMenuItem
