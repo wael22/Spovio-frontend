@@ -18,7 +18,7 @@
     "logout": "Logout"
   },
   "dashboard": {
-    "welcome": "Hello, {{name}} 👋",
+    "welcome": "Hello, {{name}}",
     "readyToAnalyze": "Ready to analyze your performance?",
     "startRecording": "Start Recording",
     "scanQr": "Scan QR",

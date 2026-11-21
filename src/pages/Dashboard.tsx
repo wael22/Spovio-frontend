@@ -462,10 +462,10 @@ const Dashboard = () => {
           transition={{ duration: 0.6 }}
           className="mb-8"
         >
-          <h1 className="text-3xl lg:text-4xl font-bold font-orbitron mb-2">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-foreground mb-1.5">
             {t('dashboard.welcome', { name: user?.name || 'Joueur' })}
           </h1>
-          <p className="text-muted-foreground text-lg">
+          <p className="text-muted-foreground text-sm sm:text-base">
             {t('dashboard.readyToAnalyze')}
           </p>
         </motion.div>

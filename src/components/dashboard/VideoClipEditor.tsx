@@ -511,23 +511,27 @@ export function VideoClipEditor({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-3xl md:max-w-4xl max-h-[92vh] overflow-y-auto bg-card text-card-foreground border-border">
-                <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2 text-foreground font-bold text-lg">
-                        <Scissors className="h-5 w-5 text-primary" />
-                        {t('components.clipEditor.title')}
-                        {video.camera_index && (
-                            <span className="text-xs px-2 py-0.5 rounded-md bg-secondary text-secondary-foreground border border-border font-medium">
-                                Angle {video.camera_index}
-                            </span>
-                        )}
-                    </DialogTitle>
-                    <DialogDescription className="text-muted-foreground text-xs sm:text-sm">
-                        {t('components.clipEditor.subtitle')}
-                    </DialogDescription>
-                </DialogHeader>
+            <DialogContent className="p-0 gap-0 sm:max-w-3xl md:max-w-4xl max-h-[90vh] sm:max-h-[85vh] flex flex-col overflow-hidden bg-card text-card-foreground border-border rounded-xl sm:rounded-2xl shadow-2xl">
+                {/* Pinned Modal Header (Never clips, never scrolls away) */}
+                <div className="px-5 py-3.5 sm:py-4 border-b border-border bg-card shrink-0 pr-12">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2 text-foreground font-semibold text-base sm:text-lg">
+                            <Scissors className="h-4.5 w-4.5 text-primary" />
+                            {t('components.clipEditor.title')}
+                            {video.camera_index && (
+                                <span className="text-xs px-2 py-0.5 rounded-md bg-secondary text-secondary-foreground border border-border font-medium">
+                                    Angle {video.camera_index}
+                                </span>
+                            )}
+                        </DialogTitle>
+                        <DialogDescription className="text-muted-foreground text-xs sm:text-sm mt-0.5">
+                            {t('components.clipEditor.subtitle')}
+                        </DialogDescription>
+                    </DialogHeader>
+                </div>
 
-                <div className="space-y-5">
+                {/* Scrollable Content Body */}
+                <div className="overflow-y-auto flex-1 p-4 sm:p-6 space-y-5">
                     {/* Video Player */}
                     <div className="space-y-1.5">
                         <div className="relative bg-black rounded-xl overflow-hidden shadow-md border border-border">
@@ -615,13 +619,12 @@ export function VideoClipEditor({
                                         }}
                                     >
                                         <div
-                                            className={`transition-all ${
-                                                t.isMid
-                                                    ? 'w-1 bg-primary/80 h-7 rounded-sm'
-                                                    : t.isMajor
+                                            className={`transition-all ${t.isMid
+                                                ? 'w-1 bg-primary/80 h-7 rounded-sm'
+                                                : t.isMajor
                                                     ? 'w-0.5 bg-muted-foreground/60 h-5'
                                                     : 'w-0.5 bg-border h-3'
-                                            }`}
+                                                }`}
                                         />
                                         {t.label && (
                                             <span className="text-[10px] font-mono text-muted-foreground select-none pt-0.5">
@@ -748,11 +751,10 @@ export function VideoClipEditor({
                                         variant="outline"
                                         size="sm"
                                         onClick={() => handleSetPresetDuration(sec)}
-                                        className={`h-7 px-2.5 text-xs rounded-md font-mono transition ${
-                                            Math.round(clipDuration) === sec
-                                                ? 'bg-primary text-primary-foreground font-semibold border-primary shadow-xs'
-                                                : 'bg-secondary hover:bg-secondary/80 text-secondary-foreground border-border'
-                                        }`}
+                                        className={`h-7 px-2.5 text-xs rounded-md font-mono transition ${Math.round(clipDuration) === sec
+                                            ? 'bg-primary text-primary-foreground font-semibold border-primary shadow-xs'
+                                            : 'bg-secondary hover:bg-secondary/80 text-secondary-foreground border-border'
+                                            }`}
                                     >
                                         {sec}s
                                     </Button>
@@ -762,11 +764,10 @@ export function VideoClipEditor({
                                     variant="outline"
                                     size="sm"
                                     onClick={() => handleSetPresetDuration(60)}
-                                    className={`h-7 px-2.5 text-xs rounded-md font-mono transition ${
-                                        isMaxReached
-                                            ? 'bg-primary text-primary-foreground font-semibold border-primary shadow-xs'
-                                            : 'bg-secondary hover:bg-secondary/80 text-secondary-foreground border-border'
-                                    }`}
+                                    className={`h-7 px-2.5 text-xs rounded-md font-mono transition ${isMaxReached
+                                        ? 'bg-primary text-primary-foreground font-semibold border-primary shadow-xs'
+                                        : 'bg-secondary hover:bg-secondary/80 text-secondary-foreground border-border'
+                                        }`}
                                 >
                                     60s (Max)
                                 </Button>
@@ -876,35 +877,35 @@ export function VideoClipEditor({
                             </AlertDescription>
                         </Alert>
                     )}
+                </div>
 
-                    {/* Modal Footer Actions */}
-                    <div className="flex gap-3 justify-end pt-2 border-t border-border">
-                        <Button
-                            variant="outline"
-                            onClick={onClose}
-                            disabled={loading}
-                            className="text-xs sm:text-sm h-9"
-                        >
-                            {t('components.clipEditor.cancel')}
-                        </Button>
-                        <Button
-                            onClick={handleCreateClip}
-                            disabled={loading || !title.trim()}
-                            className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs sm:text-sm h-9 shadow-md"
-                        >
-                            {loading ? (
-                                <>
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                    {t('components.clipEditor.processing')}
-                                </>
-                            ) : (
-                                <>
-                                    <Scissors className="h-4 w-4" />
-                                    {t('components.clipEditor.create')}
-                                </>
-                            )}
-                        </Button>
-                    </div>
+                {/* Pinned Modal Footer (Always visible, clean and ergonomic) */}
+                <div className="px-5 py-3.5 border-t border-border bg-card shrink-0 flex items-center justify-end gap-3">
+                    <Button
+                        variant="outline"
+                        onClick={onClose}
+                        disabled={loading}
+                        className="text-xs sm:text-sm h-9 rounded-md"
+                    >
+                        {t('components.clipEditor.cancel')}
+                    </Button>
+                    <Button
+                        onClick={handleCreateClip}
+                        disabled={loading || !title.trim()}
+                        className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs sm:text-sm h-9 rounded-md shadow-xs"
+                    >
+                        {loading ? (
+                            <>
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                {t('components.clipEditor.processing')}
+                            </>
+                        ) : (
+                            <>
+                                <Scissors className="h-4 w-4" />
+                                {t('components.clipEditor.create')}
+                            </>
+                        )}
+                    </Button>
                 </div>
             </DialogContent>
         </Dialog>

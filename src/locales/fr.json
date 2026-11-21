@@ -18,7 +18,7 @@
     "logout": "Déconnexion"
   },
   "dashboard": {
-    "welcome": "Bonjour, {{name}} 👋",
+    "welcome": "Bonjour, {{name}}",
     "readyToAnalyze": "Prêt à analyser tes performances ?",
     "startRecording": "Démarrer un enregistrement",
     "scanQr": "Scanner QR",
