@@ -1,7 +1,7 @@
 /**
  * Video Clip Editor Component
- * Instagram-style ergonomic clip trimmer with a 2-minute local focus window (for 120min+ matches),
- * draggable selection frame, resize handles, max 60s constraint, and quick presets.
+ * Ergonomic Filmstrip / Reel Clip Trimmer with resizable selection width (3s to 60s max),
+ * full Light/Dark mode support, live video synchronization, and instant presets.
  */
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
@@ -27,9 +27,8 @@ import {
     CheckCircle2,
     AlertCircle,
     Sparkles,
-    ChevronLeft,
-    ChevronRight,
-    Clock
+    Clock,
+    RotateCcw
 } from 'lucide-react';
 import { clipService } from '@/lib/api';
 import { getPreferredPlaybackUrl } from '@/lib/bunnyVideoHelper';
@@ -56,9 +55,9 @@ interface VideoClipEditorProps {
 
 type ProcessingStep = 'upload' | '';
 
-const WINDOW_DURATION = 120; // 2 minutes local focus window for long matches (e.g. 120 min)
-const MIN_DURATION = 3;      // Minimum clip duration in seconds
-const MAX_DURATION = 60;     // Maximum clip duration in seconds
+const VIEW_WINDOW_SPAN = 150; // 2.5 minutes local focus span for effortless trimming on long matches (120min+)
+const MIN_DURATION = 3;       // Minimum clip duration in seconds
+const MAX_DURATION = 60;      // Maximum clip duration in seconds
 
 export function VideoClipEditor({
     isOpen,
@@ -85,7 +84,7 @@ export function VideoClipEditor({
     const [duration, setDuration] = useState(0);
     const [isPreviewing, setIsPreviewing] = useState(false);
 
-    // Selection states (in absolute seconds from match start)
+    // Selection states (absolute seconds)
     const hasInitialRange =
         typeof initialStartTime === 'number' &&
         typeof initialEndTime === 'number' &&
@@ -94,19 +93,19 @@ export function VideoClipEditor({
     const [startTime, setStartTime] = useState(initialStartTime ?? 0);
     const [endTime, setEndTime] = useState(initialEndTime ?? 25);
 
-    // 2-minute local focus window start (in absolute seconds)
-    const [windowStart, setWindowStart] = useState(0);
+    // View window start (absolute seconds)
+    const [viewStart, setViewStart] = useState(0);
 
     // Clip metadata
     const [title, setTitle] = useState(initialTitle ?? '');
     const [description, setDescription] = useState(initialDescription ?? '');
 
-    // Scrubber interaction refs & state
+    // Drag interaction state & ref
     const trackRef = useRef<HTMLDivElement>(null);
     const [activeDrag, setActiveDrag] = useState<'box' | 'left' | 'right' | null>(null);
     const dragDataRef = useRef<{ clientX: number; initialStart: number; initialEnd: number } | null>(null);
 
-    // Sync initial values whenever editor opens with a new preset segment
+    // Sync initial values whenever editor opens
     useEffect(() => {
         if (!isOpen) return;
         setError('');
@@ -126,29 +125,28 @@ export function VideoClipEditor({
         setTitle(initialTitle ?? '');
         setDescription(initialDescription ?? '');
 
-        // Initialize local 2-minute focus window
-        const totalDur = dur;
-        if (totalDur <= WINDOW_DURATION) {
-            setWindowStart(0);
+        // Center view window around the selection
+        if (dur <= VIEW_WINDOW_SPAN) {
+            setViewStart(0);
         } else {
-            const idealStart = Math.max(0, cleanStart - 15);
-            const maxStart = Math.max(0, totalDur - WINDOW_DURATION);
-            setWindowStart(Math.min(idealStart, maxStart));
+            const ideal = Math.max(0, cleanStart - 15);
+            const maxStart = Math.max(0, dur - VIEW_WINDOW_SPAN);
+            setViewStart(Math.min(ideal, maxStart));
         }
     }, [isOpen, initialStartTime, initialEndTime, initialTitle, initialDescription, video?.id, video?.duration]);
 
-    // Keep windowStart encompassing the current selection
+    // Keep view window encompassing the current selection
     useEffect(() => {
         const totalDur = duration || video?.duration || 0;
-        if (totalDur <= WINDOW_DURATION) return;
+        if (totalDur <= VIEW_WINDOW_SPAN) return;
 
-        if (startTime < windowStart) {
-            setWindowStart(Math.max(0, startTime - 10));
-        } else if (endTime > windowStart + WINDOW_DURATION) {
-            const maxStart = Math.max(0, totalDur - WINDOW_DURATION);
-            setWindowStart(Math.min(maxStart, endTime - WINDOW_DURATION + 10));
+        if (startTime < viewStart) {
+            setViewStart(Math.max(0, startTime - 10));
+        } else if (endTime > viewStart + VIEW_WINDOW_SPAN) {
+            const maxStart = Math.max(0, totalDur - VIEW_WINDOW_SPAN);
+            setViewStart(Math.min(maxStart, endTime - VIEW_WINDOW_SPAN + 10));
         }
-    }, [startTime, endTime, duration, video?.duration, windowStart]);
+    }, [startTime, endTime, duration, video?.duration, viewStart]);
 
     const videoRef = useRef<HTMLVideoElement>(null);
     const hlsRef = useRef<Hls | null>(null);
@@ -245,17 +243,11 @@ export function VideoClipEditor({
             const time = videoRef.current.currentTime;
             setCurrentTime(time);
 
-            // Auto-loop during preview mode
+            // Loop smoothly during preview mode
             if (isPreviewing && time >= endTime) {
                 videoRef.current.currentTime = startTime;
             }
         }
-    };
-
-    const formatTime = (seconds: number): string => {
-        const mins = Math.floor(seconds / 60);
-        const secs = Math.floor(seconds % 60);
-        return `${mins}:${secs.toString().padStart(2, '0')}`;
     };
 
     const formatTimeWithTenths = (seconds: number): string => {
@@ -290,10 +282,10 @@ export function VideoClipEditor({
         }
     };
 
-    // Quick presets (15s, 30s, 45s, 60s)
-    const handleSetPreset = (presetSeconds: number) => {
+    // Quick presets (change width to 15s, 30s, 45s, 60s)
+    const handleSetPresetDuration = (presetSec: number) => {
         const totalDur = duration || video?.duration || 0;
-        const dur = Math.min(MAX_DURATION, presetSeconds);
+        const dur = Math.min(MAX_DURATION, presetSec);
         let newEnd = startTime + dur;
         let newStart = startTime;
 
@@ -312,7 +304,7 @@ export function VideoClipEditor({
         }
     };
 
-    // Nudge selection by +/- seconds
+    // Nudge entire selection by +/- seconds
     const handleNudge = (deltaSeconds: number) => {
         const totalDur = duration || video?.duration || 0;
         const clipDur = endTime - startTime;
@@ -338,20 +330,12 @@ export function VideoClipEditor({
         }
     };
 
-    // Shift 2-minute window along the match
-    const handleShiftWindow = (deltaSeconds: number) => {
-        const totalDur = duration || video?.duration || 0;
-        if (totalDur <= WINDOW_DURATION) return;
-        const maxStart = Math.max(0, totalDur - WINDOW_DURATION);
-        setWindowStart(prev => Math.max(0, Math.min(maxStart, prev + deltaSeconds)));
-    };
-
-    // Total effective window bounds
+    // Effective span calculations
     const totalVideoDuration = duration || video?.duration || 0;
-    const windowSpan = totalVideoDuration > 0 ? Math.min(WINDOW_DURATION, totalVideoDuration) : WINDOW_DURATION;
-    const windowEnd = Math.min(totalVideoDuration || windowStart + windowSpan, windowStart + windowSpan);
+    const effectiveSpan = totalVideoDuration > 0 ? Math.min(VIEW_WINDOW_SPAN, totalVideoDuration) : VIEW_WINDOW_SPAN;
+    const viewEnd = Math.min(totalVideoDuration || viewStart + effectiveSpan, viewStart + effectiveSpan);
 
-    // Scrubber Drag Handlers (Touch + Mouse unified)
+    // Drag Handlers (Left Handle, Right Handle, Center Frame)
     const startDrag = (type: 'box' | 'left' | 'right', clientX: number) => {
         setActiveDrag(type);
         dragDataRef.current = {
@@ -371,14 +355,15 @@ export function VideoClipEditor({
             if (rect.width <= 0) return;
 
             const totalDur = duration || video?.duration || 0;
-            const effectiveWindowSpan = totalDur > 0 ? Math.min(WINDOW_DURATION, totalDur) : WINDOW_DURATION;
+            const currentSpan = totalDur > 0 ? Math.min(VIEW_WINDOW_SPAN, totalDur) : VIEW_WINDOW_SPAN;
             const deltaX = clientX - dragDataRef.current.clientX;
-            const deltaSec = (deltaX / rect.width) * effectiveWindowSpan;
+            const deltaSec = (deltaX / rect.width) * currentSpan;
 
             const { initialStart, initialEnd } = dragDataRef.current;
             const clipDur = initialEnd - initialStart;
 
             if (activeDrag === 'box') {
+                // Drag entire frame (constant width)
                 let newStart = initialStart + deltaSec;
                 let newEnd = initialEnd + deltaSec;
 
@@ -400,7 +385,8 @@ export function VideoClipEditor({
                     videoRef.current.currentTime = newStart;
                 }
             } else if (activeDrag === 'left') {
-                const timeAtCursor = windowStart + ((clientX - rect.left) / rect.width) * effectiveWindowSpan;
+                // Resize Left Handle (Change Start Time & Width)
+                const timeAtCursor = viewStart + ((clientX - rect.left) / rect.width) * currentSpan;
                 const minPossibleStart = Math.max(0, endTime - MAX_DURATION);
                 const maxPossibleStart = Math.max(0, endTime - MIN_DURATION);
 
@@ -411,7 +397,8 @@ export function VideoClipEditor({
                     videoRef.current.currentTime = newStart;
                 }
             } else if (activeDrag === 'right') {
-                const timeAtCursor = windowStart + ((clientX - rect.left) / rect.width) * effectiveWindowSpan;
+                // Resize Right Handle (Change End Time & Width)
+                const timeAtCursor = viewStart + ((clientX - rect.left) / rect.width) * currentSpan;
                 const minPossibleEnd = startTime + MIN_DURATION;
                 const maxPossibleEnd = Math.min(totalDur || Infinity, startTime + MAX_DURATION);
 
@@ -440,22 +427,22 @@ export function VideoClipEditor({
             window.removeEventListener('touchmove', handlePointerMove);
             window.removeEventListener('touchend', handlePointerEnd);
         };
-    }, [activeDrag, duration, video?.duration, windowStart, startTime, endTime]);
+    }, [activeDrag, duration, video?.duration, viewStart, startTime, endTime]);
 
-    // Relative percentages within the 2-minute window
-    const relStart = Math.max(0, startTime - windowStart);
-    const relEnd = Math.max(relStart + 0.5, endTime - windowStart);
-    const leftPercent = Math.max(0, Math.min(100, (relStart / windowSpan) * 100));
-    const widthPercent = Math.max(2, Math.min(100 - leftPercent, ((relEnd - relStart) / windowSpan) * 100));
+    // Relative percentages within visible track
+    const relStart = Math.max(0, startTime - viewStart);
+    const relEnd = Math.max(relStart + 0.5, endTime - viewStart);
+    const leftPercent = Math.max(0, Math.min(100, (relStart / effectiveSpan) * 100));
+    const widthPercent = Math.max(2, Math.min(100 - leftPercent, ((relEnd - relStart) / effectiveSpan) * 100));
 
-    const playheadRel = currentTime - windowStart;
-    const playheadPercent = Math.max(0, Math.min(100, (playheadRel / windowSpan) * 100));
-    const isPlayheadVisible = currentTime >= windowStart && currentTime <= windowEnd;
+    const playheadRel = currentTime - viewStart;
+    const playheadPercent = Math.max(0, Math.min(100, (playheadRel / effectiveSpan) * 100));
+    const isPlayheadVisible = currentTime >= viewStart && currentTime <= viewEnd;
 
     const clipDuration = Number((endTime - startTime).toFixed(1));
     const isMaxReached = clipDuration >= MAX_DURATION - 0.2;
 
-    // Fixed realistic audio/video waveform bars simulation
+    // Fixed waveform pattern
     const waveformBars = useMemo(() => {
         return Array.from({ length: 48 }, (_, i) => {
             const h = Math.sin(i * 0.42) * 35 + Math.cos(i * 0.85) * 20 + 45;
@@ -464,7 +451,7 @@ export function VideoClipEditor({
     }, []);
 
     /**
-     * Create clip by sending request to backend (Server-Side Processing)
+     * Submit clip creation
      */
     const handleCreateClip = async () => {
         if (!title.trim()) {
@@ -542,18 +529,18 @@ export function VideoClipEditor({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-3xl md:max-w-4xl max-h-[92vh] overflow-y-auto">
+            <DialogContent className="sm:max-w-3xl md:max-w-4xl max-h-[92vh] overflow-y-auto bg-card text-card-foreground border-border">
                 <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2">
+                    <DialogTitle className="flex items-center gap-2 text-foreground font-bold text-lg">
                         <Scissors className="h-5 w-5 text-primary" />
                         {t('components.clipEditor.title')}
                         {video.camera_index && (
-                            <span className="text-xs px-2.5 py-0.5 rounded-full bg-primary/20 text-primary font-medium">
+                            <span className="text-xs px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 font-medium">
                                 Angle {video.camera_index}
                             </span>
                         )}
                     </DialogTitle>
-                    <DialogDescription>
+                    <DialogDescription className="text-muted-foreground text-xs sm:text-sm">
                         {t('components.clipEditor.subtitle')}
                     </DialogDescription>
                 </DialogHeader>
@@ -561,7 +548,7 @@ export function VideoClipEditor({
                 <div className="space-y-5">
                     {/* Video Player */}
                     <div className="space-y-1.5">
-                        <div className="relative bg-black rounded-xl overflow-hidden shadow-md">
+                        <div className="relative bg-black rounded-2xl overflow-hidden shadow-lg border border-border">
                             <video
                                 ref={videoCallbackRef}
                                 className="w-full aspect-video"
@@ -573,108 +560,78 @@ export function VideoClipEditor({
                                 {t('components.clipEditor.unsupported')}
                             </video>
 
-                            {/* Full Video Mini-Timeline bar (gives macro awareness on long 120min matches) */}
+                            {/* Macro match progress badge */}
                             {totalVideoDuration > 0 && (
-                                <div className="absolute top-2 left-3 right-3 z-10 flex items-center justify-between pointer-events-none">
-                                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/75 backdrop-blur-md border border-white/10 text-[11px] font-mono text-white/90 shadow">
-                                        <Clock className="w-3 h-3 text-cyan-400" />
-                                        <span>{formatMatchTime(currentTime)}</span>
-                                        <span className="text-white/40">/</span>
-                                        <span className="text-white/60">{formatMatchTime(totalVideoDuration)}</span>
-                                    </div>
-                                    {totalVideoDuration > WINDOW_DURATION && (
-                                        <div className="text-[11px] px-2.5 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 font-medium backdrop-blur-md">
-                                            {t('components.clipEditor.trimWindow', 'Fenêtre :')} {formatMatchTime(windowStart)} - {formatMatchTime(windowEnd)}
-                                        </div>
-                                    )}
+                                <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/75 backdrop-blur-md border border-white/10 text-xs font-mono text-white shadow">
+                                    <Clock className="w-3.5 h-3.5 text-primary" />
+                                    <span>{formatMatchTime(currentTime)}</span>
+                                    <span className="text-white/40">/</span>
+                                    <span className="text-white/70">{formatMatchTime(totalVideoDuration)}</span>
                                 </div>
                             )}
                         </div>
                     </div>
 
-                    {/* Instagram-Style Zoomed 2-Minute Scrubber */}
-                    <div className="p-4 rounded-2xl bg-card border border-border shadow-sm space-y-3">
-                        {/* Header Row: Window Context & Duration Pill */}
-                        <div className="flex flex-wrap items-center justify-between gap-2">
+                    {/* Filmstrip / Reel Trimmer Section (Matches Light & Dark theme) */}
+                    <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-3.5">
+                        {/* Header: Title & Dynamic Live Duration Pill */}
+                        <div className="flex items-center justify-between gap-2">
                             <div className="flex items-center gap-2">
-                                <Label className="text-sm font-semibold flex items-center gap-1.5">
-                                    <Sparkles className="w-4 h-4 text-cyan-400" />
+                                <Label className="text-xs sm:text-sm font-bold text-foreground flex items-center gap-1.5">
+                                    <Sparkles className="w-4 h-4 text-primary" />
                                     {t('components.clipEditor.selection', 'Sélection')}
                                 </Label>
-                                {totalVideoDuration > WINDOW_DURATION && (
-                                    <div className="flex items-center gap-1">
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => handleShiftWindow(-30)}
-                                            className="h-6 px-1.5 text-[11px] gap-0.5"
-                                            title="Reculer la fenêtre de 30s"
-                                        >
-                                            <ChevronLeft className="w-3 h-3" />
-                                            -30s
-                                        </Button>
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => handleShiftWindow(30)}
-                                            className="h-6 px-1.5 text-[11px] gap-0.5"
-                                            title="Avancer la fenêtre de 30s"
-                                        >
-                                            +30s
-                                            <ChevronRight className="w-3 h-3" />
-                                        </Button>
-                                    </div>
-                                )}
+                                <span className="text-[11px] text-muted-foreground hidden sm:inline">
+                                    {t('components.clipEditor.dragTip', 'Glissez le cadre ou étirez les poignées (max 60s)')}
+                                </span>
                             </div>
 
                             {/* Live Duration Badge */}
-                            <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border transition-colors ${
+                            <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border transition-colors shadow-sm ${
                                 isMaxReached
-                                    ? 'bg-purple-500/15 border-purple-500/50 text-purple-300 font-bold'
+                                    ? 'bg-purple-500/10 border-purple-500/40 text-purple-600 dark:text-purple-300 font-bold'
                                     : 'bg-primary/10 border-primary/30 text-primary font-semibold'
                             }`}>
-                                <span className={`w-2 h-2 rounded-full ${isMaxReached ? 'bg-purple-400 animate-pulse' : 'bg-cyan-400'}`}></span>
+                                <span className={`w-2 h-2 rounded-full ${isMaxReached ? 'bg-purple-500 animate-pulse' : 'bg-primary'}`}></span>
                                 <span className="text-xs font-mono">{clipDuration}s</span>
-                                <span className="text-[10px] text-muted-foreground font-normal">/ {MAX_DURATION}s max</span>
+                                <span className="text-[10px] opacity-70 font-normal">/ {MAX_DURATION}s max</span>
                             </div>
                         </div>
 
-                        {/* Timestamps Row */}
+                        {/* Start & End Timestamps */}
                         <div className="flex justify-between items-center text-xs font-mono px-1">
                             <div className="flex items-center gap-1 text-muted-foreground">
                                 <span className="font-sans text-[11px]">{t('components.clipEditor.startTime', 'Début')} :</span>
-                                <span className="text-cyan-400 font-bold">{formatTimeWithTenths(startTime)}</span>
+                                <span className="text-primary font-bold">{formatTimeWithTenths(startTime)}</span>
                             </div>
-                            <div className="text-[11px] font-sans text-muted-foreground hidden sm:block">
-                                {t('components.clipEditor.dragTip', 'Glissez le cadre ou étirez les poignées (max 60s)')}
+                            <div className="text-[11px] font-sans font-semibold text-primary/80 bg-primary/10 px-2 py-0.5 rounded-md">
+                                {clipDuration}s
                             </div>
                             <div className="flex items-center gap-1 text-muted-foreground">
                                 <span className="font-sans text-[11px]">{t('components.clipEditor.endTime', 'Fin')} :</span>
-                                <span className="text-purple-400 font-bold">{formatTimeWithTenths(endTime)}</span>
+                                <span className="text-purple-600 dark:text-purple-400 font-bold">{formatTimeWithTenths(endTime)}</span>
                             </div>
                         </div>
 
-                        {/* Interactive Track Container */}
+                        {/* Interactive Reel Track Container */}
                         <div
                             ref={trackRef}
-                            className="relative h-14 bg-neutral-950/90 rounded-xl border border-neutral-800 overflow-hidden cursor-pointer select-none touch-none shadow-inner"
+                            className="relative h-14 bg-white dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden cursor-pointer select-none touch-none shadow-inner"
                         >
-                            {/* Background Waveform Simulation (Dimmed) */}
-                            <div className="absolute inset-0 flex items-center justify-between px-2 pointer-events-none opacity-20">
+                            {/* Inactive Waveform Simulation (Light / Dark responsive) */}
+                            <div className="absolute inset-0 flex items-center justify-between px-2 pointer-events-none opacity-30 dark:opacity-20">
                                 {waveformBars.map((h, i) => (
                                     <div
                                         key={`bg-tick-${i}`}
-                                        className="w-1 bg-white rounded-full transition-all"
+                                        className="w-1 bg-slate-400 dark:bg-slate-600 rounded-full"
                                         style={{ height: `${h}%` }}
                                     />
                                 ))}
                             </div>
 
-                            {/* Active Instagram-Style Selection Box */}
+                            {/* Active Resizable Selection Frame (Spovio Neon Gradient) */}
                             <div
-                                className="absolute top-0 bottom-0 rounded-xl p-[2px] bg-gradient-to-r from-cyan-400 via-sky-500 to-purple-600 shadow-xl shadow-cyan-500/25 cursor-grab active:cursor-grabbing z-20"
+                                className="absolute top-0 bottom-0 rounded-xl p-[2px] bg-gradient-to-r from-sky-400 via-primary to-purple-500 shadow-md shadow-primary/20 cursor-grab active:cursor-grabbing z-20"
                                 style={{
                                     left: `${leftPercent}%`,
                                     width: `${widthPercent}%`,
@@ -683,29 +640,30 @@ export function VideoClipEditor({
                                 onTouchStart={(e) => startDrag('box', e.touches[0].clientX)}
                             >
                                 {/* Inner illuminated window */}
-                                <div className="w-full h-full bg-neutral-950/85 rounded-[10px] relative overflow-hidden flex items-center justify-center">
+                                <div className="w-full h-full bg-slate-50/90 dark:bg-slate-950/85 rounded-[10px] relative overflow-hidden flex items-center justify-center">
                                     {/* Active Highlighted Ticks Inside Selection */}
-                                    <div className="absolute inset-0 flex items-center justify-between px-1 pointer-events-none opacity-80">
+                                    <div className="absolute inset-0 flex items-center justify-between px-1 pointer-events-none opacity-85">
                                         {waveformBars.slice(0, 16).map((h, i) => (
                                             <div
                                                 key={`fg-tick-${i}`}
-                                                className="w-1 bg-gradient-to-t from-cyan-400 to-purple-400 rounded-full"
+                                                className="w-1 bg-gradient-to-t from-sky-500 to-purple-500 rounded-full"
                                                 style={{ height: `${Math.max(25, h)}%` }}
                                             />
                                         ))}
                                     </div>
 
-                                    {/* Center Duration Grip Pill */}
-                                    <div className="z-10 flex items-center gap-1 pointer-events-none bg-black/80 px-2 py-0.5 rounded-full border border-white/10 shadow">
-                                        <span className="text-[11px] font-mono font-bold text-white tracking-wider">
+                                    {/* Center Width/Duration Pill */}
+                                    <div className="z-10 flex items-center gap-1 pointer-events-none bg-white/95 dark:bg-black/80 px-2 py-0.5 rounded-full border border-slate-200 dark:border-white/10 shadow-sm">
+                                        <span className="text-[11px] font-mono font-bold text-slate-900 dark:text-white tracking-wider">
                                             {Math.round(clipDuration)}s
                                         </span>
                                     </div>
                                 </div>
 
-                                {/* Left Resize Handle */}
+                                {/* Left Resize Handle (Custom Width Drag) */}
                                 <div
                                     className="absolute left-0 top-0 bottom-0 w-8 -ml-4 z-30 cursor-ew-resize flex items-center justify-center group touch-none"
+                                    title="Ajuster le début (élargir/réduire)"
                                     onMouseDown={(e) => {
                                         e.stopPropagation();
                                         startDrag('left', e.clientX);
@@ -715,14 +673,15 @@ export function VideoClipEditor({
                                         startDrag('left', e.touches[0].clientX);
                                     }}
                                 >
-                                    <div className="w-2.5 h-8 bg-gradient-to-b from-cyan-300 to-cyan-500 rounded-full shadow-[0_0_10px_rgba(6,182,212,0.7)] group-hover:scale-110 group-active:scale-95 transition-transform flex items-center justify-center gap-[1px]">
-                                        <div className="w-[1.5px] h-3 bg-white/80 rounded-full"></div>
+                                    <div className="w-3 h-8 bg-gradient-to-b from-sky-400 to-sky-600 rounded-full shadow-md border border-white/60 group-hover:scale-110 group-active:scale-95 transition-transform flex items-center justify-center">
+                                        <div className="w-[1.5px] h-3.5 bg-white rounded-full"></div>
                                     </div>
                                 </div>
 
-                                {/* Right Resize Handle */}
+                                {/* Right Resize Handle (Custom Width Drag) */}
                                 <div
                                     className="absolute right-0 top-0 bottom-0 w-8 -mr-4 z-30 cursor-ew-resize flex items-center justify-center group touch-none"
+                                    title="Ajuster la fin (élargir/réduire)"
                                     onMouseDown={(e) => {
                                         e.stopPropagation();
                                         startDrag('right', e.clientX);
@@ -732,36 +691,40 @@ export function VideoClipEditor({
                                         startDrag('right', e.touches[0].clientX);
                                     }}
                                 >
-                                    <div className="w-2.5 h-8 bg-gradient-to-b from-purple-300 to-purple-500 rounded-full shadow-[0_0_10px_rgba(168,85,247,0.7)] group-hover:scale-110 group-active:scale-95 transition-transform flex items-center justify-center gap-[1px]">
-                                        <div className="w-[1.5px] h-3 bg-white/80 rounded-full"></div>
+                                    <div className="w-3 h-8 bg-gradient-to-b from-purple-400 to-purple-600 rounded-full shadow-md border border-white/60 group-hover:scale-110 group-active:scale-95 transition-transform flex items-center justify-center">
+                                        <div className="w-[1.5px] h-3.5 bg-white rounded-full"></div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Playhead Indicator (when visible in current window) */}
+                            {/* Playhead Indicator */}
                             {isPlayheadVisible && (
                                 <div
-                                    className="absolute top-0 bottom-0 w-[2px] bg-white z-30 pointer-events-none shadow-[0_0_8px_white]"
+                                    className="absolute top-0 bottom-0 w-[2px] bg-slate-900 dark:bg-white z-30 pointer-events-none shadow-sm"
                                     style={{ left: `${playheadPercent}%` }}
                                 >
-                                    <div className="absolute -top-1 -left-1 w-2.5 h-2.5 bg-white rounded-full"></div>
+                                    <div className="absolute -top-1 -left-1 w-2.5 h-2.5 bg-slate-900 dark:bg-white rounded-full"></div>
                                 </div>
                             )}
                         </div>
 
-                        {/* Bottom Actions Row: Presets, Fine-tune & Preview */}
-                        <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-border/50">
-                            {/* Quick Presets */}
+                        {/* Bottom Row: Quick Preset Width Chips & Preview Button */}
+                        <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-200 dark:border-slate-800">
+                            {/* Width Presets (Snap width to 15s, 30s, 45s, 60s) */}
                             <div className="flex items-center gap-1.5">
-                                <span className="text-[11px] text-muted-foreground font-medium">
+                                <span className="text-[11px] text-muted-foreground font-semibold">
                                     {t('components.clipEditor.presets', 'Raccourcis :')}
                                 </span>
                                 <Button
                                     type="button"
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => handleSetPreset(15)}
-                                    className="h-7 px-2.5 text-xs rounded-md"
+                                    onClick={() => handleSetPresetDuration(15)}
+                                    className={`h-7 px-2.5 text-xs rounded-lg transition ${
+                                        Math.round(clipDuration) === 15
+                                            ? 'bg-primary/10 text-primary border-primary/40 font-bold'
+                                            : 'bg-card text-foreground hover:bg-muted'
+                                    }`}
                                 >
                                     15s
                                 </Button>
@@ -769,8 +732,12 @@ export function VideoClipEditor({
                                     type="button"
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => handleSetPreset(30)}
-                                    className="h-7 px-2.5 text-xs rounded-md"
+                                    onClick={() => handleSetPresetDuration(30)}
+                                    className={`h-7 px-2.5 text-xs rounded-lg transition ${
+                                        Math.round(clipDuration) === 30
+                                            ? 'bg-primary/10 text-primary border-primary/40 font-bold'
+                                            : 'bg-card text-foreground hover:bg-muted'
+                                    }`}
                                 >
                                     30s
                                 </Button>
@@ -778,8 +745,12 @@ export function VideoClipEditor({
                                     type="button"
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => handleSetPreset(45)}
-                                    className="h-7 px-2.5 text-xs rounded-md"
+                                    onClick={() => handleSetPresetDuration(45)}
+                                    className={`h-7 px-2.5 text-xs rounded-lg transition ${
+                                        Math.round(clipDuration) === 45
+                                            ? 'bg-primary/10 text-primary border-primary/40 font-bold'
+                                            : 'bg-card text-foreground hover:bg-muted'
+                                    }`}
                                 >
                                     45s
                                 </Button>
@@ -787,14 +758,18 @@ export function VideoClipEditor({
                                     type="button"
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => handleSetPreset(60)}
-                                    className="h-7 px-2.5 text-xs rounded-md border-cyan-500/40 text-cyan-400 bg-cyan-500/10 hover:bg-cyan-500/20 font-semibold"
+                                    onClick={() => handleSetPresetDuration(60)}
+                                    className={`h-7 px-2.5 text-xs rounded-lg transition ${
+                                        isMaxReached
+                                            ? 'bg-purple-500/15 text-purple-600 dark:text-purple-300 border-purple-500/50 font-bold'
+                                            : 'bg-card text-purple-600 dark:text-purple-400 border-purple-500/30 font-semibold'
+                                    }`}
                                 >
                                     {t('components.clipEditor.max60s', 'Max 60s')}
                                 </Button>
                             </div>
 
-                            {/* Micro-nudgers & Preview Loop Button */}
+                            {/* Micro-nudgers & Preview Loop */}
                             <div className="flex items-center gap-1.5">
                                 <Button
                                     type="button"
@@ -802,7 +777,7 @@ export function VideoClipEditor({
                                     size="sm"
                                     onClick={() => handleNudge(-1)}
                                     title="Reculer de 1s"
-                                    className="h-7 px-2 text-xs"
+                                    className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
                                 >
                                     -1s
                                 </Button>
@@ -812,16 +787,15 @@ export function VideoClipEditor({
                                     size="sm"
                                     onClick={() => handleNudge(1)}
                                     title="Avancer de 1s"
-                                    className="h-7 px-2 text-xs"
+                                    className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
                                 >
                                     +1s
                                 </Button>
                                 <Button
                                     type="button"
-                                    variant="default"
                                     size="sm"
                                     onClick={handleTogglePreview}
-                                    className="h-7 px-3 text-xs gap-1.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-medium shadow-md shadow-cyan-500/20"
+                                    className="h-7 px-3 text-xs gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-sm"
                                 >
                                     {isPreviewing ? (
                                         <>
@@ -842,18 +816,23 @@ export function VideoClipEditor({
                     {/* Metadata: Title & Description */}
                     <div className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="clip-title">{t('components.clipEditor.titleLabel')} *</Label>
+                            <Label htmlFor="clip-title" className="text-xs sm:text-sm font-semibold text-foreground">
+                                {t('components.clipEditor.titleLabel')} *
+                            </Label>
                             <Input
                                 id="clip-title"
                                 placeholder={t('components.clipEditor.titlePlaceholder')}
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
                                 disabled={loading}
+                                className="bg-background text-foreground border-input"
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="clip-description">{t('components.clipEditor.descriptionLabel')}</Label>
+                            <Label htmlFor="clip-description" className="text-xs sm:text-sm font-semibold text-foreground">
+                                {t('components.clipEditor.descriptionLabel')}
+                            </Label>
                             <Textarea
                                 id="clip-description"
                                 placeholder={t('components.clipEditor.descriptionPlaceholder')}
@@ -861,6 +840,7 @@ export function VideoClipEditor({
                                 onChange={(e) => setDescription(e.target.value)}
                                 disabled={loading}
                                 rows={2}
+                                className="bg-background text-foreground border-input"
                             />
                         </div>
                     </div>
@@ -868,7 +848,7 @@ export function VideoClipEditor({
                     {/* Processing Progress */}
                     {loading && (
                         <div className="space-y-2">
-                            <div className="flex items-center text-sm">
+                            <div className="flex items-center text-sm text-foreground">
                                 {getStepIcon()}
                                 <span>{getStepLabel()}</span>
                             </div>
@@ -886,27 +866,28 @@ export function VideoClipEditor({
 
                     {/* Success Message */}
                     {success && (
-                        <Alert className="border-green-500 bg-green-50">
-                            <CheckCircle2 className="h-4 w-4 text-green-600" />
-                            <AlertDescription className="text-green-600">
+                        <Alert className="border-green-500 bg-green-50 dark:bg-green-950/30">
+                            <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
+                            <AlertDescription className="text-green-600 dark:text-green-400">
                                 {t('components.clipEditor.success')}
                             </AlertDescription>
                         </Alert>
                     )}
 
-                    {/* Actions */}
-                    <div className="flex gap-3 justify-end pt-2">
+                    {/* Modal Footer Actions */}
+                    <div className="flex gap-3 justify-end pt-2 border-t border-border">
                         <Button
                             variant="outline"
                             onClick={onClose}
                             disabled={loading}
+                            className="text-xs sm:text-sm h-9"
                         >
                             {t('components.clipEditor.cancel')}
                         </Button>
                         <Button
                             onClick={handleCreateClip}
                             disabled={loading || !title.trim()}
-                            className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-md"
+                            className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs sm:text-sm h-9 shadow-md"
                         >
                             {loading ? (
                                 <>
