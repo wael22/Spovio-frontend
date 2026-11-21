@@ -385,15 +385,19 @@ export const ServesSidebar = React.memo(function ServesSidebar({
                       type="button"
                       size="sm"
                       variant={status === "created" ? "secondary" : "outline"}
-                      disabled={status === "creating"}
+                      disabled={status === "creating" || status === "created"}
                       onClick={() => onQuickClipServe(serve)}
-                      title={`${t("modals.videoPlayer.quickClip", "Highlight rapide")} (${
-                        clipPaddingSec === 0 ? "Exact" : `±${clipPaddingSec}s`
-                      })`}
+                      title={
+                        status === "created"
+                          ? t("modals.videoPlayer.clipAlreadyCreated", "Highlight déjà créé")
+                          : `${t("modals.videoPlayer.quickClip", "Highlight rapide")} (${
+                              clipPaddingSec === 0 ? "Exact" : `±${clipPaddingSec}s`
+                            })`
+                      }
                       className={cn(
-                        "h-8 sm:h-7 px-2.5 sm:px-2 text-[11px] gap-1 text-foreground",
+                        "h-8 sm:h-7 px-2.5 sm:px-2 text-[11px] gap-1 text-foreground transition-all",
                         status === "created" &&
-                          "text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10"
+                          "text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10 opacity-70 cursor-not-allowed"
                       )}
                     >
                       {status === "creating" ? (

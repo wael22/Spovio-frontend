@@ -223,6 +223,7 @@
       "editClip": "Ajuster le highlight",
       "creatingClip": "Envoi...",
       "clipQueued": "Highlight envoyé ✓",
+      "clipAlreadyCreated": "Highlight déjà créé",
       "clipStartedToast": "Highlight \"{{title}}\" lancé ! Retrouvez-le dans Highlights.",
       "clipErrorToast": "Impossible de lancer la création du highlight.",
       "prevServe": "Service préc.",

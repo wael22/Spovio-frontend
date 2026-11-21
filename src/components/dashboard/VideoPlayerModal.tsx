@@ -250,6 +250,30 @@ export function VideoPlayerModal({
     let cancelled = false;
     setSegmentsLoading(true);
 
+    // Fetch existing clips for this video to mark already created highlights
+    clipService
+      .getVideoClips(String(vidId))
+      .then((cRes) => {
+        if (cancelled) return;
+        const existingClips = cRes.data?.clips || cRes.data || [];
+        if (Array.isArray(existingClips) && existingClips.length > 0) {
+          setClipStatusesByVideo((prev) => {
+            const vMap: Record<number, ClipStatusState> = { ...(prev[String(vidId)] || {}) };
+            existingClips.forEach((c: any) => {
+              const match = (c.title || "").match(/Serve\s+(\d+)/i);
+              if (match && match[1]) {
+                const sNum = parseInt(match[1], 10);
+                vMap[sNum] = "created";
+              }
+            });
+            return { ...prev, [String(vidId)]: vMap };
+          });
+        }
+      })
+      .catch(() => {
+        // Silently ignore if not available
+      });
+
     videoService
       .getVideoSegments(vidId)
       .then((res) => {
@@ -583,7 +607,12 @@ export function VideoPlayerModal({
     (serve: ServeSegment) => {
       if (!currentVideo?.id) return;
       const vKey = String(currentVideo.id);
-      if (clipStatusesByVideo[vKey]?.[serve.num] === "creating") return;
+      if (
+        clipStatusesByVideo[vKey]?.[serve.num] === "creating" ||
+        clipStatusesByVideo[vKey]?.[serve.num] === "created"
+      ) {
+        return;
+      }
       setConfirmClipServe(serve);
     },
     [currentVideo?.id, clipStatusesByVideo]
@@ -1382,14 +1411,18 @@ export function VideoPlayerModal({
                           <button
                             type="button"
                             onClick={() => handleQuickClipServe(activeServe)}
-                            disabled={activeClipStatus === "creating"}
-                            title={`${t("modals.videoPlayer.quickClip", "Highlight rapide")} Serve ${activeServe.num} (${
-                              clipPaddingSec === 0 ? "Exact" : `±${clipPaddingSec}s`
-                            })`}
-                            className={cn(
-                              "flex items-center justify-center gap-1 h-8 px-2 sm:px-2.5 rounded-lg text-xs font-semibold border transition-colors",
+                            disabled={activeClipStatus === "creating" || activeClipStatus === "created"}
+                            title={
                               activeClipStatus === "created"
-                                ? "bg-emerald-50 border-emerald-300 text-emerald-700 dark:bg-emerald-500/20 dark:border-emerald-400/60 dark:text-emerald-300"
+                                ? t("modals.videoPlayer.clipAlreadyCreated", "Highlight déjà créé")
+                                : `${t("modals.videoPlayer.quickClip", "Highlight rapide")} Serve ${activeServe.num} (${
+                                    clipPaddingSec === 0 ? "Exact" : `±${clipPaddingSec}s`
+                                  })`
+                            }
+                            className={cn(
+                              "flex items-center justify-center gap-1 h-8 px-2 sm:px-2.5 rounded-lg text-xs font-semibold border transition-all",
+                              activeClipStatus === "created"
+                                ? "bg-emerald-50 border-emerald-300 text-emerald-700 dark:bg-emerald-500/20 dark:border-emerald-400/60 dark:text-emerald-300 opacity-70 cursor-not-allowed"
                                 : "bg-sky-50 hover:bg-sky-100 border-sky-300 text-sky-700 dark:bg-sky-500/20 dark:hover:bg-sky-500/35 dark:border-sky-400/60 dark:text-sky-200"
                             )}
                           >
@@ -1400,7 +1433,11 @@ export function VideoPlayerModal({
                             ) : (
                               <Scissors className="h-3.5 w-3.5" />
                             )}
-                            <span className="hidden sm:inline">{`Clip S${activeServe.num}`}</span>
+                            <span className="hidden sm:inline">
+                              {activeClipStatus === "created"
+                                ? `Highlight S${activeServe.num} ✓`
+                                : `Clip S${activeServe.num}`}
+                            </span>
                           </button>
 
                           <button

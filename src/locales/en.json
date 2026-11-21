@@ -223,6 +223,7 @@
       "editClip": "Trim & edit highlight",
       "creatingClip": "Sending...",
       "clipQueued": "Highlight queued ✓",
+      "clipAlreadyCreated": "Highlight already created",
       "clipStartedToast": "Highlight \"{{title}}\" started! Check Highlights shortly.",
       "clipErrorToast": "Failed to start highlight creation.",
       "prevServe": "Previous serve",
