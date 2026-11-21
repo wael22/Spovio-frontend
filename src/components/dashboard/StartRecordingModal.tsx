@@ -418,7 +418,7 @@ export function StartRecordingModal({ open, onOpenChange, onRecordingStarted, in
           {court.has_ai && (
             <Badge variant="outline" className="border-purple-500/40 text-purple-400 text-[10px] gap-1 px-1.5 py-0">
               <Sparkles className="w-2.5 h-2.5" />
-              IA
+              {t('modals.startRecording.rallyIndexBadge', 'Index Échanges')}
             </Badge>
           )}
           {court.available ? (

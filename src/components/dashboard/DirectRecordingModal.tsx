@@ -334,17 +334,25 @@ const DirectRecordingModal = ({ isOpen, onClose, onRecordingStarted, onVideoClai
                                             <p className="text-xs text-muted-foreground">{scannedData?.club.name}</p>
                                         </div>
                                     </div>
-                                    {scannedData?.court.is_recording ? (
-                                        <Badge variant="secondary" className="bg-red-50 text-red-700 border-red-200">
-                                            <AlertCircle className="h-3 w-3 mr-1" />
-                                            {t('modals.startRecording.courtStatus.occupied')}
-                                        </Badge>
-                                    ) : (
-                                        <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-200">
-                                            <CheckCircle className="h-3 w-3 mr-1" />
-                                            {t('modals.directRecording.connected')}
-                                        </Badge>
-                                    )}
+                                    <div className="flex items-center gap-1.5">
+                                        {scannedData?.court?.has_ai && (
+                                            <Badge variant="outline" className="border-purple-500/40 text-purple-400 text-[10px] gap-1 px-1.5 py-0">
+                                                <Sparkles className="w-2.5 h-2.5" />
+                                                {t('modals.startRecording.rallyIndexBadge', 'Index Échanges')}
+                                            </Badge>
+                                        )}
+                                        {scannedData?.court.is_recording ? (
+                                            <Badge variant="secondary" className="bg-red-50 text-red-700 border-red-200">
+                                                <AlertCircle className="h-3 w-3 mr-1" />
+                                                {t('modals.startRecording.courtStatus.occupied')}
+                                            </Badge>
+                                        ) : (
+                                            <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-200">
+                                                <CheckCircle className="h-3 w-3 mr-1" />
+                                                {t('modals.directRecording.connected')}
+                                            </Badge>
+                                        )}
+                                    </div>
                                 </div>
 
                                 {/* Scoreboard / Match configuration */}

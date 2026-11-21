@@ -104,7 +104,8 @@
         "credits": "Crédit insuffisant"
       },
       "aiAnalysisTitle": "Analyse de match par IA",
-      "aiAnalysisDescription": "Retrouvez chaque point et service en un clic sur la vidéo."
+      "aiAnalysisDescription": "Retrouvez chaque point et service en un clic sur la vidéo.",
+      "rallyIndexBadge": "Index Échanges"
     },
     "directRecording": {
       "titleScan": "Scanner QR Code",
@@ -121,7 +122,8 @@
       "validate": "Valider",
       "shareClaimSuccess": "Vidéo partagée \"{{title}}\" ajoutée à vos vidéos !",
       "aiAnalysisTitle": "Analyse de match par IA",
-      "aiAnalysisDescription": "Retrouvez chaque point et service en un clic sur la vidéo."
+      "aiAnalysisDescription": "Retrouvez chaque point et service en un clic sur la vidéo.",
+      "rallyIndexBadge": "Index Échanges"
     },
     "reportIssue": {
       "title": "Signaler un problème vidéo",

@@ -104,7 +104,8 @@
         "credits": "Insufficient credits"
       },
       "aiAnalysisTitle": "AI Match Analysis",
-      "aiAnalysisDescription": "Find every point and serve in one click on the video."
+      "aiAnalysisDescription": "Find every point and serve in one click on the video.",
+      "rallyIndexBadge": "Rally Index"
     },
     "directRecording": {
       "titleScan": "Scan QR Code",
@@ -121,7 +122,8 @@
       "validate": "Validate",
       "shareClaimSuccess": "Shared video \"{{title}}\" added to your videos!",
       "aiAnalysisTitle": "AI Match Analysis",
-      "aiAnalysisDescription": "Find every point and serve in one click on the video."
+      "aiAnalysisDescription": "Find every point and serve in one click on the video.",
+      "rallyIndexBadge": "Rally Index"
     },
     "reportIssue": {
       "title": "Report Video Issue",
