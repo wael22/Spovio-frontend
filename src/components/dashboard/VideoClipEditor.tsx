@@ -112,6 +112,14 @@ export function VideoClipEditor({
     const [startTime, setStartTime] = useState(initialStartTime ?? 0);
     const [clipDuration, setClipDuration] = useState(25);
 
+    // Metadata
+    const [title, setTitle] = useState(initialTitle ?? '');
+    const [description, setDescription] = useState(initialDescription ?? '');
+
+    // Drag interaction ref & state
+    const [activeDrag, setActiveDrag] = useState<'box' | 'left' | 'right' | null>(null);
+    const dragDataRef = useRef<{ clientX: number; initialStart: number; initialDuration: number } | null>(null);
+
     // Track viewport measurement with ResizeObserver
     const trackRef = useRef<HTMLDivElement | null>(null);
     const [trackWidth, setTrackWidth] = useState(0);
