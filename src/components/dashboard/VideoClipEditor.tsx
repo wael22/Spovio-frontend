@@ -112,30 +112,46 @@ export function VideoClipEditor({
     const [startTime, setStartTime] = useState(initialStartTime ?? 0);
     const [clipDuration, setClipDuration] = useState(25);
 
-    // Track viewport measurement
-    const trackRef = useRef<HTMLDivElement>(null);
-    const [trackWidth, setTrackWidth] = useState(500);
+    // Track viewport measurement with ResizeObserver
+    const trackRef = useRef<HTMLDivElement | null>(null);
+    const [trackWidth, setTrackWidth] = useState(0);
+    const observerRef = useRef<ResizeObserver | null>(null);
 
-    // Metadata
-    const [title, setTitle] = useState(initialTitle ?? '');
-    const [description, setDescription] = useState(initialDescription ?? '');
+    // Callback ref ensures immediate, subpixel measurement as soon as DOM element mounts
+    const trackCallbackRef = useCallback((node: HTMLDivElement | null) => {
+        if (observerRef.current) {
+            observerRef.current.disconnect();
+            observerRef.current = null;
+        }
 
-    // Drag interaction ref & state
-    const [activeDrag, setActiveDrag] = useState<'box' | 'left' | 'right' | null>(null);
-    const dragDataRef = useRef<{ clientX: number; initialStart: number; initialDuration: number } | null>(null);
+        trackRef.current = node;
 
-    // Keep trackWidth measured on mount and resize
+        if (node) {
+            if (node.clientWidth > 0) {
+                setTrackWidth(node.clientWidth);
+            }
+
+            const ro = new ResizeObserver((entries) => {
+                for (const entry of entries) {
+                    const width = Math.round(entry.contentRect.width);
+                    if (width > 0) {
+                        setTrackWidth(width);
+                    }
+                }
+            });
+            ro.observe(node);
+            observerRef.current = ro;
+        }
+    }, []);
+
     useEffect(() => {
-        if (!isOpen) return;
-        const updateWidth = () => {
-            if (trackRef.current) {
-                setTrackWidth(trackRef.current.clientWidth || 500);
+        return () => {
+            if (observerRef.current) {
+                observerRef.current.disconnect();
+                observerRef.current = null;
             }
         };
-        updateWidth();
-        window.addEventListener('resize', updateWidth);
-        return () => window.removeEventListener('resize', updateWidth);
-    }, [isOpen]);
+    }, []);
 
     // Sync initial values whenever editor opens
     useEffect(() => {
@@ -320,21 +336,30 @@ export function VideoClipEditor({
     // Total effective match duration
     const totalVideoDuration = duration || video?.duration || 0;
 
-    // --- REEL GEOMETRY & MOVING BACKLINE CALCULATION ---
-    // The selection box width is directly proportional to clip duration:
-    const boxWidth = Math.max(20, clipDuration * PIXELS_PER_SEC);
-    // Center the selection box horizontally in the track viewport:
-    const boxLeft = Math.max(0, (trackWidth - boxWidth) / 2);
+    // --- RESPONSIVE REEL GEOMETRY & MOVING BACKLINE CALCULATION ---
+    // Fallback safely to 320 on mobile until ResizeObserver provides exact DOM clientWidth
+    const effectiveTrackWidth = trackWidth > 0 ? trackWidth : 320;
+
+    // Responsive pixels per second:
+    // On desktop, 5 px/s gives optimal tactile scrub resolution (60s = 300px).
+    // On mobile (< 450px), dynamically scale down so MAX_DURATION (60s) fits inside the viewport with comfortable margins.
+    const pixelsPerSec = useMemo(() => {
+        return Math.min(5, Math.max(2.5, (effectiveTrackWidth - 40) / MAX_DURATION));
+    }, [effectiveTrackWidth]);
+
+    // Selection box width & position strictly bounded to never overflow the track
+    const boxWidth = Math.max(24, Math.min(effectiveTrackWidth - 16, clipDuration * pixelsPerSec));
+    const boxLeft = Math.max(0, Math.min(effectiveTrackWidth - boxWidth, (effectiveTrackWidth - boxWidth) / 2));
 
     // The center point in seconds of the current selection:
     const centerSec = startTime + clipDuration / 2;
 
     // Build the dynamic moving ruler tape around the current center point:
-    // We generate ticks every 2 seconds (10px apart). Absolutely positioned so there is ZERO modulo jump, ZERO flexbox jumping.
+    // We generate ticks every 2 seconds. Absolutely positioned so there is ZERO modulo jump, ZERO flexbox jumping.
     const rulerTicks = useMemo(() => {
         const ticks: { sec: number; isMajor: boolean; isMid: boolean; label?: string }[] = [];
         const TICK_INTERVAL = 2;
-        const halfSpanSec = Math.ceil((trackWidth / 2) / PIXELS_PER_SEC) + 20;
+        const halfSpanSec = Math.ceil((effectiveTrackWidth / 2) / pixelsPerSec) + 20;
         const minSec = Math.max(0, Math.floor((centerSec - halfSpanSec) / TICK_INTERVAL) * TICK_INTERVAL);
         const maxSec = Math.min(
             totalVideoDuration > 0 ? totalVideoDuration : centerSec + halfSpanSec,
@@ -353,7 +378,7 @@ export function VideoClipEditor({
             ticks.push({ sec: s, isMajor, isMid, label });
         }
         return ticks;
-    }, [centerSec, totalVideoDuration, trackWidth]);
+    }, [centerSec, totalVideoDuration, effectiveTrackWidth, pixelsPerSec]);
 
     // Drag Handlers (Left Handle = Resize Start, Right Handle = Resize End, Center = Slide Match)
     const handleStartDrag = (type: 'box' | 'left' | 'right', clientX: number) => {
@@ -372,7 +397,7 @@ export function VideoClipEditor({
             if (!activeDrag || !dragDataRef.current) return;
             const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
             const deltaPx = clientX - dragDataRef.current.clientX;
-            const deltaSec = deltaPx / PIXELS_PER_SEC;
+            const deltaSec = deltaPx / pixelsPerSec;
 
             const { initialStart, initialDuration } = dragDataRef.current;
             const totalDur = duration || video?.duration || Infinity;
@@ -428,7 +453,7 @@ export function VideoClipEditor({
             window.removeEventListener('touchmove', handlePointerMove);
             window.removeEventListener('touchend', handlePointerEnd);
         };
-    }, [activeDrag, duration, video?.duration, smoothSeekVideo]);
+    }, [activeDrag, duration, video?.duration, smoothSeekVideo, pixelsPerSec]);
 
     const isMaxReached = clipDuration >= MAX_DURATION - 0.2;
 
@@ -597,15 +622,15 @@ export function VideoClipEditor({
 
                         {/* Interactive Reel Track Container */}
                         <div
-                            ref={trackRef}
+                            ref={trackCallbackRef}
                             className="relative h-20 bg-slate-100 dark:bg-slate-900/90 rounded-xl border border-border overflow-hidden select-none touch-none shadow-inner"
                         >
                             {/* THE MOVING BACKLINE TAPE: Physical ruler with ticks and labels translating smoothly at 60fps */}
                             <div
                                 className="absolute top-0 bottom-0 pointer-events-none will-change-transform"
                                 style={{
-                                    left: `${trackWidth / 2}px`,
-                                    transform: `translate3d(${-centerSec * PIXELS_PER_SEC}px, 0, 0)`,
+                                    left: `${effectiveTrackWidth / 2}px`,
+                                    transform: `translate3d(${-centerSec * pixelsPerSec}px, 0, 0)`,
                                 }}
                             >
                                 {rulerTicks.map((t) => (
@@ -613,7 +638,7 @@ export function VideoClipEditor({
                                         key={`tick-${t.sec}`}
                                         className="absolute top-0 bottom-0 flex flex-col items-center justify-end pb-1 select-none pointer-events-none"
                                         style={{
-                                            left: `${t.sec * PIXELS_PER_SEC}px`,
+                                            left: `${t.sec * pixelsPerSec}px`,
                                             transform: 'translateX(-50%)',
                                             width: '24px',
                                         }}
@@ -666,9 +691,9 @@ export function VideoClipEditor({
                                     </div>
                                 </div>
 
-                                {/* Left Handle - Clean Bracket */}
+                                {/* Left Handle - Clean Bracket (Enhanced 40px Touch Target for Mobile) */}
                                 <div
-                                    className="absolute left-0 top-0 bottom-0 w-6 -ml-3 z-30 cursor-ew-resize flex items-center justify-center group touch-none"
+                                    className="absolute left-0 top-0 bottom-0 w-10 -ml-5 sm:w-8 sm:-ml-4 z-30 cursor-ew-resize flex items-center justify-center group touch-none"
                                     title="Ajuster le début"
                                     onMouseDown={(e) => {
                                         e.stopPropagation();
@@ -686,9 +711,9 @@ export function VideoClipEditor({
                                     </div>
                                 </div>
 
-                                {/* Right Handle - Clean Bracket */}
+                                {/* Right Handle - Clean Bracket (Enhanced 40px Touch Target for Mobile) */}
                                 <div
-                                    className="absolute right-0 top-0 bottom-0 w-6 -mr-3 z-30 cursor-ew-resize flex items-center justify-center group touch-none"
+                                    className="absolute right-0 top-0 bottom-0 w-10 -mr-5 sm:w-8 sm:-mr-4 z-30 cursor-ew-resize flex items-center justify-center group touch-none"
                                     title="Ajuster la fin"
                                     onMouseDown={(e) => {
                                         e.stopPropagation();
