@@ -139,8 +139,21 @@ api.interceptors.response.use(
     (response) => {
         return response;
     },
-    (error) => {
+    async (error) => {
         if (error.response?.status === 401) {
+            // Tenter un refresh AVANT de deconnecter
+            const _orig = error.config;
+            if (!_orig?._retry && localStorage.getItem('refresh_token') && !_orig?.url?.includes('/auth/refresh')) {
+                _orig._retry = true;
+                try {
+                    const rt = localStorage.getItem('refresh_token');
+                    const r = await api.post('/auth/refresh', { refresh_token: rt });
+                    localStorage.setItem('token', r.data.access_token);
+                    localStorage.setItem('refresh_token', r.data.refresh_token);
+                    _orig.headers.Authorization = `Bearer ${r.data.access_token}`;
+                    return api(_orig);
+                } catch (_e) { /* refresh echoue -> nettoyage ci-dessous */ }
+            }
             // 🔥 CRITICAL: Clean up stale session immediately on 401
             localStorage.removeItem('token');
             localStorage.removeItem('user');
@@ -153,7 +166,7 @@ api.interceptors.response.use(
             const publicRoutes = [
                 '/login', '/register', '/auth', '/super-secret-login', '/forgot-password',
                 '/reset-password', '/verify-email', '/google-auth-callback',
-                '/about', '/contact', '/ai-features', '/how-it-works', '/player-interest', '/interest-dashboard'
+                '/about', '/contact', '/ai-features', '/how-it-works'
             ];
 
             const isHomePage = window.location.pathname === '/';

@@ -53,6 +53,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
             if (response.data.token) {
                 localStorage.setItem('token', response.data.token);
+                localStorage.setItem('refresh_token', response.data.refresh_token);
                 console.log('[AuthContext] Login successful, token stored');
             }
         } catch (error: any) {
@@ -68,6 +69,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
             if (response.data.token) {
                 localStorage.setItem('token', response.data.token);
+                localStorage.setItem('refresh_token', response.data.refresh_token);
                 console.log('[AuthContext] Registration successful, token stored');
             } else {
                 console.log('[AuthContext] Registration successful, verification required');

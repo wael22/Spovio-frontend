@@ -76,6 +76,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
                     localStorage.setItem('user', JSON.stringify(response.data.user));
                     if (response.data.token) {
                         localStorage.setItem('token', response.data.token);
+                localStorage.setItem('refresh_token', response.data.refresh_token);
                     }
                 } else {
                     setUser(null);
@@ -183,6 +184,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             localStorage.setItem('user', JSON.stringify(userData));
             if (response.data?.token) {
                 localStorage.setItem('token', response.data.token);
+                localStorage.setItem('refresh_token', response.data.refresh_token);
             }
             return userData;
         } catch (error: any) {

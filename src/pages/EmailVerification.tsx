@@ -65,6 +65,7 @@ const EmailVerification = () => {
 
             if (response.data.token) {
                 localStorage.setItem('token', response.data.token);
+                localStorage.setItem('refresh_token', response.data.refresh_token);
             }
 
             try {
