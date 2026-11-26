@@ -135,6 +135,8 @@ api.interceptors.request.use(
 );
 
 // Response interceptor - Handle errors and redirect on 401
+let refreshPromise: Promise<string> | null = null;
+
 api.interceptors.response.use(
     (response) => {
         return response;
@@ -143,14 +145,16 @@ api.interceptors.response.use(
         if (error.response?.status === 401) {
             // Tenter un refresh AVANT de deconnecter
             const _orig = error.config;
-            if (!_orig?._retry && localStorage.getItem('refresh_token') && !_orig?.url?.includes('/auth/refresh')) {
+            if (!_orig?._retry && !_orig?.url?.includes('/auth/refresh')) {
                 _orig._retry = true;
                 try {
-                    const rt = localStorage.getItem('refresh_token');
-                    const r = await api.post('/auth/refresh', { refresh_token: rt });
-                    localStorage.setItem('token', r.data.access_token);
-                    localStorage.setItem('refresh_token', r.data.refresh_token);
-                    _orig.headers.Authorization = `Bearer ${r.data.access_token}`;
+                    if (!refreshPromise) {
+                        refreshPromise = api.post('/auth/refresh')
+                            .then((r) => { localStorage.setItem('token', r.data.access_token); return r.data.access_token as string; })
+                            .finally(() => { refreshPromise = null; });
+                    }
+                    const newToken = await refreshPromise;
+                    _orig.headers.Authorization = `Bearer ${newToken}`;
                     return api(_orig);
                 } catch (_e) { /* refresh echoue -> nettoyage ci-dessous */ }
             }

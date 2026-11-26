@@ -35,7 +35,6 @@ const GoogleAuthCallback = () => {
                 if (response.data && response.data.token) {
                     // 1. Stocker le token et l'utilisateur explicitement
                     localStorage.setItem('token', response.data.token);
-                localStorage.setItem('refresh_token', response.data.refresh_token);
                     if (response.data.user) {
                         localStorage.setItem('user', JSON.stringify(response.data.user));
                     }

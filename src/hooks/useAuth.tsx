@@ -76,7 +76,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
                     localStorage.setItem('user', JSON.stringify(response.data.user));
                     if (response.data.token) {
                         localStorage.setItem('token', response.data.token);
-                localStorage.setItem('refresh_token', response.data.refresh_token);
                     }
                 } else {
                     setUser(null);
@@ -120,7 +119,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             // 🔥 CRITICAL: Store token FIRST before setting user
             if (token) {
                 localStorage.setItem('token', token);
-                localStorage.setItem('refresh_token', response.data.refresh_token);
                 console.log('[useAuth] JWT token stored explicitly');
             } else {
                 console.warn('[useAuth] No token in login response!');
@@ -185,7 +183,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             localStorage.setItem('user', JSON.stringify(userData));
             if (response.data?.token) {
                 localStorage.setItem('token', response.data.token);
-                localStorage.setItem('refresh_token', response.data.refresh_token);
             }
             return userData;
         } catch (error: any) {
@@ -227,7 +224,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             // 🔥 CRITICAL: Store token FIRST before setting user
             if (token) {
                 localStorage.setItem('token', token);
-                localStorage.setItem('refresh_token', response.data.refresh_token);
                 console.log('[useAuth] JWT token stored from email verification');
             }
 
