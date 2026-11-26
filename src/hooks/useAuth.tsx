@@ -120,6 +120,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             // 🔥 CRITICAL: Store token FIRST before setting user
             if (token) {
                 localStorage.setItem('token', token);
+                localStorage.setItem('refresh_token', response.data.refresh_token);
                 console.log('[useAuth] JWT token stored explicitly');
             } else {
                 console.warn('[useAuth] No token in login response!');
@@ -226,6 +227,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             // 🔥 CRITICAL: Store token FIRST before setting user
             if (token) {
                 localStorage.setItem('token', token);
+                localStorage.setItem('refresh_token', response.data.refresh_token);
                 console.log('[useAuth] JWT token stored from email verification');
             }
 

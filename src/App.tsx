@@ -32,8 +32,6 @@ const EmailVerification = lazy(() => import("./pages/EmailVerification"));
 const GoogleAuthCallback = lazy(() => import("./pages/GoogleAuthCallback"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
-const PlayerInterest = lazy(() => import("./pages/PlayerInterest"));
-const InterestDashboard = lazy(() => import("./pages/InterestDashboard"));
 
 // Protected MySmash App pages — lazy loaded
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -104,8 +102,6 @@ const App = () => (
                     />
                     <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/super-secret-login" element={<SuperAdminLogin />} />
-                    <Route path="/player-interest" element={<PlayerInterest />} />
-                    <Route path="/interest-dashboard" element={<InterestDashboard />} />
 
                     {/* Protected Admin & Club Routes */}
                     <Route
